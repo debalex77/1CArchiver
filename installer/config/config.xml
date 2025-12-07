@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Installer>
+    <Name>'1CArchiver v1.4 – Архивация баз данных 1С:Предприятие'</Name>
+    <Version>1.4</Version>
+    <Title>1CArchiver v1.4 – Архивация баз данных 1С:Предприятие</Title>
+    <Publisher>Oxvalprim SRL</Publisher>
+    <StartMenuDir>1CArchiver v1.4 – Архивация баз данных 1С:Предприятие</StartMenuDir>
+    <InstallerWindowIcon>backup.png</InstallerWindowIcon>
+    <TargetDir>@RootDir@/1CArchiver</TargetDir>
+    <StyleSheet>style.qss</StyleSheet>
+    <WizardStyle>Classic</WizardStyle>
+    <WizardDefaultWidth>800</WizardDefaultWidth>
+    <WizardDefaultHeight>500</WizardDefaultHeight>
+</Installer>

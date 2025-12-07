@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>welcome.html</file>
+        <file>backup.png</file>
+    </qresource>
+</RCC>

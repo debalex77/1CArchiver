@@ -1,0 +1,129 @@
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
+
+#include <QEvent>
+#include <QMainWindow>
+#include <QTableWidget>
+#include <QPushButton>
+#include <QLabel>
+#include <QProgressBar>
+#include <QTextEdit>
+#include <QProcess>
+#include <QTimer>
+#include <QVector>
+#include <QMovie>
+#include <QComboBox>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QJsonParseError>
+#include <QFile>
+#include <QEventLoop>
+#include <QTranslator>
+#include <QToolButton>
+
+#include "ibaseentry.h"
+#include "switchbutton.h"
+#include "appsettings.h"
+
+namespace bit7z {
+    class Bit7zLibrary;
+    class BitFileCompressor;
+}
+
+class MainWindow : public QMainWindow
+{
+    Q_OBJECT
+
+public:
+    explicit MainWindow(QWidget *parent = nullptr);
+    ~MainWindow();
+
+signals:
+    void jobFinishedSignal(bool ok);
+
+private slots:
+    void onSelectAll();
+    void onChooseBackupFolder();
+    void onStartArchive();
+    void switchLanguage(const QString& lang);
+    void applyTheme();
+
+private:
+    struct BackupJob {
+        int row;
+        QString dbName;
+        QString dbFolder;
+        QString file1CD;
+        QString archivePath;
+
+        QMovie *spinner = nullptr;
+        QLabel *statusLabel = nullptr;
+        bool archiveWholeFolder;
+    };
+
+    // UI
+    QTableWidget *table = nullptr;
+
+    QPushButton *btnSelectAll    = nullptr;
+    QPushButton *btnFolder       = nullptr;
+    QPushButton *btnArchive      = nullptr;
+    QPushButton *btnGenerateTask = nullptr;
+    QToolButton *btnSettings     = nullptr;
+
+    QLabel *currentStatus     = nullptr;
+    QProgressBar *progressBar = nullptr;
+    QTextEdit *logBox         = nullptr;
+
+    QComboBox *comboCompression = nullptr;
+
+    // Data
+    QString backupFolder;
+    QVector<IBASEEntry> bases;
+
+    // 7-Zip process
+    QTimer *progressTimer = nullptr;
+    QString currentArchivePath = nullptr;
+    qint64 sourceFileSize = 0;
+
+    // Job queue
+    QVector<BackupJob> jobs;
+    int currentJob = -1;
+
+    QString settingsFilePath;
+
+    bit7z::Bit7zLibrary* m_lib = nullptr;
+    bit7z::BitFileCompressor* m_compressor = nullptr;
+
+    qint64 m_currentTotalBytes = 0;   // dimensiunea totală a 1Cv8.1CD pentru job-ul curent
+
+    QLabel *lblCompression;
+    QTranslator translator;
+    QString currentLang;
+    SwitchButton* themeSwitch;
+    SwitchButton* lblSwitch;
+    QLabel* lblLang;
+    QLabel* themeLabel;
+
+    AppSettings* app_settings;
+
+private:
+    void check7ZipInstallation();
+    void log(const QString &msg);
+    QString buildArchiveName(const QString &dbName) const;
+    void startNextJob();
+    void updateRowStatusIcon(int row, bool ok);
+    QString get7zPath() const;
+
+    bool createSha256File(const QString& filePath);
+
+    void loadSettings();
+    void saveSettings();
+
+    void retranslateUi();
+
+protected:
+    void closeEvent(QCloseEvent *event) override;
+
+};
+
+#endif // MAINWINDOW_H

@@ -1,0 +1,29 @@
+QWidget
+{
+    color: white;
+    background-color: rgb(65, 65, 65);
+}
+QPushButton
+{
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    background-color: #f1f1f1;
+    color: #000000;
+    font-size: 13px;
+    padding: 4px 10px;
+    min-width: 80px;
+}
+QPushButton:hover
+{
+    background-color: #e0e0e0;
+}
+QPushButton:pressed
+{
+    background-color: #d0d0d0;
+}
+QPushButton:disabled
+{
+    background-color: #f5f5f5; /* Gri mai deschis */
+    color: #a0a0a0; /* Text gri */
+    border: 1px solid rgba(0, 0, 0, 0.1); /* Border mai slab */
+}

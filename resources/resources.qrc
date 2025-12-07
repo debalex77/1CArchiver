@@ -1,0 +1,23 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>icons/db_closed.png</file>
+        <file>icons/db_open.png</file>
+        <file>icons/backup_ok.png</file>
+        <file>icons/backup_fail.png</file>
+        <file>icons/Fading balls.gif</file>
+        <file>icons/backup.png</file>
+        <file>translations/1CArchiver_app_ru_RU.qm</file>
+        <file>translations/1CArchiver_app_ru_RU.ts</file>
+        <file>icons/drop-down-arrow.png</file>
+        <file>icons/down-chevron.png</file>
+        <file>icons/check-mark.png</file>
+        <file>icons/settings.png</file>
+        <file>icons/spinner.gif</file>
+        <file>icons/lock.png</file>
+        <file>icons/unlock.png</file>
+    </qresource>
+    <qresource prefix="/">
+        <file>styles/main_style.qss</file>
+        <file>styles/dark_style.qss</file>
+    </qresource>
+</RCC>

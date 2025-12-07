@@ -1,0 +1,163 @@
+/* --------------------- QLineEdit --------------------- */
+QLineEdit
+{
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    color: #000000;
+    font-size: 13px;
+    padding: 4px 10px;
+}
+QLineEdit::focus
+{
+  border: 1px inset blue;
+  border-radius: 4px;
+  min-height: 18px;
+}
+QLineEdit:!enabled
+{
+  border: 1px inset gray;
+  border-radius: 4px;
+  background-color: LightGray;
+  min-height: 18px;
+  color: #646464;
+}
+/* --------------------- QPushButton ------------------ */
+QPushButton
+{
+	border: 1px solid rgba(0, 0, 0, 0.2);
+		border-radius: 8px;
+		background-color: #f1f1f1;
+	color: #000000;
+		font-size: 13px;
+	padding: 4px 10px;
+}
+QPushButton:hover
+{
+	background-color: #e0e0e0;
+}
+QPushButton:pressed
+{
+	background-color: #d0d0d0;
+}
+/* ---------------------- QToolButton ---------------------- */
+QToolButton {
+    background-color: #f4f4f4;
+    border: 1px solid rgba(0,0,0,0.20);
+    border-radius: 6px;
+    padding: 4px 10px;
+    color: #222;
+    font-size: 13px;
+}
+
+QToolButton:hover {
+    background-color: #eaeaea;
+    border-color: rgba(0,0,0,0.35);
+}
+
+QToolButton:pressed {
+    background-color: #d9d9d9;
+    border-color: rgba(0,0,0,0.45);
+}
+
+QToolButton:checked {
+    background-color: #0078d7;      /* albastru Windows */
+    color: white;
+    border: 1px solid #005a9e;
+}
+
+QToolButton:disabled {
+    background-color: #f0f0f0;
+    color: #999;
+    border-color: rgba(0,0,0,0.15);
+}
+
+/* Pentru QToolButton cu icon + text */
+QToolButton::menu-indicator {
+    image: none;
+}
+/* -------------------- QComboBox Modern -------------------- */
+QComboBox {
+    background: #fafafa;
+    border: 1px solid rgba(0,0,0,0.25);
+    border-radius: 8px;
+    padding: 4px 28px 4px 8px;  /* loc pentru săgeată */
+    font-size: 13px;
+    color: #222;
+}
+
+QComboBox:hover {
+    border-color: rgba(0,0,0,0.45);
+}
+
+QComboBox:focus {
+    border-color: #00baff;
+    background: #ffffff;
+}
+
+QComboBox::drop-down {
+    border: none;
+    width: 22px;
+    subcontrol-origin: padding;
+    subcontrol-position: right;
+}
+
+QComboBox::down-arrow {
+    image: url(:/icons/icons/drop-down-arrow.png);
+    width: 12px;
+    height: 12px;
+    margin-right: 4px;
+}
+
+/* Lista */
+QComboBox QAbstractItemView {
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.25);
+    border-radius: 6px;
+    selection-background-color: #00baff;
+    selection-color: white;
+    padding: 2px;
+}
+
+QComboBox QAbstractItemView::item {
+    padding: 6px 10px;
+}
+
+/* --------------------- QTextEdit ------------------ */
+QTextEdit {
+	background-color: #f8f9fa;                                   /* Culoare de fundal deschisă */
+	border: 1px solid #cccccc;                                   /* Border subțire gri */
+	border-radius: 6px;                                          /* Colțuri rotunjite */
+	padding: 4px;                                                /* Spațiere internă */
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; /* Font specific macOS */
+	font-size: 13px;                                             /* Dimensiune text */
+	color: #333333;                                              /* Culoare text */
+}
+
+QTextEdit:focus {
+        border: 1px solid #007aff;        /* Border albastru când are focus */
+	background-color: #ffffff;        /* Fundal alb */
+}
+
+QTextEdit[readOnly="true"] {
+        background-color: #e9ecef;        /* Fundal gri deschis pentru mod read-only */
+	color: #6c757d;                   /* Text gri */
+	border: 1px solid #bbbbbb;        /* Border mai puțin pronunțat */
+}
+/* --------------------- QProgressBar ------------------ */
+QProgressBar {
+    background: #d9d9d9;
+    border-radius: 10px;
+    text-align: center;
+    color: #000;
+    height: 20px;
+}
+
+QProgressBar::chunk {
+    background: qlineargradient(
+        spread:pad,
+	x1:0, y1:0, x2:1, y2:0,
+	stop:0 #42a5f5,
+	stop:1 #1e88e5
+    );
+    border-radius: 10px;
+}

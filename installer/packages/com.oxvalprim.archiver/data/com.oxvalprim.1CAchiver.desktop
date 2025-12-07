@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.4
+Type=Application
+Name=1CArchiver v1.4 – Архивация баз данных 1С:Предприятие
+Comment=1CArchiver v1.4 – Архивация баз данных 1С:Предприятие
+Exec=@TargetDir@/1CArchiver
+Icon=@TargetDir@/icons/backup.ico
+Terminal=false
+Categories=Utility;Qt;
+StartupWMClass=1CArchiver
+Terminal=false
+Encoding=UTF-8
