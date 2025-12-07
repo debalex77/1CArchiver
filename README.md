@@ -1,3 +1,6 @@
+
+<img width="898" height="676" alt="2025-12-07_17-48" src="https://github.com/user-attachments/assets/6703aba0-75bf-4e3b-94d0-f8c98fc1c141" />
+
 # 1CArchiver  
 ### Fast & Secure Backup Tool for 1C:Enterprise Databases  
 ![platform](https://img.shields.io/badge/platform-Windows%20x64-blue)
@@ -29,6 +32,7 @@ The project is built with:
 - Archive:
   - only the `1Cv8.1CD` file  
   - the entire database directory (extensions mode)
+- **Automatic detection of the user's 1C database locations**
 - Optional password protection
 - Automatic generation of **SHA-256 checksum** files
 
