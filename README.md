@@ -46,6 +46,8 @@ The project is built with:
 - QProgressBar and animated spinner during long operations
 
 ### ⚙️ Technical Architecture
+- Automatic reading and parsing of the 1C configuration file  
+  `C:\Users\<user>\AppData\Roaming\1C\1CEStart\ibases.v8i`
 - Background worker based on `QThread` (non-blocking UI)
 - Real-time progress reporting through bit7z callback (bytes processed)
 - Persistent user settings stored in `settings.json`
