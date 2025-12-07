@@ -1,6 +1,5 @@
 # 1CArchiver  
-### Backup rapid și sigur pentru bazele de date 1C:Enterprise  
-![license](https://img.shields.io/badge/license-MIT-blue.svg)
+### Fast & Secure Backup Tool for 1C:Enterprise Databases  
 ![platform](https://img.shields.io/badge/platform-Windows%20x64-blue)
 ![qt](https://img.shields.io/badge/Qt-6.9.3-brightgreen)
 ![cpp](https://img.shields.io/badge/C%2B%2B-17-orange)
@@ -8,66 +7,92 @@
 
 ---
 
-## 📌 Descriere
+## 📌 Overview
 
-**1CArchiver** este o aplicație modernă Qt/C++ pentru backup automat și manual al bazelor de date **1C:Enterprise (1С:Предприятие)**.  
-Aplicația arhivează fișierul `1Cv8.1CD` sau întregul director al bazei de date, generează fișier SHA-256 și oferă progres de arhivare în timp real.
+**1CArchiver** is a Qt/C++ application designed for fast, reliable, and automated backup of **1C:Enterprise (1С:Предприятие)** file-based databases.  
+It can archive the main `1Cv8.1CD` file or the entire database directory, generate SHA-256 checksums, and display real-time compression progress.
 
-Proiectul este compatibil cu:
-- **Windows 64-bit**  
-- **Qt 6.9.3 (MSVC 2022)**  
-- **bit7z 4.0.10 (SevenZip SDK)**  
+The project is built with:
 
----
-
-## ✨ Funcționalități
-
-### 🔐 Arhivare și securitate
-- Arhivare **.7z** folosind **LZMA / LZMA2** (through bit7z)
-- Setare nivel compresie (`0–9`)
-- Posibilitatea de a arhiva:
-  - doar fișierul `1Cv8.1CD`
-  - întregul director al bazei (mod extensii)
-- Suport pentru **parolă** (opțional)
-- Generarea automată a fișierului **.sha256**
-
-### 🎛 Interfață modernă
-- UI complet în **Qt Widgets**
-- **Theme switcher** Light/Dark
-- Traduceri dinamice:
-  - 🇷🇺 Rusă (`ru_RU`)
-  - 🇷🇴 Română (`ro_RO`)
-- QTableWidget cu stil personalizat
-- QProgressBar + spinner animat în timpul arhivării
-
-### ⚙️ Funcții tehnice
-- Worker-thread bazat pe `QThread` pentru arhivare (nu blochează UI)
-- Calcul progres prin callback bit7z (bytes processed)
-- Setări persistente în `settings.json`
-- Backup folder configurabil
-- Generator automats pentru fișier **Task XML**
-
-### 🖥 Instalator profesionist
-- Creator installer cu **Qt Installer Framework 4.10**
-- Icon, Logo, Watermark personalizate
-- Creare shortcut pe desktop și în Start Menu
-- Descărcare automată și instalare **Visual C++ Redistributable**
-- Generare hash SHA-256 pentru instalator
+- **Qt 6.9.3 (MSVC 2022)**
+- **C++17**
+- **bit7z 4.0.10 (SevenZip SDK)**
+- **Windows 64-bit support**
 
 ---
 
-## 🚀 Compilare & Dependențe
+## ✨ Features
 
-### 🔧 Cerințe
-- Qt 6.9.3 (MSVC 2022)
-- Visual Studio Build Tools 2022
-- 7-Zip instalat (pentru `7z.dll`)
-- bit7z v4.0.10
+### 🔐 Archiving & Security
+- Create **.7z** archives using **LZMA / LZMA2**
+- Adjustable compression level (`0–9`)
+- Archive:
+  - only the `1Cv8.1CD` file  
+  - the entire database directory (extensions mode)
+- Optional password protection
+- Automatic generation of **SHA-256 checksum** files
 
-### 🔨 Compilare
+### 🎛 Modern User Interface
+- Built using **Qt Widgets**
+- **Light/Dark theme switcher**
+- Dynamic translation loading:
+  - 🇷🇺 Russian (`ru_RU`)
+  - 🇷🇴 Romanian (`ro_RO`)
+- Custom-styled tables and progress controls
+- QProgressBar and animated spinner during long operations
 
+### ⚙️ Technical Architecture
+- Background worker based on `QThread` (non-blocking UI)
+- Real-time progress reporting through bit7z callback (bytes processed)
+- Persistent user settings stored in `settings.json`
+- Configurable backup folder
+- Automatic generation of XML Task files for external scheduling
+
+### 🖥 Professional Installer
+- Built using **Qt Installer Framework 4.10**
+- Custom icons, logo, and installer artwork
+- Creates Desktop and Start Menu shortcuts
+- Optional download and installation of **Microsoft Visual C++ Redistributable**
+- Automatic SHA-256 checksum generation for installer integrity
+
+---
+
+## 🚀 Getting Started
+
+### 🔧 Requirements
+- Windows 10/11 64-bit  
+- Qt 6.9.3 (MSVC 2022)  
+- Visual Studio Build Tools 2022  
+- 7-Zip installed (for `7z.dll`)  
+- bit7z 4.0.10  
+
+---
+
+## 🔨 Build Instructions
+
+### 1. Clone the repository
 ```bash
+git clone https://github.com/debalex77/1CArchiver.git
+cd 1CArchiver
 qmake
-nmake
+./release/1CArchiver.exe
+```
 
+----
+
+## 📦 Packaging & Installer
+
+To create the installer:
+- Install Qt Installer Framework 4.10
+- Configure config.xml and package structure under packages/
+- Build the installer:
+```
+binarycreator --config config/config.xml --packages packages 1CArchiverInstaller.exe
+```
+
+## 🔒 Security Notes
+
+- Password-protected archives use AES-256 encryption (7-Zip standard)
+- SHA-256 checksum files ensure archive integrity
+- No telemetry or external communication of user data
 
