@@ -12,7 +12,7 @@ and this project follows Semantic Versioning.
 
 ---
 
-## [1.4.0] - 2025-12-13
+## [1.5] - 2025-12-13
 
 ### Added
 - Dropbox synchronization using OAuth2 PKCE
@@ -27,7 +27,7 @@ and this project follows Semantic Versioning.
 
 ---
 
-## [1.4.0] - 2025-12-09
+## [1.4] - 2025-12-09
 
 ### Fixed
 - Fixed random crashes related to QString construction
