@@ -1,3 +1,12 @@
+![platform](https://img.shields.io/badge/platform-Windows%20x64-blue)
+![qt](https://img.shields.io/badge/Qt-6.9.3-brightgreen)
+![cpp](https://img.shields.io/badge/C%2B%2B-17-orange)
+![bit7z](https://img.shields.io/badge/bit7z-4.0.10-lightgrey)
+![License](https://img.shields.io/github/license/debalex77/1CArchiver)
+[![GitHub stars](https://img.shields.io/github/stars/debalex77/1CArchiver)](https://github.com/debalex77/1CArchiver/stargazers)
+[![GitHub release](https://img.shields.io/github/v/release/debalex77/1CArchiver)](https://github.com/debalex77/1CArchiver/releases)
+
+---
 
 ## 📸 Screenshot
 <img width="898" height="676" alt="2025-12-07_17-48" src="https://github.com/user-attachments/assets/6703aba0-75bf-4e3b-94d0-f8c98fc1c141" />
@@ -6,10 +15,6 @@
 
 # 1CArchiver  
 ### Быстрый и безопасный инструмент резервного копирования баз данных 1C:Enterprise  
-![platform](https://img.shields.io/badge/platform-Windows%20x64-blue)
-![qt](https://img.shields.io/badge/Qt-6.9.3-brightgreen)
-![cpp](https://img.shields.io/badge/C%2B%2B-17-orange)
-![bit7z](https://img.shields.io/badge/bit7z-4.0.10-lightgrey)
 
 ---
 
