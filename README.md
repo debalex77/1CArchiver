@@ -1,3 +1,7 @@
+[![GitHub stars](https://img.shields.io/github/stars/debalex77/1CArchiver)](https://github.com/debalex77/1CArchiver/stargazers)
+[![GitHub release](https://img.shields.io/github/v/release/debalex77/1CArchiver)](https://github.com/debalex77/1CArchiver/releases)
+
+---
 
 ## 🌐 Language / Язык
 [🇬🇧 English](README.md) | [🇷🇺 Русский](README_RU.md)
