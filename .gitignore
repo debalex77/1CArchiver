@@ -1,9 +1,41 @@
-# Qt build folders
+# ===============================
+# Qt / Qt Creator
+# ===============================
 build*/
 *.pro.user
 *.pro.user.*
 *.qbs.user
 *.qbs.user.*
-
-# Qt Creator
 .qtcreator/
+
+# ===============================
+# MSVC / Windows
+# ===============================
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.obj
+*.ilk
+*.pdb
+*.idb
+*.tlog
+*.pch
+*.tmp
+*.log
+
+# ===============================
+# Logs
+# ===============================
+*.log
+*.trace
+*.stackdump
+
+# ===============================
+# Archives / Backups
+# ===============================
+*.7z
+*.zip
+*.rar
+*.sha256
