@@ -1,1 +1,9 @@
-.qtcreator
+# Qt build folders
+build*/
+*.pro.user
+*.pro.user.*
+*.qbs.user
+*.qbs.user.*
+
+# Qt Creator
+.qtcreator/
