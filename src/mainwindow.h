@@ -1,3 +1,13 @@
+/*
+ * 1CArchiver is a Qt/C++ application designed for fast, reliable,
+ * and automated backup of 1C:Enterprise file-based databases.
+ * Copyright (c) 2024-2025 Codreanu Alexandru - All Rights Reserved.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
@@ -20,6 +30,8 @@
 #include <QEventLoop>
 #include <QTranslator>
 #include <QToolButton>
+
+#include <src/dropbox/dropboxuploader.h>
 
 #include "ibaseentry.h"
 #include "switchbutton.h"
@@ -47,6 +59,7 @@ private slots:
     void onStartArchive();
     void switchLanguage(const QString& lang);
     void applyTheme();
+    void clickedAbortDropbox();
 
 private:
     struct BackupJob {
@@ -72,6 +85,11 @@ private:
 
     QLabel *currentStatus     = nullptr;
     QProgressBar *progressBar = nullptr;
+
+    QLabel *currentStatusDropbox     = nullptr;
+    QProgressBar *progressBarDropbox = nullptr;
+    QPushButton *btnAbortDropbox = nullptr;
+
     QTextEdit *logBox         = nullptr;
 
     QComboBox *comboCompression = nullptr;
@@ -106,15 +124,24 @@ private:
 
     AppSettings* app_settings;
 
+    DropboxUploader *m_dbxUploader = nullptr;
+    bool m_waitingForDropbox = false;
+
 private:
     void check7ZipInstallation();
+
     void log(const QString &msg);
+
     QString buildArchiveName(const QString &dbName) const;
     void startNextJob();
     void updateRowStatusIcon(int row, bool ok);
     QString get7zPath() const;
 
+    void startDropboxUpload(const QString &localPath, const QString &fileSHA256 = QString());
+
     bool createSha256File(const QString& filePath);
+
+    void setPropertyVisible();
 
     void loadSettings();
     void saveSettings();

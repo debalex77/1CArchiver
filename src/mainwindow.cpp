@@ -22,10 +22,14 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QCryptographicHash>
+#include <QTextBlock>
 
 #ifdef Q_OS_WIN
 #include <windows.h>
 #include <dwmapi.h>
+
+#include <src/dropbox/connectordropbox.h>
+
 #pragma comment(lib, "dwmapi.lib")
 
 static void enableDarkTitlebar(QWidget* w) {
@@ -63,15 +67,12 @@ uint64_t folderSize(const QString& path) {
     return total;
 }
 
-// ======================================
-// Constructor
-// ======================================
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
     m_lib(nullptr),
     m_compressor(nullptr)
 {
-    resize(900, 600);
+    resize(920, 680);
     setWindowIcon(QIcon(":/icons/icons/backup.png"));
     setWindowTitle(tr("1CArchiver v%1 – Backup al bazelor de date 1C:Enterprise")
                        .arg(VER));
@@ -187,13 +188,34 @@ MainWindow::MainWindow(QWidget *parent)
     // ---------------------------------------------------------
     // UI – progres + status
     // ---------------------------------------------------------
-    currentStatus = new QLabel("Idle", this);
+    currentStatus = new QLabel("Arhivarea: ... inactiv", this);
     progressBar = new QProgressBar(this);
     progressBar->setRange(0, 100);
     progressBar->setValue(0);
 
     v->addWidget(currentStatus);
     v->addWidget(progressBar);
+
+    // ---------------------------------------------------------
+    // UI – progres + status DROPBOX
+    // ---------------------------------------------------------
+    currentStatusDropbox = new QLabel("Dropbox: ... inactiv", this);
+    progressBarDropbox = new QProgressBar(this);
+    progressBarDropbox->setRange(0, 100);
+    progressBarDropbox->setValue(0);
+
+    btnAbortDropbox = new QPushButton(tr("Oprește Dropbox"), this);
+    btnAbortDropbox->setEnabled(false);
+    connect(btnAbortDropbox, &QPushButton::clicked,
+            this, &MainWindow::clickedAbortDropbox, Qt::UniqueConnection);
+
+    auto *layoutDropbox = new QHBoxLayout;
+    layoutDropbox->addWidget(currentStatusDropbox);
+    layoutDropbox->addStretch();
+    layoutDropbox->addWidget(btnAbortDropbox);
+
+    v->addLayout(layoutDropbox);
+    v->addWidget(progressBarDropbox);
 
     // ---------------------------------------------------------
     // UI – log
@@ -299,9 +321,6 @@ MainWindow::MainWindow(QWidget *parent)
 
 }
 
-// ======================================
-// Destructor
-// ======================================
 MainWindow::~MainWindow()
 {
 }
@@ -348,7 +367,13 @@ void MainWindow::onChooseBackupFolder()
 // Începe arhivarea
 // ======================================
 void MainWindow::onStartArchive()
-{    
+{
+    // Dezactivarea UI button
+    btnSelectAll->setEnabled(false);
+    btnArchive->setEnabled(false);
+    btnFolder->setEnabled(false);
+    comboCompression->setEnabled(false);
+
     jobs.clear();
     currentJob = -1;
 
@@ -430,6 +455,27 @@ void MainWindow::applyTheme()
     }
 }
 
+void MainWindow::clickedAbortDropbox()
+{
+    if (!m_dbxUploader)
+        return;
+
+    log("⛔ Dropbox: upload abortat de utilizator.");
+
+    currentStatusDropbox->setText(tr("Dropbox: anulat"));
+    progressBarDropbox->setValue(0);
+
+    m_dbxUploader->abort();      // foarte important
+    m_dbxUploader->deleteLater();
+    m_dbxUploader = nullptr;
+
+    btnAbortDropbox->setEnabled(false);
+
+    // permitem continuarea fluxului
+    m_waitingForDropbox = false;
+    startNextJob();
+}
+
 void MainWindow::check7ZipInstallation()
 {
     QString exe = get7zPath();
@@ -467,19 +513,30 @@ QString MainWindow::buildArchiveName(const QString &dbName) const
         ".7z");
 }
 
-
 // ======================================
 // Pornește job
 // ======================================
 void MainWindow::startNextJob()
 {
+    // dacă așteptăm Dropbox → NU pornim alt job
+    if (m_waitingForDropbox)
+        return;
+
     currentJob++;
 
+    // finalizarea job-lui
     if (currentJob >= jobs.size()) {
         log("----------------------------------------------------------------------------");
         log(tr("Toate backup-urile finalizate."));
         currentStatus->setText("Gata.");
         progressBar->setValue(100);
+
+        // Reactivarea UI button
+        btnSelectAll->setEnabled(true);
+        btnArchive->setEnabled(true);
+        btnFolder->setEnabled(true);
+        comboCompression->setEnabled(true);
+
         return;
     }
 
@@ -489,81 +546,108 @@ void MainWindow::startNextJob()
     log(tr("Arhivez: ") + toWinPath(job.file1CD));
     log("📦 " + job.dbName);
 
-    // ----------------------------------------------------------
-    // CALCUL DIMENSIUNE TOTALĂ pentru progres
-    // ----------------------------------------------------------
-    uint64_t totalBytes = 0;
+    // dimensiune pentru progres
+    uint64_t totalBytes = job.archiveWholeFolder
+                              ? folderSize(job.dbFolder)
+                              : QFileInfo(job.file1CD).size();
 
-    if (job.archiveWholeFolder) {
-        totalBytes = folderSize(job.dbFolder);
-    } else {
-        QFileInfo fi(job.file1CD);
-        totalBytes = fi.size();
+    // initierea progressBar
+    progressBar->setValue(0);
+    currentStatus->setText(tr("Arhivare: ..."));
+
+    if (globals::syncDropbox) {
+        progressBarDropbox->setValue(0);
+        currentStatusDropbox->setText(tr("Încărcarea în Dropbox: ..."));
     }
 
-    // UI setup
-    progressBar->setValue(0);
-    currentStatus->setText("Arhivare...");
-
-    QLabel* lbl = new QLabel(this);
+    // initierea spinner-lui in tabel
+    QLabel *lbl = new QLabel(this);
     lbl->setAlignment(Qt::AlignCenter);
 
-    QMovie* mv;
-    if (globals::isDark)
-        mv = new QMovie(":/icons/icons/spinner.gif");
-    else
-        mv = new QMovie(":/icons/icons/Fading balls.gif");
-    mv->setScaledSize(QSize(20,20));
+    QMovie *mv = globals::isDark
+                     ? new QMovie(":/icons/icons/spinner.gif")
+                     : new QMovie(":/icons/icons/Fading balls.gif");
+
+    mv->setScaledSize(QSize(20, 20));
     lbl->setMovie(mv);
     mv->start();
 
     table->setCellWidget(job.row, 3, lbl);
 
-    // THREAD
-    QThread* t   = new QThread;
+    QThread *t = new QThread;
     QString inputPath = job.archiveWholeFolder ? job.dbFolder : job.file1CD;
-    auto* worker = new CompressWorker(inputPath,
-                                      job.archivePath,
-                                      comboCompression->currentIndex(),
-                                      job.archiveWholeFolder,
-                                      totalBytes,
-                                      globals::archivePassword);
+
+    auto *worker = new CompressWorker(
+        inputPath,
+        job.archivePath,
+        comboCompression->currentIndex(),
+        job.archiveWholeFolder,
+        totalBytes,
+        globals::archivePassword
+        );
+
     worker->moveToThread(t);
 
     connect(t, &QThread::started, worker, &CompressWorker::process);
 
-    // PROGRESS
-    connect(worker, &CompressWorker::progress, this, [=](int pct){
-        progressBar->setValue(pct);
-        currentStatus->setText(QString(tr("Progres: %1%")).arg(pct));
-    });
+    connect(worker, &CompressWorker::progress, this,
+            [this](int pct) {
+                progressBar->setValue(pct);
+                currentStatus->setText(
+                    QString(tr("Progres: %1%")).arg(pct)
+                    );
+            });
 
-    // FINISHED
-    connect(worker, &CompressWorker::finished, this, [=](bool ok, QString){
-        mv->stop();
-        table->removeCellWidget(job.row, 3);
+    // BACKUP FINALIZAT (doar arhivare)
+    connect(worker, &CompressWorker::finished, this,
+            [=](bool ok, QString) {
 
-        auto* it = new QTableWidgetItem(ok ? "✔" : "❌");
-        it->setTextAlignment(Qt::AlignCenter);
-        table->setItem(job.row, 3, it);
+                mv->stop();
+                mv->deleteLater();
+                lbl->deleteLater();
 
-        // 🔥 Dimensiunea arhivei
-        QFileInfo info(job.archivePath);
-        double sizeMB = info.size() / 1024.0 / 1024.0;
+                table->removeCellWidget(job.row, 3);
 
-        log(QString(tr("📦 Arhivă: %1 (%2 MB)"))
-                .arg(toWinPath(job.archivePath),
-                     QString::number(sizeMB, 'f', 1)));
+                auto *it = new QTableWidgetItem(ok ? "✔" : "❌");
+                it->setTextAlignment(Qt::AlignCenter);
+                table->setItem(job.row, 3, it);
 
-        if (ok && globals::createFileSHA256) {
-            createSha256File(job.archivePath);
-        }
+                log(ok
+                        ? tr("✔ Backup finalizat")
+                        : tr("❌ Backup eșuat"));
 
-        log(ok ? tr("✔ Backup reușit") : tr("❌ Backup eșuat"));
+                t->quit();
+            });
 
-        emit jobFinishedSignal(ok);
-        t->quit();
-    });
+    // ARHIVĂ CREATĂ → SHA + DROPBOX
+    connect(worker, &CompressWorker::backupCreated, this,
+            [=](const QString &archivePath) {
+
+                QFileInfo info(archivePath);
+                double sizeMB = info.size() / 1024.0 / 1024.0;
+
+                log(QString(tr("📦 Arhivă: %1 (%2 MB)"))
+                        .arg(toWinPath(archivePath),
+                             QString::number(sizeMB, 'f', 1)));
+
+                if (globals::createFileSHA256)
+                    createSha256File(archivePath);
+
+                if (globals::syncDropbox && globals::activate_syncDropbox) {
+                    m_waitingForDropbox = true;
+
+                    if (globals::createFileSHA256)
+                        startDropboxUpload(
+                            archivePath,
+                            archivePath + ".sha256");
+                    else
+                        startDropboxUpload(archivePath);
+                }
+                else {
+                    // fără Dropbox → următorul job imediat
+                    startNextJob();
+                }
+            });
 
     connect(t, &QThread::finished, worker, &QObject::deleteLater);
     connect(t, &QThread::finished, t, &QObject::deleteLater);
@@ -617,6 +701,88 @@ QString MainWindow::get7zPath() const
     return QString();      // nu a fost găsit
 }
 
+void MainWindow::startDropboxUpload(const QString &localPath, const QString &fileSHA256)
+{
+    progressBarDropbox->setRange(0, 100);
+    progressBarDropbox->setValue(0);
+    currentStatusDropbox->setText(tr("🌍 Dropbox: inițierea încărcării..."));
+
+    ConnectorDropbox conn;
+    const QString access  = conn.accessToken();
+    const QString refresh = conn.refreshToken();
+
+    if (access.isEmpty() || refresh.isEmpty()) {
+        log(tr("⛔ Dropbox: nu este conectat, încărcarea omisă."));
+        m_waitingForDropbox = false;
+        startNextJob();
+        return;
+    }
+
+    m_dbxUploader = new DropboxUploader(access, refresh, this);
+
+    const QString remotePath =
+        "/" + QFileInfo(localPath).fileName();
+
+    connect(m_dbxUploader, &DropboxUploader::uploadProgress,
+            this, [this](qint64 sent, qint64 total) {
+
+                if (total <= 0)
+                    return;
+
+                int percent = int(double(sent) / double(total) * 100.0);
+                percent = qBound(0, percent, 100);
+
+                progressBarDropbox->setValue(percent);
+
+                currentStatusDropbox->setText(
+                    QString(tr("Încărcarea în Dropbox: %1% (%2 / %3 MB))"))
+                        .arg(QString::number(percent),
+                             QString::number(sent  / 1024.0 / 1024.0, 'f', 1),
+                             QString::number(total / 1024.0 / 1024.0, 'f', 1))
+                    );
+            });
+
+    connect(m_dbxUploader, &DropboxUploader::uploadFinished,
+            this, [this, localPath, fileSHA256](bool ok, const QString &msg) {
+
+                if (!ok) {
+                    log(tr("⛔ Dropbox: încărcarea nereușită: ") + msg);
+                }
+                else {
+                    log(tr("🌍 Dropbox: încărcarea finalizată: ")
+                        + QFileInfo(localPath).fileName());
+
+                    // upload SHA256 DUPĂ .7z
+                    if (!fileSHA256.isEmpty() &&
+                        QFile::exists(fileSHA256)) {
+
+                        log(tr("🌍 Dropbox: inițirea încărcării fișierului SHA256..."));
+
+                        QMetaObject::invokeMethod(
+                            this,
+                            [this, fileSHA256]() {
+                                startDropboxUpload(fileSHA256);
+                            },
+                            Qt::QueuedConnection
+                            );
+                        return;
+                    }
+
+                    // FINAL JOB
+                    log(tr("✔ Arhivarea și încărcarea în Dropbox reușită"));
+                }
+
+                m_dbxUploader->deleteLater();
+                m_dbxUploader = nullptr;
+
+                m_waitingForDropbox = false;
+                startNextJob();   // următorul job ABIA ACUM
+            });
+
+    log(tr("🌍 Dropbox: start încărcarea: ") + toWinPath(localPath));
+    m_dbxUploader->uploadFile(localPath, remotePath);
+}
+
 bool MainWindow::createSha256File(const QString &filePath)
 {
     QFile file(filePath);
@@ -656,6 +822,15 @@ bool MainWindow::createSha256File(const QString &filePath)
     return true;
 }
 
+void MainWindow::setPropertyVisible()
+{
+    currentStatusDropbox->setVisible(globals::syncDropbox);
+    progressBarDropbox->setVisible(globals::syncDropbox);
+}
+
+// ======================================
+// Setarile -> load & save
+// ======================================
 void MainWindow::loadSettings()
 {
     QFile f(settingsFilePath);
@@ -714,6 +889,20 @@ void MainWindow::loadSettings()
     if (obj.contains("createFileSHA256"))
         globals::createFileSHA256 = obj["createFileSHA256"].toBool();
 
+    if (obj.contains("syncDropbox")) {
+        globals::syncDropbox = obj["syncDropbox"].toBool();
+        setPropertyVisible();
+    }
+
+    if (obj.contains("activate_syncDropbox"))
+        globals::activate_syncDropbox = obj["activate_syncDropbox"].toBool();
+
+    if (obj.contains("syncGoogleDrive"))
+        globals::syncGoogleDrive = obj["syncGoogleDrive"].toBool();
+
+    if (obj.contains("activate_syncGoogleDrive"))
+        globals::activate_syncGoogleDrive = obj["activate_syncGoogleDrive"].toBool();
+
     if (obj.contains("questionCloseApp"))
         globals::questionCloseApp = obj["questionCloseApp"].toBool();
 
@@ -722,6 +911,12 @@ void MainWindow::loadSettings()
 
     if (obj.contains("archivePassword"))
         globals::archivePassword = decryptPassword(obj.value("archivePassword").toString());
+
+    if (obj.contains("succ_dropbox"))
+        globals::loginSuccesDropbox = obj["succ_dropbox"].toString();
+
+    if (obj.contains("succ_gdrive"))
+        globals::loginSuccesGoogleDrive = obj["succ_gdrive"].toString();
 
     // ------------------------------------------
     // Restaurăm dimensiunile coloanelor tabelului
@@ -740,15 +935,21 @@ void MainWindow::loadSettings()
 void MainWindow::saveSettings()
 {
     QJsonObject obj;
-    obj["compression"]        = comboCompression->currentIndex();
-    obj["backupFolder"]       = backupFolder;
-    obj["currentLang"]        = currentLang;
-    obj["darkTheme"]          = themeSwitch->isChecked();
-    obj["backupExtFiles"]     = globals::backupExtFiles;
-    obj["createFileSHA256"]   = globals::createFileSHA256;
-    obj["questionCloseApp"]   = globals::questionCloseApp;
-    obj["setArchivePassword"] = globals::setArchivePassword;
-    obj["archivePassword"]    = encryptPassword(globals::archivePassword);
+    obj["compression"]              = comboCompression->currentIndex();
+    obj["backupFolder"]             = backupFolder;
+    obj["currentLang"]              = currentLang;
+    obj["darkTheme"]                = themeSwitch->isChecked();
+    obj["backupExtFiles"]           = globals::backupExtFiles;
+    obj["createFileSHA256"]         = globals::createFileSHA256;
+    obj["questionCloseApp"]         = globals::questionCloseApp;
+    obj["setArchivePassword"]       = globals::setArchivePassword;
+    obj["archivePassword"]          = encryptPassword(globals::archivePassword);
+    obj["syncDropbox"]              = globals::syncDropbox;
+    obj["activate_syncDropbox"]     = globals::activate_syncDropbox;
+    obj["syncGoogleDrive"]          = globals::syncGoogleDrive;
+    obj["activate_syncGoogleDrive"] = globals::activate_syncGoogleDrive;
+    obj["succ_dropbox"]             = globals::loginSuccesDropbox;
+    obj["succ_gdrive"]              = globals::loginSuccesGoogleDrive;
 
     // ------------------------------------------
     // Salvăm dimensiunile coloanelor tabelului
@@ -775,13 +976,15 @@ void MainWindow::retranslateUi()
     btnSelectAll->setText(tr("Selectează toate"));
     btnFolder->setText(tr("Alege folder backup"));
     btnArchive->setText(tr("Arhivează selectatele"));
+    btnAbortDropbox->setText(tr("Oprește Dropbox"));
     // btnGenerateTask->setText(tr("Generează Task XML"));
 
     themeLabel->setText(tr("Dark theme:"));
     lblLang->setText(tr("Limba RO:"));
     lblCompression->setText(tr("Compresie:"));
 
-    currentStatus->setText(tr("Idle"));
+    currentStatus->setText(tr("Arhivarea: ... inactiv"));
+    currentStatusDropbox->setText(tr("Dropbox: ... inactiv"));
 
     table->setHorizontalHeaderLabels({
         tr("Select"),

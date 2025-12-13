@@ -1,6 +1,8 @@
-QT += core gui widgets
+QT += core gui widgets network
 
-CONFIG += c++17 release
+CONFIG += c++17
+CONFIG += debug_and_release
+
 TEMPLATE = app
 TARGET = 1CArchiver
 
@@ -10,6 +12,10 @@ SOURCES += \
     main.cpp \
     src/appsettings.cpp \
     src/compressworker.cpp \
+    src/dropbox/connectordropbox.cpp \
+    src/dropbox/dropboxconnectdialog.cpp \
+    src/dropbox/dropboxoauth2_pkce.cpp \
+    src/dropbox/dropboxuploader.cpp \
     src/globals.cpp \
     src/lineeditpassword.cpp \
     src/mainwindow.cpp \
@@ -20,6 +26,10 @@ SOURCES += \
 HEADERS += \
     src/appsettings.h \
     src/compressworker.h \
+    src/dropbox/connectordropbox.h \
+    src/dropbox/dropboxconnectdialog.h \
+    src/dropbox/dropboxoauth2_pkce.h \
+    src/dropbox/dropboxuploader.h \
     src/globals.h \
     src/lineeditpassword.h \
     src/mainwindow.h \
@@ -33,16 +43,16 @@ HEADERS += \
 RESOURCES += resources/resources.qrc \
     installer/config/installer.qrc
 
+FORMS += \
+    src/dropbox/dropboxconnectdialog.ui
+
 TRANSLATIONS += \
     resources/translations/1CArchiver_ru_RU.ts
 #lupdate 1CArchiver.pro -ts resources/translations/1CArchiver_app_ru_RU.ts
 #lrelease resources/translations/1CArchiver_app_ru_RU.ts -qm resources/translations/1CArchiver_app_ru_RU.qm
 
-win32{
-    QMAKE_PROJECT_DEPTH = 0
-}
-
 DISTFILES += \
+    LICENSE \
     build_script/build_win.bat \
     installer/config/backup.png \
     installer/config/config.xml \
@@ -54,9 +64,6 @@ DISTFILES += \
     installer/packages/com.oxvalprim.archiver/meta/package.xml \
     version.txt
 
-# INCLUDEPATH += $$PWD/3rdparty/bit7z/include
-# LIBS += -L$$PWD/3rdparty/bit7z/lib -lbit7z
-
 # IMPORTANT: Biblioteci Windows necesare pentru bit7z
 LIBS += -loleaut32 -lole32 -luuid
 
@@ -67,6 +74,8 @@ else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/3rdparty/bit7z/lib/x64/
 INCLUDEPATH += $$PWD/3rdparty/bit7z/include
 DEPENDPATH += $$PWD/3rdparty/bit7z/include
 
-FORMS +=
+win32{
+    QMAKE_PROJECT_DEPTH = 0
+}
 
 

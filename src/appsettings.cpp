@@ -6,6 +6,8 @@
 #include <dwmapi.h>
 #include <QMessageBox>
 #include <QPushButton>
+
+#include <src/dropbox/dropboxconnectdialog.h>
 #pragma comment(lib, "dwmapi.lib")
 
 static void enableDarkTitlebar(QWidget* w) {
@@ -17,6 +19,9 @@ static void enableDarkTitlebar(QWidget* w) {
 
 AppSettings::AppSettings(QWidget *parent) : QDialog(parent)
 {
+    QString highlightColor = globals::isDark ? " style='color:#61AFEF'"
+                                             : "";
+
     setupUI();
     updateUI();
 
@@ -33,10 +38,51 @@ AppSettings::AppSettings(QWidget *parent) : QDialog(parent)
         globals::createFileSHA256 = on;
     });
 
+    connect(btn_syncDropbox, &SwitchButton::toggled,
+            this, [this, highlightColor](bool on)
+            {
+                globals::syncDropbox = on;
+                globals::activate_syncDropbox = !on;
+
+                if (!globals::activate_syncDropbox && on) {
+                    auto* conDlgDropbox = new DropboxConnectDialog(this);
+
+                    connect(conDlgDropbox, &DropboxConnectDialog::loginSuccesDropbox,
+                            this, [this, highlightColor]()
+                            {
+                                lbl_syncDropbox->setText(
+                                    tr("Sincronizarea cu <b><span %1>Dropbox</span></b><br>"
+                                       "După comprimarea şi arhivare backup-le se sincronizează<br>"
+                                       "cu <b><span %1>Dropbox</span></b>.%2")
+                                        .arg(
+                                            highlightColor,
+                                            globals::loginSuccesDropbox.isEmpty()
+                                                ? QString()
+                                                : "<br><br><span style='color:#7acfcf'>"
+                                                      + globals::loginSuccesDropbox
+                                                      + "</span>"
+                                            )
+                                    );
+                            });
+
+                    conDlgDropbox->exec();
+                    conDlgDropbox->deleteLater();
+                }
+            });
+
+    // connect(btn_syncGoogleDrive, &SwitchButton::toggled, this, [&](bool on) {
+    //     globals::syncGoogleDrive = on;
+    //     if (! globals::activate_syncGoogleDrive && on) {
+
+    //     }
+    // });
+
     connect(btn_closeApp, &SwitchButton::toggled, this, [&](bool on) {
         globals::questionCloseApp = on;
     });
 
+    if (globals::isDark)
+        enableDarkTitlebar(this);
 }
 
 AppSettings::~AppSettings()
@@ -69,7 +115,8 @@ void AppSettings::setupUI()
     lbl_setArchivePassword = new QLabel(this);
     lbl_setArchivePassword->setStyleSheet("font-size: 12px;");
     lbl_setArchivePassword->setText(tr("Setarea parolei la arhive.<br>"
-                                       "La salvarea parolei se criptează(AES-like XOR + hashed key)"));
+                                       "La salvarea parolei se criptează <b><span%1>(AES-like XOR + hashed key)</span></b>")
+                                        .arg(highlightColor));
 
     btn_setArchivePassword = new SwitchButton(this);
     btn_setArchivePassword->setChecked(globals::setArchivePassword);
@@ -114,7 +161,8 @@ void AppSettings::setupUI()
     lbl_backupExtFiles = new QLabel(this);
     lbl_backupExtFiles->setStyleSheet("font-size: 12px;");
     lbl_backupExtFiles->setText(tr("Arhivarea fișierelor externe a bazelor de date <br>"
-                                   "include directorii ex.: ExtDb, ExtForms etc."));
+                                   "include directorii ex.: <b><span%1>ExtDb, ExtForms etc.</span></b>")
+                                    .arg(highlightColor));
 
     btn_backupExtFiles = new SwitchButton(this);
     btn_backupExtFiles->setChecked(globals::backupExtFiles);
@@ -142,8 +190,8 @@ void AppSettings::setupUI()
 
     lbl_fileSHA256 = new QLabel(this);
     lbl_fileSHA256->setStyleSheet("font-size: 12px;");
-    lbl_fileSHA256->setText(tr("Generarea automată a sumelor SHA-256 <br>"
-                               "pentru fișierele arhivate"));
+    lbl_fileSHA256->setText(tr("Generarea automată a sumelor <b><span%1>SHA-256</span></b><br>"
+                               "pentru fișierele arhivate").arg(highlightColor));
 
     btn_createFileSHA256 = new SwitchButton(this);
     btn_createFileSHA256->setChecked(globals::createFileSHA256);
@@ -164,6 +212,76 @@ void AppSettings::setupUI()
 
     layout_spacer1->addWidget(line1);
 
+    // ----- sincronizarea cu Dropbox -----
+    auto* layout_syncDropbox = new QHBoxLayout;
+    layout_syncDropbox->setContentsMargins(10,10,10,10);
+    layout_syncDropbox->setSpacing(10);
+
+    lbl_syncDropbox = new QLabel(this);
+    lbl_syncDropbox->setStyleSheet("font-size: 12px;");
+    lbl_syncDropbox->setText(
+        tr("Sincronizarea cu <b><span %1>Dropbox</span></b><br>"
+           "După comprimarea şi arhivare backup-le se sincronizează<br>"
+           "cu <b><span %1>Dropbox</span></b>.%2")
+            .arg(
+                highlightColor,
+                globals::loginSuccesDropbox.isEmpty()
+                    ? QString()
+                    : "<br><br><span style='color:#7acfcf'>"
+                          + globals::loginSuccesDropbox
+                          + "</span>"
+                )
+        );
+
+    btn_syncDropbox = new SwitchButton(this);
+    btn_syncDropbox->setChecked(globals::syncDropbox);
+
+    layout_syncDropbox->addWidget(lbl_syncDropbox);
+    layout_syncDropbox->addStretch();
+    layout_syncDropbox->addWidget(btn_syncDropbox);
+
+    // ----- separator3 -----
+    auto* layout_spacer2 = new QHBoxLayout;
+    layout_spacer2->setContentsMargins(10,0,10,10);
+    layout_spacer2->setSpacing(10);
+
+    QFrame* line2 = new QFrame(this);
+    line2->setFrameShape(QFrame::HLine);
+    line2->setFrameShadow(QFrame::Plain);
+    line2->setFixedHeight(1);
+
+    layout_spacer2->addWidget(line2);
+
+    // ----- sincronizarea cu GoogleDrive -----
+    // auto* layout_syncGoogleDrive = new QHBoxLayout;
+    // layout_syncGoogleDrive->setContentsMargins(10,10,10,10);
+    // layout_syncGoogleDrive->setSpacing(10);
+
+    // lbl_syncGoogleDrive = new QLabel(this);
+    // lbl_syncGoogleDrive->setStyleSheet("font-size: 12px;");
+    // lbl_syncGoogleDrive->setText(tr("Sincronizarea cu <b><span%1>GoogleDrive</span></b><br>"
+    //                                 "După comprimarea şi arhivare backup-le se sincronizează<br>"
+    //                                 "cu <b><span%1>GoogleDrive</span><b>.").arg(highlightColor));
+
+    // btn_syncGoogleDrive = new SwitchButton(this);
+    // btn_syncGoogleDrive->setChecked(globals::syncGoogleDrive);
+
+    // layout_syncGoogleDrive->addWidget(lbl_syncGoogleDrive);
+    // layout_syncGoogleDrive->addStretch();
+    // layout_syncGoogleDrive->addWidget(btn_syncGoogleDrive);
+
+    // // ----- separator4 -----
+    // auto* layout_spacer3 = new QHBoxLayout;
+    // layout_spacer3->setContentsMargins(10,0,10,10);
+    // layout_spacer3->setSpacing(10);
+
+    // QFrame* line3 = new QFrame(this);
+    // line3->setFrameShape(QFrame::HLine);
+    // line3->setFrameShadow(QFrame::Plain);
+    // line3->setFixedHeight(1);
+
+    // layout_spacer3->addWidget(line3);
+
     // ----- inchiderea aplicatiei -----
     auto* layout_closeApp = new QHBoxLayout;
     layout_closeApp->setContentsMargins(10,10,10,10);
@@ -180,17 +298,17 @@ void AppSettings::setupUI()
     layout_closeApp->addStretch();
     layout_closeApp->addWidget(btn_closeApp);
 
-    // ----- separator3 -----
-    auto* layout_spacer2 = new QHBoxLayout;
-    layout_spacer2->setContentsMargins(10,0,10,10);
-    layout_spacer2->setSpacing(10);
+    // ----- separator5 -----
+    auto* layout_spacer4 = new QHBoxLayout;
+    layout_spacer4->setContentsMargins(10,0,10,10);
+    layout_spacer4->setSpacing(10);
 
-    QFrame* line2 = new QFrame(this);
-    line2->setFrameShape(QFrame::HLine);
-    line2->setFrameShadow(QFrame::Plain);
-    line2->setFixedHeight(1);
+    QFrame* line4 = new QFrame(this);
+    line4->setFrameShape(QFrame::HLine);
+    line4->setFrameShadow(QFrame::Plain);
+    line4->setFixedHeight(1);
 
-    layout_spacer2->addWidget(line2);
+    layout_spacer4->addWidget(line4);
 
     // ----- adaugăm în layout principal -----
 
@@ -201,8 +319,12 @@ void AppSettings::setupUI()
     v->addLayout(layout_spacer);
     v->addLayout(layout_sha);
     v->addLayout(layout_spacer1);
-    v->addLayout(layout_closeApp);
+    v->addLayout(layout_syncDropbox);
     v->addLayout(layout_spacer2);
+    // v->addLayout(layout_syncGoogleDrive);
+    // v->addLayout(layout_spacer3);
+    v->addLayout(layout_closeApp);
+    v->addLayout(layout_spacer4);
 
     // ----- tema -----
     if (globals::isDark) {

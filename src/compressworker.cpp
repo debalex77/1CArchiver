@@ -1,6 +1,7 @@
 #include "compressworker.h"
 #include <QFileInfo>
 #include <QCoreApplication>
+#include "src/globals.h"
 
 using namespace bit7z;
 
@@ -53,6 +54,7 @@ void CompressWorker::process() {
                 );
         }
 
+        emit backupCreated(m_output);
         emit finished(true, m_output);
 
     } catch (const BitException& ex) {

@@ -1,3 +1,13 @@
+/*
+ * 1CArchiver is a Qt/C++ application designed for fast, reliable,
+ * and automated backup of 1C:Enterprise file-based databases.
+ * Copyright (c) 2024-2025 Codreanu Alexandru - All Rights Reserved.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
 #ifndef APPSETTINGS_H
 #define APPSETTINGS_H
 
@@ -10,6 +20,13 @@
 #include <QLabel>
 #include <QObject>
 
+/*
+ * Clasa responsabila pentru:
+ *   - setarea variabilelor globale
+ *   - setarea parolei arhivei
+ *   - setarea crearii fisierelor SHA256
+ *   - sincronizarea in Dropbox si GoogleDrive
+ */
 class AppSettings : public QDialog
 {
     Q_OBJECT
@@ -21,17 +38,23 @@ public:
     bool isChecked() const;
 
 private:
+    QString highlightColor;
+
     QLabel* lbl_setArchivePassword;
+    QLabel* lbl_pwd;
     QLabel* lbl_backupExtFiles;
     QLabel* lbl_fileSHA256;
     QLabel* lbl_closeApp;
-    QLabel* lbl_pwd;
+    QLabel* lbl_syncDropbox;
+    // QLabel* lbl_syncGoogleDrive;
+
     SwitchButton* btn_setArchivePassword;
+    LineEditPassword* edit_pwd;
     SwitchButton* btn_backupExtFiles;
     SwitchButton* btn_createFileSHA256;
     SwitchButton* btn_closeApp;
-
-    LineEditPassword* edit_pwd;
+    SwitchButton* btn_syncDropbox;
+    SwitchButton* btn_syncGoogleDrive;
 
     void setupUI();
     void updateUI();

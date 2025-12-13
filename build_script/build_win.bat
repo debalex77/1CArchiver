@@ -10,7 +10,7 @@ set "QIF_PATH=C:\Qt\Tools\QtInstallerFramework\4.10\bin"
 set "WDEPLOY=%QT_PATH%\bin\windeployqt6.exe"
 set "BUILD_EXE=%BUILD_PATH%\Desktop_Qt_6_9_3_MSVC2022_64bit-Release\release\1CArchiver.exe"
 
-set "PREBUILD_PATH=%BUILD_PATH%\1CArchiver_v1.4"
+set "PREBUILD_PATH=%BUILD_PATH%\1CArchiver_v1.5"
 
 ::------------------------------------------
 :: Ștergem și recreăm folderul de build
@@ -24,6 +24,8 @@ copy "%BUILD_EXE%" "%PREBUILD_PATH%\1CArchiver.exe"
 ::------------------------------------------
 :: Rulăm windeployqt pentru a include toate dependințele Qt
 "%WDEPLOY%" "%PREBUILD_PATH%\1CArchiver.exe"
+"%WDEPLOY%" --release "%PREBUILD_PATH%\1CArchiver.exe"
+goto skip_1
 
 ::------------------------------------------
 :: Copiem installer structure
@@ -80,7 +82,7 @@ for /f "tokens=*" %%A in ('"%ZIP_PATH%" h "%PACKAGE_FILE%" -scrcSHA256 ^| findst
 
 echo %SHA256_SUM_TXT% > "%SHA_FILE%"
 echo === SHA256 generated ===
-
+: skip_1
 echo === Build completat cu succes! ===
 
 endlocal /b 0
