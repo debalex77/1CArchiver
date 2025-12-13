@@ -88,7 +88,8 @@ private:
     // Lista porturilor fallback
     const QList<int> m_ports = {53682, 53683, 53684, 53685, 53686};
 
-    // APP KEY (client_id) – nu e secret
+    // APP KEY
     const QString CLIENT_ID = "gfkrwtxtibh08xp";
 };
+
 
