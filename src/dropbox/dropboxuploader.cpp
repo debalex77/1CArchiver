@@ -118,33 +118,41 @@ void DropboxUploader::onUploadReply()
 
     m_file.close();
 
+    // SUCCESS
     if (err == QNetworkReply::NoError) {
         m_state = UploadState::Idle;
         emit uploadFinished(true, QString::fromUtf8(response));
         return;
     }
 
-    QString errorMessage = QString::fromUtf8(response);
+    const QString errorMessage = QString::fromUtf8(response);
 
-    // TOKEN EXPIRAT
-    if (response.contains("invalid_access_token") ||
-        response.contains("expired_access_token"))
+    // AUTH ERROR (corect, robust)
+    if (err == QNetworkReply::AuthenticationRequiredError ||
+        err == QNetworkReply::ContentAccessDenied ||
+        errorMessage.contains("invalid_access_token") ||
+        errorMessage.contains("expired_access_token"))
     {
-        // blocăm retry multiplu
         if (m_state == UploadState::RefreshingToken)
             return;
 
         m_state = UploadState::RefreshingToken;
-
         m_retryAfterRefresh = true;
-        emit authError(tr("Dropbox token expired"));
+
+        emit authError(tr("Dropbox authentication required"));
         tryRefreshToken();
         return;
     }
 
-    // ALTA EROARE
+    // ALTĂ EROARE (închidem fluxul sigur)
     m_state = UploadState::Failed;
-    emit uploadFinished(false, errorMessage);
+
+    emit uploadFinished(
+        false,
+        errorMessage.isEmpty()
+            ? tr("Dropbox upload failed: authentication or network error")
+            : errorMessage
+        );
 }
 
 /*

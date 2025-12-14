@@ -23,12 +23,16 @@
 #include <QMenuBar>
 #include <QCryptographicHash>
 #include <QTextBlock>
+#include <QDirIterator>
+#include <QSettings>
 
 #ifdef Q_OS_WIN
 #include <windows.h>
 #include <dwmapi.h>
 
 #include <src/dropbox/connectordropbox.h>
+#include <src/dropbox/dropboxhealthchecker.h>
+#include <src/dropbox/dropboxoauth2_pkce.h>
 
 #pragma comment(lib, "dwmapi.lib")
 
@@ -77,7 +81,6 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle(tr("1CArchiver v%1 – Backup al bazelor de date 1C:Enterprise")
                        .arg(VER));
 
-    // ---------------------------------------------------------
     // Tema si limba aplicatiei
     // ---------------------------------------------------------
 
@@ -123,7 +126,6 @@ MainWindow::MainWindow(QWidget *parent)
     topBar->addWidget(themeSwitch);
     topBar->addWidget(btnSettings);
 
-    // ---------------------------------------------------------
     // central widget
     // ---------------------------------------------------------
 
@@ -133,7 +135,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     v->addLayout(topBar);
 
-    // ---------------------------------------------------------
     // drumul spre setarile aplicatiei
     // ---------------------------------------------------------
 
@@ -141,7 +142,6 @@ MainWindow::MainWindow(QWidget *parent)
                            .filePath("settings.json");
     QDir().mkpath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
 
-    // ---------------------------------------------------------
     // UI – tabel
     // ---------------------------------------------------------
     table = new QTableWidget(0, 4, this);
@@ -153,25 +153,32 @@ MainWindow::MainWindow(QWidget *parent)
     );
     table->horizontalHeader()->setStretchLastSection(true);
     table->setSelectionMode(QAbstractItemView::NoSelection);
+    table->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    connect(table, &QTableWidget::customContextMenuRequested,
+            this, &MainWindow::onTableContextMenu);
+
     v->addWidget(table);
 
-    // ---------------------------------------------------------
     // UI – butoane
     // ---------------------------------------------------------
     QHBoxLayout *btns = new QHBoxLayout;
 
     btnSelectAll    = new QPushButton(tr("Selectează toate"));
+    btnWithDb       = new QPushButton(tr("Directoriu cu BD"));
     btnFolder       = new QPushButton(tr("Alege folder backup"));
     btnArchive      = new QPushButton(tr("Arhivează selectatele"));
     // btnGenerateTask = new QPushButton(tr("Generează Task XML"));
 
     btns->addWidget(btnSelectAll);
+    btns->addWidget(btnWithDb);
     btns->addWidget(btnFolder);
     btns->addWidget(btnArchive);
     btns->addStretch();
     // btns->addWidget(btnGenerateTask);
 
-    // ---------------------------------------------------------
+    connect(btnWithDb, &QPushButton::clicked, this, &MainWindow::onChooseDirWithDb);
+
     // Combobox compresie
     // ---------------------------------------------------------
     comboCompression = new QComboBox(this);
@@ -185,10 +192,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     v->addLayout(btns);
 
-    // ---------------------------------------------------------
     // UI – progres + status
     // ---------------------------------------------------------
-    currentStatus = new QLabel("Arhivarea: ... inactiv", this);
+    currentStatus = new QLabel("Arhivarea: ... așteptare", this);
     progressBar = new QProgressBar(this);
     progressBar->setRange(0, 100);
     progressBar->setValue(0);
@@ -196,10 +202,9 @@ MainWindow::MainWindow(QWidget *parent)
     v->addWidget(currentStatus);
     v->addWidget(progressBar);
 
-    // ---------------------------------------------------------
     // UI – progres + status DROPBOX
     // ---------------------------------------------------------
-    currentStatusDropbox = new QLabel("Dropbox: ... inactiv", this);
+    currentStatusDropbox = new QLabel(tr("Dropbox: verificare conexiune..."), this);
     progressBarDropbox = new QProgressBar(this);
     progressBarDropbox->setRange(0, 100);
     progressBarDropbox->setValue(0);
@@ -217,37 +222,35 @@ MainWindow::MainWindow(QWidget *parent)
     v->addLayout(layoutDropbox);
     v->addWidget(progressBarDropbox);
 
-    // ---------------------------------------------------------
     // UI – log
     // ---------------------------------------------------------
     logBox = new QTextEdit(this);
     logBox->setReadOnly(true);
     v->addWidget(logBox);
 
+    // Init folder backup
     // ---------------------------------------------------------
+    backupFolder = QDir::homePath() + "/Backups_1C";
+    QDir().mkpath(backupFolder);
+
+    // CITIRE ibases.v8i
+    // ---------------------------------------------------------
+    autoDetectPaths1C();
+
     // Conectări
     // ---------------------------------------------------------
     connect(btnSelectAll, &QPushButton::clicked, this, &MainWindow::onSelectAll);
     connect(btnFolder,    &QPushButton::clicked, this, &MainWindow::onChooseBackupFolder);
     connect(btnArchive,   &QPushButton::clicked, this, &MainWindow::onStartArchive);
 
-    // ---------------------------------------------------------
-    // Init folder backup
-    // ---------------------------------------------------------
-    backupFolder = QDir::homePath() + "/Backups_1C";
-    QDir().mkpath(backupFolder);
-
-    // ---------------------------------------------------------
     // Incarcam datele din .json
     // ---------------------------------------------------------
     loadSettings();
 
-    // ---------------------------------------------------------
     // Verificam instalarea 7-zip
     // ---------------------------------------------------------
     check7ZipInstallation();
 
-    // ---------------------------------------------------------
     // Timer progres bazat pe dimensiunea arhivei
     // ---------------------------------------------------------
     progressTimer = new QTimer(this);
@@ -265,42 +268,6 @@ MainWindow::MainWindow(QWidget *parent)
         currentStatus->setText(QString(tr("Progres: %1%")).arg(pct));
     });
 
-    // ---------------------------------------------------------
-    // CITIRE ibases.v8i
-    // ---------------------------------------------------------
-    QString ibasesPath = QDir(QDir::homePath() + "/AppData/Roaming/1C/1CEStart")
-                             .filePath("ibases.v8i");
-
-    bases = IBASEParser::parse(ibasesPath);
-
-    if (bases.isEmpty()) {
-        log(tr("Nu am găsit nicio bază în ibases.v8i."));
-    }
-
-    table->setRowCount(bases.size());
-
-    for (int i = 0; i < bases.size(); ++i)
-    {
-        // checkbox
-        QWidget *cw    = new QWidget(this);
-        QHBoxLayout *h = new QHBoxLayout(cw);
-        QCheckBox *cb  = new QCheckBox(cw);
-        h->addWidget(cb);
-        h->setAlignment(Qt::AlignCenter);
-        h->setContentsMargins(0,0,0,0);
-        cw->setLayout(h);
-
-        table->setCellWidget(i, 0, cw);
-        table->setItem(i, 1, new QTableWidgetItem(bases[i].displayName));
-        table->setItem(i, 2, new QTableWidgetItem(bases[i].filePath));
-
-        QTableWidgetItem *statusItem = new QTableWidgetItem("");
-        statusItem->setTextAlignment(Qt::AlignCenter);
-        table->setItem(i, 3, statusItem);
-    }
-
-
-    // ---------------------------------------------------------
     // bottom bar
     // ---------------------------------------------------------
 
@@ -328,6 +295,7 @@ MainWindow::~MainWindow()
 // ======================================
 // LOG
 // ======================================
+
 void MainWindow::log(const QString &msg)
 {
     logBox->append(msg);
@@ -336,6 +304,65 @@ void MainWindow::log(const QString &msg)
 // ======================================
 // Selectează toate
 // ======================================
+
+void MainWindow::onChooseDirWithDb()
+{
+    QString root = QFileDialog::getExistingDirectory(
+        this, tr("Alege directorul cu baze 1C"), "C:/");
+
+    if (!root.isEmpty()) {
+
+        auto paths = find1CDBaseFolders(root);
+
+        if (table->rowCount() > 0 && ! paths.isEmpty()) {
+            auto ret = QMessageBox::question(
+                this,
+                tr("Confirmare"),
+                tr("Tabelul conține deja date.\nDoriți să adăugați încă %1 baze?")
+                    .arg(paths.size()),
+                QMessageBox::Yes | QMessageBox::No
+                );
+
+            if (ret == QMessageBox::No)
+                return;
+            else
+                log(tr("Sunt adaugate %1 baze de date din directoriu - %2")
+                        .arg(QString::number(paths.size()),
+                             toWinPath(root)));
+        }
+
+        for (const QString &path : std::as_const(paths)) {
+
+            int row = table->rowCount();   // rând nou la final
+            table->insertRow(row);
+
+            // ===== Col 0: checkbox =====
+            QWidget *cw    = new QWidget(table);
+            QHBoxLayout *h = new QHBoxLayout(cw);
+            QCheckBox *cb  = new QCheckBox(cw);
+
+            h->addWidget(cb);
+            h->setAlignment(Qt::AlignCenter);
+            h->setContentsMargins(0,0,0,0);
+            cw->setLayout(h);
+
+            table->setCellWidget(row, 0, cw);
+
+            // ===== Col 1: nume BD =====
+            QString dbName = QFileInfo(path).fileName(); // numele folderului
+            table->setItem(row, 1, new QTableWidgetItem(dbName));
+
+            // ===== Col 2: path BD =====
+            table->setItem(row, 2, new QTableWidgetItem(path));
+
+            // ===== Col 3: status =====
+            QTableWidgetItem *statusItem = new QTableWidgetItem("");
+            statusItem->setTextAlignment(Qt::AlignCenter);
+            table->setItem(row, 3, statusItem);
+        }
+    }
+}
+
 void MainWindow::onSelectAll()
 {
     for (int i = 0; i < table->rowCount(); ++i)
@@ -354,6 +381,7 @@ void MainWindow::onSelectAll()
 // ======================================
 // Alege folder backup
 // ======================================
+
 void MainWindow::onChooseBackupFolder()
 {
     QString d = QFileDialog::getExistingDirectory(this, tr("Alege folder backup"));
@@ -366,6 +394,7 @@ void MainWindow::onChooseBackupFolder()
 // ======================================
 // Începe arhivarea
 // ======================================
+
 void MainWindow::onStartArchive()
 {
     // Dezactivarea UI button
@@ -476,6 +505,94 @@ void MainWindow::clickedAbortDropbox()
     startNextJob();
 }
 
+// ======================================
+// Meniu contextual și acțiunile
+// ======================================
+
+void MainWindow::onTableContextMenu(const QPoint &pos)
+{
+    QMenu menu(this);
+
+    QAction *actClear = menu.addAction(tr("🧹 Elimină toate rândurile"));
+    QAction *actRemove = menu.addAction(tr("❌ Elimină rândul curent"));
+    menu.addSeparator();
+    QAction *actAuto = menu.addAction(tr("🔍 Detectare automată baze 1C"));
+
+    QAction *selected = menu.exec(table->viewport()->mapToGlobal(pos));
+    if (!selected)
+        return;
+
+    if (selected == actClear)
+        clearAllRows();
+    else if (selected == actRemove)
+        removeCurrentRow();
+    else if (selected == actAuto)
+        autoDetectPaths1C();
+}
+
+void MainWindow::clearAllRows()
+{
+    if (table->rowCount() == 0)
+        return;
+
+    auto ret = QMessageBox::question(
+        this,
+        tr("Confirmare"),
+        tr("Sigur doriți să eliminați toate rândurile?"),
+        QMessageBox::Yes | QMessageBox::No
+        );
+
+    if (ret == QMessageBox::Yes)
+        table->setRowCount(0);
+}
+
+void MainWindow::removeCurrentRow()
+{
+    int row = table->currentRow();
+    if (row < 0)
+        return;
+
+    table->removeRow(row);
+}
+
+void MainWindow::autoDetectPaths1C()
+{
+    QString ibasesPath = QDir(QDir::homePath() + "/AppData/Roaming/1C/1CEStart")
+    .filePath("ibases.v8i");
+
+    bases = IBASEParser::parse(ibasesPath);
+
+    if (bases.isEmpty()) {
+        log(tr("Nu am găsit nicio bază în ibases.v8i."));
+    }
+
+    table->setRowCount(bases.size());
+
+    for (int i = 0; i < bases.size(); ++i)
+    {
+        // checkbox
+        QWidget *cw    = new QWidget(this);
+        QHBoxLayout *h = new QHBoxLayout(cw);
+        QCheckBox *cb  = new QCheckBox(cw);
+        h->addWidget(cb);
+        h->setAlignment(Qt::AlignCenter);
+        h->setContentsMargins(0,0,0,0);
+        cw->setLayout(h);
+
+        table->setCellWidget(i, 0, cw);
+        table->setItem(i, 1, new QTableWidgetItem(bases[i].displayName));
+        table->setItem(i, 2, new QTableWidgetItem(bases[i].filePath));
+
+        QTableWidgetItem *statusItem = new QTableWidgetItem("");
+        statusItem->setTextAlignment(Qt::AlignCenter);
+        table->setItem(i, 3, statusItem);
+    }
+}
+
+// ======================================
+// Determinarea 7zip + determinarea bd 1C
+// ======================================
+
 void MainWindow::check7ZipInstallation()
 {
     QString exe = get7zPath();
@@ -502,9 +619,28 @@ void MainWindow::check7ZipInstallation()
     log(tr("Determinat 7-zip: ") + toWinPath(exe));
 }
 
+QStringList MainWindow::find1CDBaseFolders(const QString &rootDir)
+{
+    QStringList result;
+
+    QDirIterator it(rootDir,
+                    QStringList() << "*.1CD",
+                    QDir::Files,
+                    QDirIterator::Subdirectories);
+
+    while (it.hasNext()) {
+        QFileInfo fi(it.next());
+        result << QDir::toNativeSeparators(fi.absolutePath()); // folderul bd
+    }
+
+    result.removeDuplicates();
+    return result;
+}
+
 // ======================================
 // Nume arhivă
 // ======================================
+
 QString MainWindow::buildArchiveName(const QString &dbName) const
 {
     return QDir(backupFolder).filePath(
@@ -516,6 +652,7 @@ QString MainWindow::buildArchiveName(const QString &dbName) const
 // ======================================
 // Pornește job
 // ======================================
+
 void MainWindow::startNextJob()
 {
     // dacă așteptăm Dropbox → NU pornim alt job
@@ -658,6 +795,7 @@ void MainWindow::startNextJob()
 // ======================================
 // Setează icon status manual
 // ======================================
+
 void MainWindow::updateRowStatusIcon(int row, bool ok)
 {
     table->removeCellWidget(row, 3);
@@ -669,6 +807,7 @@ void MainWindow::updateRowStatusIcon(int row, bool ok)
 // ======================================
 // Detectare 7-Zip
 // ======================================
+
 QString MainWindow::get7zPath() const
 {
 #if defined(Q_OS_WIN)
@@ -779,6 +918,17 @@ void MainWindow::startDropboxUpload(const QString &localPath, const QString &fil
                 startNextJob();   // următorul job ABIA ACUM
             });
 
+    connect(m_dbxUploader, &DropboxUploader::authError,
+            this, [this](const QString &msg)
+            {
+                log(msg);
+                currentStatusDropbox->setText(tr("Dropbox: este necesar autorizare"));
+                progressBarDropbox->setValue(0);
+                globals::syncDropbox = false;          // dezactivează sincronizarea
+                globals::activate_syncDropbox = false;
+                log(tr("Dropbox sync disabled. Please reconnect."));
+            });
+
     log(tr("🌍 Dropbox: start încărcarea: ") + toWinPath(localPath));
     m_dbxUploader->uploadFile(localPath, remotePath);
 }
@@ -826,11 +976,36 @@ void MainWindow::setPropertyVisible()
 {
     currentStatusDropbox->setVisible(globals::syncDropbox);
     progressBarDropbox->setVisible(globals::syncDropbox);
+    btnAbortDropbox->setVisible(globals::syncDropbox);
+}
+
+static QCheckBox* checkboxAt(QTableWidget *table, int row, int col)
+{
+    QWidget *w = table->cellWidget(row, col);
+    if (!w) return nullptr;
+
+    return w->findChild<QCheckBox*>();
+}
+
+QWidget *MainWindow::createCheckBoxWidget(QWidget *parent)
+{
+    QWidget *cw = new QWidget(parent);
+
+    QHBoxLayout *h = new QHBoxLayout(cw);
+    QCheckBox *cb = new QCheckBox(cw);
+
+    h->addWidget(cb);
+    h->setAlignment(Qt::AlignCenter);
+    h->setContentsMargins(0, 0, 0, 0);
+
+    cw->setLayout(h);
+    return cw;
 }
 
 // ======================================
 // Setarile -> load & save
 // ======================================
+
 void MainWindow::loadSettings()
 {
     QFile f(settingsFilePath);
@@ -891,11 +1066,11 @@ void MainWindow::loadSettings()
 
     if (obj.contains("syncDropbox")) {
         globals::syncDropbox = obj["syncDropbox"].toBool();
+        if (obj.contains("activate_syncDropbox"))
+            globals::activate_syncDropbox = obj["activate_syncDropbox"].toBool();
         setPropertyVisible();
+        checkDropboxAtStartup();
     }
-
-    if (obj.contains("activate_syncDropbox"))
-        globals::activate_syncDropbox = obj["activate_syncDropbox"].toBool();
 
     if (obj.contains("syncGoogleDrive"))
         globals::syncGoogleDrive = obj["syncGoogleDrive"].toBool();
@@ -917,6 +1092,53 @@ void MainWindow::loadSettings()
 
     if (obj.contains("succ_gdrive"))
         globals::loginSuccesGoogleDrive = obj["succ_gdrive"].toString();
+
+    if (obj.contains("paths_db")) {
+
+        if (!obj["paths_db"].isArray())
+            return;
+
+        QJsonArray arr_db = obj["paths_db"].toArray();
+
+        table->setRowCount(0); // curățăm tabelul
+
+        for (const QJsonValue &val : std::as_const(arr_db)) {
+
+            if (!val.isObject())
+                continue;
+
+            QJsonObject o = val.toObject();
+
+            const bool mark    = o.value("mark").toBool(false);
+            const QString name = o.value("name").toString();
+            const QString path = o.value("path").toString();
+
+            int row = table->rowCount();
+            table->insertRow(row);
+
+            // === col 0: checkbox ===
+            QWidget *cw   = createCheckBoxWidget(table);
+            QCheckBox *cb = cw->findChild<QCheckBox*>();
+            if (cb)
+                cb->setChecked(mark);
+
+            table->setCellWidget(row, 0, cw);
+
+            // === col 1: nume BD ===
+            table->setItem(row, 1, new QTableWidgetItem(name));
+
+            // === col 2: path BD ===
+            table->setItem(row, 2, new QTableWidgetItem(path));
+
+            // === col 3: status ===
+            QTableWidgetItem *statusItem = new QTableWidgetItem("");
+            statusItem->setTextAlignment(Qt::AlignCenter);
+            table->setItem(row, 3, statusItem);
+
+            log(tr("Baza de date '%1' încărcată din setări.")
+                    .arg(path));
+        }
+    }
 
     // ------------------------------------------
     // Restaurăm dimensiunile coloanelor tabelului
@@ -959,6 +1181,26 @@ void MainWindow::saveSettings()
         arr.append(table->columnWidth(c));
     obj["columnWidths"] = arr;
 
+    // ------------------------------------------
+    // Salvăm baze de date marcate
+    // ------------------------------------------
+    QJsonArray arr_db;
+    for (int i = 0; i < table->rowCount(); ++i) {
+
+        QCheckBox *cb = checkboxAt(table, i, 0);
+
+        QJsonObject obj;
+        obj["mark"] = cb->isChecked();
+        obj["name"] = table->item(i, 1)->text();
+        obj["path"] = table->item(i, 2)->text();
+
+        arr_db.append(obj);
+    }
+    obj["paths_db"] = arr_db;
+
+    // ------------------------------------------
+    // Salvăm in fisierul de satari .json
+    // ------------------------------------------
     QFile f(settingsFilePath);
     if (f.open(QIODevice::WriteOnly)) {
         QJsonDocument doc(obj);
@@ -968,12 +1210,17 @@ void MainWindow::saveSettings()
 
 }
 
+// ======================================
+// Retranslarea și evenimentele închiderii
+// ======================================
+
 void MainWindow::retranslateUi()
 {
     setWindowTitle(tr("1CArchiver v%1 – Backup al bazelor de date 1C:Enterprise")
                        .arg(VER));
 
     btnSelectAll->setText(tr("Selectează toate"));
+    btnWithDb->setText(tr("Directoriu cu BD"));
     btnFolder->setText(tr("Alege folder backup"));
     btnArchive->setText(tr("Arhivează selectatele"));
     btnAbortDropbox->setText(tr("Oprește Dropbox"));
@@ -984,7 +1231,6 @@ void MainWindow::retranslateUi()
     lblCompression->setText(tr("Compresie:"));
 
     currentStatus->setText(tr("Arhivarea: ... inactiv"));
-    currentStatusDropbox->setText(tr("Dropbox: ... inactiv"));
 
     table->setHorizontalHeaderLabels({
         tr("Select"),
@@ -992,6 +1238,89 @@ void MainWindow::retranslateUi()
         tr("Cale"),
         tr("Status")
     });
+}
+
+void MainWindow::checkDropboxAtStartup()
+{
+    if (!globals::syncDropbox || !globals::activate_syncDropbox)
+        return;
+
+    QSettings s("Oxvalprim", "1CArchiver");
+    const QString access  = s.value("dropbox/access_token").toString();
+    const QString refresh = s.value("dropbox/refresh_token").toString();
+
+    // ❌ Fără refresh token → verdict final
+    if (refresh.isEmpty()) {
+        setDropboxAuthRequired();
+        return;
+    }
+
+    auto *checker = new DropboxHealthChecker(this);
+
+    // ✔ TOKEN OK
+    connect(checker, &DropboxHealthChecker::connected,
+            this, [this]() {
+                setDropboxConnected();
+            });
+
+    // ⚠️ TOKEN EXPIRAT → încercăm refresh, NU afișăm eroare încă
+    connect(checker, &DropboxHealthChecker::authorizationRequired,
+            this, [this, refresh]() {
+
+                auto *oauth = new DropboxOAuth2_PKCE(this);
+
+                connect(oauth, &DropboxOAuth2_PKCE::refreshSucceeded,
+                        this, [this, oauth]() {
+                            oauth->deleteLater();
+
+                            QSettings s("Oxvalprim", "1CArchiver");
+                            const QString newAccess =
+                                s.value("dropbox/access_token").toString();
+
+                            if (newAccess.isEmpty()) {
+                                setDropboxAuthRequired();   // ❌ acum e corect
+                                return;
+                            }
+
+                            // 🔁 retry health-check pe token NOU
+                            auto *checker2 = new DropboxHealthChecker(this);
+
+                            connect(checker2, &DropboxHealthChecker::connected,
+                                    this, [this]() {
+                                        setDropboxConnected();
+                                    });
+
+                            connect(checker2, &DropboxHealthChecker::authorizationRequired,
+                                    this, [this]() {
+                                        setDropboxAuthRequired(); // ❌ verdict final
+                                    });
+
+                            checker2->check(newAccess);
+                        });
+
+                connect(oauth, &DropboxOAuth2_PKCE::refreshFailed,
+                        this, [this, oauth](const QString &) {
+                            oauth->deleteLater();
+                            setDropboxAuthRequired();       // ❌ refresh a eșuat
+                        });
+
+                oauth->refreshAccessToken();
+            });
+
+    checker->check(access);
+}
+
+void MainWindow::setDropboxConnected()
+{
+    currentStatusDropbox->setText(tr("Dropbox: conectat (...așteptare)"));
+    globals::syncDropbox = true;
+}
+
+void MainWindow::setDropboxAuthRequired()
+{
+    currentStatusDropbox->setText(tr("Dropbox: este necesar autorizarea"));
+    globals::syncDropbox = false;
+    globals::activate_syncDropbox = false;
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)

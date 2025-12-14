@@ -14,6 +14,7 @@ SOURCES += \
     src/compressworker.cpp \
     src/dropbox/connectordropbox.cpp \
     src/dropbox/dropboxconnectdialog.cpp \
+    src/dropbox/dropboxhealthchecker.cpp \
     src/dropbox/dropboxoauth2_pkce.cpp \
     src/dropbox/dropboxuploader.cpp \
     src/globals.cpp \
@@ -28,6 +29,7 @@ HEADERS += \
     src/compressworker.h \
     src/dropbox/connectordropbox.h \
     src/dropbox/dropboxconnectdialog.h \
+    src/dropbox/dropboxhealthchecker.h \
     src/dropbox/dropboxoauth2_pkce.h \
     src/dropbox/dropboxuploader.h \
     src/globals.h \
@@ -52,7 +54,10 @@ TRANSLATIONS += \
 #lrelease resources/translations/1CArchiver_app_ru_RU.ts -qm resources/translations/1CArchiver_app_ru_RU.qm
 
 DISTFILES += \
+    CHANGELOG.md \
     LICENSE \
+    README.md \
+    README_RU.md \
     build_script/build_win.bat \
     installer/config/backup.png \
     installer/config/config.xml \

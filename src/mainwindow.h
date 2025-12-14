@@ -55,11 +55,17 @@ signals:
 
 private slots:
     void onSelectAll();
+    void onChooseDirWithDb();
     void onChooseBackupFolder();
     void onStartArchive();
     void switchLanguage(const QString& lang);
     void applyTheme();
     void clickedAbortDropbox();
+
+    void onTableContextMenu(const QPoint &pos);
+    void clearAllRows();
+    void removeCurrentRow();
+    void autoDetectPaths1C();
 
 private:
     struct BackupJob {
@@ -78,6 +84,7 @@ private:
     QTableWidget *table = nullptr;
 
     QPushButton *btnSelectAll    = nullptr;
+    QPushButton *btnWithDb       = nullptr;
     QPushButton *btnFolder       = nullptr;
     QPushButton *btnArchive      = nullptr;
     QPushButton *btnGenerateTask = nullptr;
@@ -127,8 +134,12 @@ private:
     DropboxUploader *m_dbxUploader = nullptr;
     bool m_waitingForDropbox = false;
 
+    bool m_dropboxStartupCheckRunning = false;
+
 private:
     void check7ZipInstallation();
+
+    QStringList find1CDBaseFolders(const QString& rootDir);
 
     void log(const QString &msg);
 
@@ -143,10 +154,15 @@ private:
 
     void setPropertyVisible();
 
+    QWidget* createCheckBoxWidget(QWidget *parent);
     void loadSettings();
     void saveSettings();
 
     void retranslateUi();
+
+    void checkDropboxAtStartup();
+    void setDropboxConnected();
+    void setDropboxAuthRequired();
 
 protected:
     void closeEvent(QCloseEvent *event) override;
