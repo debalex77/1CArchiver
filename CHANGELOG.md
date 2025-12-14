@@ -8,11 +8,64 @@ and this project follows Semantic Versioning.
 ---
 
 ## [Unreleased]
-- Planned improvements and fixes.
 
+### 🇬🇧 English
+
+#### Added
+- Added **“Select database directory”** button to allow adding 1C databases located outside the user’s default directory.
+- Added a **context menu for the database table**, providing:
+  - Clear all rows
+  - Remove selected row
+  - Auto-detect 1C databases for the current user
+
+#### Fixed
+- Fixed Dropbox synchronization by introducing a **startup health check (`DropboxHealthChecker`)**:
+  - Proper validation of stored Dropbox access tokens
+  - Automatic token refresh at application startup
+  - Correct detection of Dropbox connection state
+  - Eliminated false “authorization required” status after restart
+
+🔸 🔸 🔸
+
+### 🇷🇴 Română
+
+#### Adăugat
+- A fost adăugat butonul **„Alege directorul cu BD”**, care permite adăugarea bazelor de date 1C aflate în afara directorului implicit al utilizatorului.
+- A fost adăugat **meniul contextual al tabelei**, care include:
+  - Ștergerea tuturor rândurilor
+  - Ștergerea rândului curent
+  - Autodetectarea bazelor de date 1C ale utilizatorului curent
+
+#### Corectat
+- A fost corectată sincronizarea Dropbox prin introducerea unui **mecanism de verificare la pornire (`DropboxHealthChecker`)**:
+  - Verificarea corectă a token-ului Dropbox salvat
+  - Reîmprospătarea automată a token-ului la pornirea aplicației
+  - Detectarea corectă a stării conexiunii Dropbox
+  - Eliminarea mesajelor false de tip „este necesară autorizarea” după repornire
+
+🔸 🔸 🔸
+
+### 🇷🇺 Русский
+
+#### Добавлено
+- Добавлена кнопка **«Выбрать каталог с БД»**, позволяющая добавлять базы данных 1С, расположенные вне стандартного каталога пользователя.
+- Добавлено **контекстное меню таблицы**, включающее:
+  - Удаление всех строк
+  - Удаление текущей строки
+  - Автоопределение баз данных 1С текущего пользователя
+
+#### Исправлено
+- Исправлена синхронизация с Dropbox путём внедрения **проверки состояния при запуске (`DropboxHealthChecker`)**:
+  - Корректная проверка сохранённого Dropbox access token
+  - Автоматическое обновление токена при запуске приложения
+  - Корректное определение состояния подключения к Dropbox
+  - Устранено ложное сообщение «требуется авторизация» после перезапуска
+  
 ---
 
 ## [1.5] - 2025-12-13
+
+### 🇬🇧 English
 
 ### Added
 - Dropbox synchronization using OAuth2 PKCE
@@ -24,6 +77,36 @@ and this project follows Semantic Versioning.
 - Backup and upload flow is now strictly sequential
 - Installer updated to include Dropbox components
 - Improved UI status and progress reporting
+
+🔸 🔸 🔸
+
+### 🇷🇴 Română
+
+### Adăugat
+- Sincronizare cu Dropbox folosind OAuth2 PKCE
+- Flux secvențial: backup → SHA-256 → upload în Dropbox
+- Upload opțional al fișierelor `.sha256`
+- Buton de anulare pentru upload-ul Dropbox
+
+### Modificat
+- Fluxul de backup și upload este acum strict secvențial
+- Installerul a fost actualizat pentru a include componentele Dropbox
+- Îmbunătățirea afișării stării și a progresului în interfața utilizatorului
+
+🔸 🔸 🔸
+
+### 🇷🇺 Русский
+
+### Добавлено
+- Синхронизация с Dropbox с использованием OAuth2 PKCE
+- Последовательный процесс: резервное копирование → SHA-256 → загрузка в Dropbox
+- Опциональная загрузка файлов `.sha256`
+- Кнопка отмены загрузки в Dropbox
+
+### Изменено
+- Процесс резервного копирования и загрузки теперь строго последовательный
+- Установщик обновлён и включает компоненты Dropbox
+- Улучшено отображение состояния и прогресса в пользовательском интерфейсе
 
 ---
 
