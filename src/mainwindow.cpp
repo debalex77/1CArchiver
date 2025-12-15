@@ -34,6 +34,8 @@
 #include <src/dropbox/dropboxhealthchecker.h>
 #include <src/dropbox/dropboxoauth2_pkce.h>
 
+#include <src/scheduler/scheduledtaskdialog.h>
+
 #pragma comment(lib, "dwmapi.lib")
 
 static void enableDarkTitlebar(QWidget* w) {
@@ -168,16 +170,20 @@ MainWindow::MainWindow(QWidget *parent)
     btnWithDb       = new QPushButton(tr("Directoriu cu BD"));
     btnFolder       = new QPushButton(tr("Alege folder backup"));
     btnArchive      = new QPushButton(tr("Arhivează selectatele"));
-    // btnGenerateTask = new QPushButton(tr("Generează Task XML"));
+    btnGenerateTask = new QPushButton(tr("Generează Task XML"));
 
     btns->addWidget(btnSelectAll);
     btns->addWidget(btnWithDb);
     btns->addWidget(btnFolder);
     btns->addWidget(btnArchive);
     btns->addStretch();
-    // btns->addWidget(btnGenerateTask);
+    btns->addWidget(btnGenerateTask);
 
     connect(btnWithDb, &QPushButton::clicked, this, &MainWindow::onChooseDirWithDb);
+    connect(btnGenerateTask, &QPushButton::clicked, this, [this]() {
+        ScheduledTaskDialog dlg(this);
+        dlg.exec();
+    });
 
     // Combobox compresie
     // ---------------------------------------------------------
@@ -290,6 +296,11 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+}
+
+void MainWindow::startBackup()
+{
+    onStartArchive();
 }
 
 // ======================================
@@ -673,6 +684,8 @@ void MainWindow::startNextJob()
         btnArchive->setEnabled(true);
         btnFolder->setEnabled(true);
         comboCompression->setEnabled(true);
+
+        emit allJobsFinished(); // pu "--autorun" vezi in main.cpp
 
         return;
     }

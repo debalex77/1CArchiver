@@ -6,8 +6,6 @@ CONFIG += debug_and_release
 TEMPLATE = app
 TARGET = 1CArchiver
 
-RC_ICONS = resources/icons/backup.ico
-
 SOURCES += \
     main.cpp \
     src/appsettings.cpp \
@@ -21,6 +19,7 @@ SOURCES += \
     src/lineeditpassword.cpp \
     src/mainwindow.cpp \
     src/ibaseparser.cpp \
+    src/scheduler/scheduledtaskdialog.cpp \
     src/switchbutton.cpp \
     src/thememanager.cpp
 
@@ -37,6 +36,7 @@ HEADERS += \
     src/mainwindow.h \
     src/ibaseparser.h \
     src/IBASEEntry.h \
+    src/scheduler/scheduledtaskdialog.h \
     src/switchbutton.h \
     src/thememanager.h \
     src/utils.h \
@@ -58,6 +58,8 @@ DISTFILES += \
     LICENSE \
     README.md \
     README_RU.md \
+    app.manifest \
+    app.rc \
     build_script/build_win.bat \
     installer/config/backup.png \
     installer/config/config.xml \
@@ -81,6 +83,8 @@ DEPENDPATH += $$PWD/3rdparty/bit7z/include
 
 win32{
     QMAKE_PROJECT_DEPTH = 0
+    RC_FILE = app.rc
+    LIBS += -ladvapi32
 }
 
 

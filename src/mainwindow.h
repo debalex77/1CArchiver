@@ -50,8 +50,11 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    void startBackup(); // functia externa pu "--autorun" vezi in main.cpp
+
 signals:
     void jobFinishedSignal(bool ok);
+    void allJobsFinished();           // pu "--autorun" vezi in main.cpp
 
 private slots:
     void onSelectAll();
