@@ -9,6 +9,12 @@ and this project follows Semantic Versioning.
 
 ## [Unreleased]
 
+- Planned improvements and fixes.
+
+---
+
+## [1.6] - 2025-12-15
+
 ### 🇬🇧 English
 
 #### Added
@@ -17,6 +23,12 @@ and this project follows Semantic Versioning.
   - Clear all rows
   - Remove selected row
   - Auto-detect 1C databases for the current user
+- Added **Windows Task Scheduler integration**:
+  - Ability to create a scheduled backup task directly from the application
+  - Support for automatic application startup via `--autorun`
+  - Background execution without showing the main window
+  - System tray notification and warning message before backup starts
+  - Graceful application exit after all backup jobs are finished
 
 #### Fixed
 - Fixed Dropbox synchronization by introducing a **startup health check (`DropboxHealthChecker`)**:
@@ -35,6 +47,12 @@ and this project follows Semantic Versioning.
   - Ștergerea tuturor rândurilor
   - Ștergerea rândului curent
   - Autodetectarea bazelor de date 1C ale utilizatorului curent
+- A fost adăugată **integrarea cu Windows Task Scheduler**:
+  - Crearea task-ului de backup direct din aplicație
+  - Pornirea automată a aplicației folosind parametrul `--autorun`
+  - Rulare în fundal fără afișarea ferestrei principale
+  - Notificare în tray și mesaj de avertizare înainte de pornirea backup-ului
+  - Închiderea automată a aplicației după finalizarea tuturor backup-urilor
 
 #### Corectat
 - A fost corectată sincronizarea Dropbox prin introducerea unui **mecanism de verificare la pornire (`DropboxHealthChecker`)**:
@@ -53,6 +71,12 @@ and this project follows Semantic Versioning.
   - Удаление всех строк
   - Удаление текущей строки
   - Автоопределение баз данных 1С текущего пользователя
+- Добавлена **интеграция с Планировщиком заданий Windows**:
+  - Создание задания резервного копирования прямо из приложения
+  - Автоматический запуск приложения с параметром `--autorun`
+  - Фоновый режим работы без отображения главного окна
+  - Уведомление в системном трее и предупреждающее сообщение перед началом архивации
+  - Автоматическое завершение приложения после окончания всех задач резервного копирования
 
 #### Исправлено
 - Исправлена синхронизация с Dropbox путём внедрения **проверки состояния при запуске (`DropboxHealthChecker`)**:

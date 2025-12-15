@@ -34,14 +34,14 @@ public:
     QString accessToken() const;
     QString refreshToken() const;
 
-    // Salvează tokenuri în QSettings
+    /** Salvează tokenuri în QSettings */
     void saveTokens(const QString &at, const QString &rt);
 
-    // Test upload (folosit de UI)
+    /** Test upload (folosit de UI) */
     void testUpload();
 
 signals:
-    // Emit când testul de upload s-a terminat
+    /** Emit când testul de upload s-a terminat */
     void testFinished(bool ok, const QString &msg);
 
 private slots:

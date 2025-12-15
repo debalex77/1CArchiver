@@ -172,12 +172,18 @@ MainWindow::MainWindow(QWidget *parent)
     btnArchive      = new QPushButton(tr("Arhivează selectatele"));
     btnGenerateTask = new QPushButton(tr("Generează Task XML"));
 
+    btnSelectAll->setMinimumWidth(140);
+    btnWithDb->setMinimumWidth(140);
+    btnFolder->setMinimumWidth(140);
+    btnArchive->setMinimumWidth(140);
+    btnGenerateTask->setMinimumWidth(140);
+
     btns->addWidget(btnSelectAll);
     btns->addWidget(btnWithDb);
     btns->addWidget(btnFolder);
     btns->addWidget(btnArchive);
-    btns->addStretch();
     btns->addWidget(btnGenerateTask);
+    btns->addStretch();
 
     connect(btnWithDb, &QPushButton::clicked, this, &MainWindow::onChooseDirWithDb);
     connect(btnGenerateTask, &QPushButton::clicked, this, [this]() {
@@ -466,7 +472,7 @@ void MainWindow::switchLanguage(const QString &lang)
 
     // Dacă limba este RO – nu încărcăm niciun fișier
     if (lang == "app_ro_RO") {
-        retranslateUi();            // forțează textul implicit
+        retranslateUi();       // forțează textul implicit
         return;
     }
 
@@ -1237,7 +1243,7 @@ void MainWindow::retranslateUi()
     btnFolder->setText(tr("Alege folder backup"));
     btnArchive->setText(tr("Arhivează selectatele"));
     btnAbortDropbox->setText(tr("Oprește Dropbox"));
-    // btnGenerateTask->setText(tr("Generează Task XML"));
+    btnGenerateTask->setText(tr("Generează Task XML"));
 
     themeLabel->setText(tr("Dark theme:"));
     lblLang->setText(tr("Limba RO:"));
@@ -1262,7 +1268,7 @@ void MainWindow::checkDropboxAtStartup()
     const QString access  = s.value("dropbox/access_token").toString();
     const QString refresh = s.value("dropbox/refresh_token").toString();
 
-    // ❌ Fără refresh token → verdict final
+    // Fără refresh token → verdict final
     if (refresh.isEmpty()) {
         setDropboxAuthRequired();
         return;
@@ -1270,13 +1276,13 @@ void MainWindow::checkDropboxAtStartup()
 
     auto *checker = new DropboxHealthChecker(this);
 
-    // ✔ TOKEN OK
+    // TOKEN OK
     connect(checker, &DropboxHealthChecker::connected,
             this, [this]() {
                 setDropboxConnected();
             });
 
-    // ⚠️ TOKEN EXPIRAT → încercăm refresh, NU afișăm eroare încă
+    // TOKEN EXPIRAT → încercăm refresh, NU afișăm eroare încă
     connect(checker, &DropboxHealthChecker::authorizationRequired,
             this, [this, refresh]() {
 
@@ -1291,11 +1297,11 @@ void MainWindow::checkDropboxAtStartup()
                                 s.value("dropbox/access_token").toString();
 
                             if (newAccess.isEmpty()) {
-                                setDropboxAuthRequired();   // ❌ acum e corect
+                                setDropboxAuthRequired();
                                 return;
                             }
 
-                            // 🔁 retry health-check pe token NOU
+                            // retry health-check pe token NOU
                             auto *checker2 = new DropboxHealthChecker(this);
 
                             connect(checker2, &DropboxHealthChecker::connected,
@@ -1305,7 +1311,7 @@ void MainWindow::checkDropboxAtStartup()
 
                             connect(checker2, &DropboxHealthChecker::authorizationRequired,
                                     this, [this]() {
-                                        setDropboxAuthRequired(); // ❌ verdict final
+                                        setDropboxAuthRequired();
                                     });
 
                             checker2->check(newAccess);
@@ -1314,7 +1320,7 @@ void MainWindow::checkDropboxAtStartup()
                 connect(oauth, &DropboxOAuth2_PKCE::refreshFailed,
                         this, [this, oauth](const QString &) {
                             oauth->deleteLater();
-                            setDropboxAuthRequired();       // ❌ refresh a eșuat
+                            setDropboxAuthRequired();       // refresh a eșuat
                         });
 
                 oauth->refreshAccessToken();

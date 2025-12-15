@@ -4,6 +4,12 @@
 #include <QNetworkAccessManager>
 #include <QObject>
 
+/*
+ * Clasa responsabila pentru:
+ *   - verificare autorizatiei la Dropbox:
+ *     - connected
+ *     - authorization required
+ */
 class DropboxHealthChecker : public QObject
 {
     Q_OBJECT

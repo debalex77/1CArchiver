@@ -15,6 +15,10 @@
 #include <bit7z/bitfilecompressor.hpp>
 #include <bit7z/bitformat.hpp>
 
+/*
+ * Clasa responsabila pentru:
+ *   - comprimarea bd 1C (.7z)
+ */
 class CompressWorker : public QObject {
     Q_OBJECT
 public:

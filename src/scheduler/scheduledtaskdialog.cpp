@@ -11,8 +11,15 @@
 #include <QCoreApplication>
 
 #include <windows.h>
-
+#include <dwmapi.h>
 #include "src/switchbutton.h"
+
+#pragma comment(lib, "dwmapi.lib")
+static void enableDarkTitlebar(QWidget* w) {
+    HWND hwnd = (HWND)w->winId();
+    BOOL dark = TRUE;
+    DwmSetWindowAttribute(hwnd, 20, &dark, sizeof(dark));   // Dark TitleBar
+}
 
 static bool runSchtasksElevated(const QString &arguments)
 {
@@ -31,7 +38,7 @@ ScheduledTaskDialog::ScheduledTaskDialog(QWidget *parent)
 {
     setWindowTitle(tr("Programare backup"));
     setModal(true);
-    resize(360, 280);
+    resize(370, 280);
 
     auto *mainLayout = new QVBoxLayout(this);
 
@@ -88,23 +95,48 @@ ScheduledTaskDialog::ScheduledTaskDialog(QWidget *parent)
 
     mainLayout->addLayout(timeLayout);
 
-    // --- Butoane
-    auto *btnLayout = new QHBoxLayout;
+    // --- Butoane - activeaza, dezactiveaza si sterge
+    auto *btnLayoutEnableDisable = new QHBoxLayout;
+    btnLayoutEnableDisable->setContentsMargins(0,5,0,5);
 
-    m_btnCreate = new QPushButton(tr("Creează task"), this);
-    m_btnCancel = new QPushButton(tr("Anulează"), this);
+    auto *lbl_statusTask = new QLabel(tr("Acțiuni cu task: "), this);
 
     m_btnEnable  = new QPushButton(tr("Activează"), this);
+    m_btnEnable->setMinimumWidth(120);
+
     m_btnDisable = new QPushButton(tr("Dezactivează"), this);
-    m_btnDelete  = new QPushButton(tr("Șterge task"), this);
+    m_btnDisable->setMinimumWidth(120);
+
+    btnLayoutEnableDisable->addStretch();
+    btnLayoutEnableDisable->addWidget(lbl_statusTask);
+    btnLayoutEnableDisable->addWidget(m_btnEnable);
+    btnLayoutEnableDisable->addWidget(m_btnDisable);
+
+    mainLayout->addLayout(btnLayoutEnableDisable);
+
+    // --- Separator
+    auto *line = new QFrame(this);
+    line->setFrameShape(QFrame::HLine);
+    line->setFrameShadow(QFrame::Sunken);
+    if (globals::isDark)
+        line->setStyleSheet("background-color: #3a3a3a;");
+    mainLayout->addWidget(line);
+
+    // --- Butoane
+    auto *btnLayout = new QHBoxLayout;
+    btnLayout->setContentsMargins(0,5,0,0);
+
+    m_btnCreate = new QPushButton(tr("Creează task"), this);
+    m_btnCreate->setMinimumWidth(120);
+    m_btnDelete = new QPushButton(tr("Șterge task"), this);
+    m_btnDelete->setMinimumWidth(120);
+    m_btnCancel = new QPushButton(tr("Anulează"), this);
+    m_btnCancel->setMinimumWidth(120);
 
     btnLayout->addStretch();
     btnLayout->addWidget(m_btnCreate);
+    btnLayout->addWidget(m_btnDelete);
     btnLayout->addWidget(m_btnCancel);
-
-    btnLayout->insertWidget(0, m_btnEnable);
-    btnLayout->insertWidget(1, m_btnDisable);
-    btnLayout->insertWidget(2, m_btnDelete);
 
     mainLayout->addStretch();
     mainLayout->addLayout(btnLayout);
@@ -125,6 +157,11 @@ ScheduledTaskDialog::ScheduledTaskDialog(QWidget *parent)
 
     // --- Determinarea existentei task-lui
     detectExistingTask();
+
+    if (globals::isDark)
+        enableDarkTitlebar(this);
+
+    this->adjustSize();
 }
 
 void ScheduledTaskDialog::onCreateTask()

@@ -24,7 +24,7 @@ void DropboxHealthChecker::check(const QString &accessToken)
 
     // req.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
-    QNetworkReply *reply = m_net.post(req, QByteArray()); // body COMPLET gol
+    QNetworkReply *reply = m_net.post(req, QByteArray()); // body COMPLET gol !!!
 
     connect(reply, &QNetworkReply::finished,
             this, [this, reply]()

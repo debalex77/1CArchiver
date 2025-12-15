@@ -15,6 +15,11 @@
 #include <QList>
 #include "IBASEEntry.h"
 
+/*
+ * Clasa responsabila pentru:
+ *   - determinarea/parsarea denumirei bd, drumului spre bd din fisierul:
+ *     C:\Users\user\AppData\Roaming\1C\1CEStart\ibases.v8i
+ */
 class IBASEParser
 {
 public:

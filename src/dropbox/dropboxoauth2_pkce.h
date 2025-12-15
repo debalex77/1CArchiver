@@ -34,43 +34,43 @@ class DropboxOAuth2_PKCE : public QObject
 public:
     explicit DropboxOAuth2_PKCE(QObject *parent = nullptr);
 
-    // Pornește fluxul OAuth2 PKCE (deschide browser-ul)
+    /** Pornește fluxul OAuth2 PKCE (deschide browser-ul) */
     void startLoginFlow();
 
-    // Reînnoire access_token folosind refresh_token
+    /** Reînnoire access_token folosind refresh_token */
     void refreshAccessToken();
 
-    // Accesorii
+    /** Accesorii pu token */
     QString accessToken() const { return m_accessToken; }
     QString refreshToken() const { return m_refreshToken; }
 
 signals:
-    // Autentificarea a reușit
+    /** Autentificarea a reușit */
     void loginSucceeded();
-    // Autentificarea a eșuat
+    /** Autentificarea a eșuat */
     void loginFailed(const QString &reason);
 
-    // Refresh token success / fail
+    /** Refresh token success / fail */
     void refreshSucceeded();
     void refreshFailed(const QString &reason);
 
 private slots:
-    // Server HTTP – conexiune nouă de la browser
+    /** Server HTTP – conexiune nouă de la browser */
     void onIncomingConnection();
 
-    // Răspunsul după schimbul authorization_code → tokenuri
+    /** Răspunsul după schimbul authorization_code → tokenuri */
     void onTokenReply();
 
-    // Răspunsul la refresh token
+    /** Răspunsul la refresh token */
     void onRefreshReply();
 
 private:
-    // Functii locale
+    /** Functii locale */
     QString generateCodeVerifier();
     QString generateCodeChallenge(const QString &verifier);
     QString base64UrlEncode(const QByteArray &data);
 
-    bool startCallbackServer();        // încearcă porturile 53682–53686
+    bool startCallbackServer();        /** încearcă porturile 53682–53686 */
     void exchangeCodeForTokens(const QString &code);
 
 private:
@@ -85,10 +85,10 @@ private:
 
     int m_callbackPort = -1;
 
-    // Lista porturilor fallback
+    /** Lista porturilor fallback */
     const QList<int> m_ports = {53682, 53683, 53684, 53685, 53686};
 
-    // APP KEY (client_id) – nu e secret
+    /** APP KEY (client_id) – nu e secret */
     const QString CLIENT_ID = "gfkrwtxtibh08xp";
 };
 

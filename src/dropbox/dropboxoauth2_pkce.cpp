@@ -44,7 +44,8 @@ QString DropboxOAuth2_PKCE::generateCodeVerifier()
  */
 QString DropboxOAuth2_PKCE::base64UrlEncode(const QByteArray &data)
 {
-    QString out = data.toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals);
+    QString out = data.toBase64(QByteArray::Base64UrlEncoding |
+                                QByteArray::OmitTrailingEquals);
     return out;
 }
 
@@ -54,7 +55,8 @@ QString DropboxOAuth2_PKCE::base64UrlEncode(const QByteArray &data)
  */
 QString DropboxOAuth2_PKCE::generateCodeChallenge(const QString &verifier)
 {
-    QByteArray hash = QCryptographicHash::hash(verifier.toUtf8(), QCryptographicHash::Sha256);
+    QByteArray hash = QCryptographicHash::hash(verifier.toUtf8(),
+                                               QCryptographicHash::Sha256);
     return base64UrlEncode(hash);
 }
 
@@ -158,10 +160,12 @@ void DropboxOAuth2_PKCE::exchangeCodeForTokens(const QString &code)
     QByteArray body = q.toString(QUrl::FullyEncoded).toUtf8();
 
     QNetworkRequest req(url);
-    req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    req.setHeader(QNetworkRequest::ContentTypeHeader,
+                  "application/x-www-form-urlencoded");
 
     QNetworkReply *reply = m_net.post(req, body);
-    connect(reply, &QNetworkReply::finished, this, &DropboxOAuth2_PKCE::onTokenReply);
+    connect(reply, &QNetworkReply::finished,
+            this, &DropboxOAuth2_PKCE::onTokenReply);
 }
 
 /*
@@ -211,10 +215,12 @@ void DropboxOAuth2_PKCE::refreshAccessToken()
     QByteArray body = q.toString(QUrl::FullyEncoded).toUtf8();
 
     QNetworkRequest req(url);
-    req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    req.setHeader(QNetworkRequest::ContentTypeHeader,
+                  "application/x-www-form-urlencoded");
 
     QNetworkReply *reply = m_net.post(req, body);
-    connect(reply, &QNetworkReply::finished, this, &DropboxOAuth2_PKCE::onRefreshReply);
+    connect(reply, &QNetworkReply::finished,
+            this, &DropboxOAuth2_PKCE::onRefreshReply);
 }
 
 /*

@@ -15,7 +15,7 @@
 
 struct IBASEEntry
 {
-    QString sectionName;   // [ClinicBase]
+    QString sectionName;   // [Base]
     QString displayName;   // Name=
     QString filePath;      // Folder BD (File="...")
 };

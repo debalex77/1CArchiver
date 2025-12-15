@@ -57,10 +57,10 @@ void ConnectorDropbox::testUpload()
         return;
     }
 
-    // Creăm un fișier temporar
+    /** Creăm un fișier temporar */
     QString tmpFile = QDir::temp().filePath("dropbox_test.txt");
 
-    // Citim fişierul
+    /** Citim fişierul */
     QFile f(tmpFile);
     if (!f.open(QIODevice::WriteOnly))
     {
@@ -71,7 +71,7 @@ void ConnectorDropbox::testUpload()
     f.write("1CArchiver Dropbox Test OK");
     f.close();
 
-    // Uploader
+    /** Uploader */
     auto *uploader = new DropboxUploader(m_accessToken, m_refreshToken, this);
 
     connect(uploader, &DropboxUploader::uploadFinished,

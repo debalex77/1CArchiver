@@ -144,7 +144,7 @@ void DropboxUploader::onUploadReply()
         return;
     }
 
-    // ALTĂ EROARE (închidem fluxul sigur)
+    // ALTĂ EROARE (închidem fluxul)
     m_state = UploadState::Failed;
 
     emit uploadFinished(
@@ -166,7 +166,7 @@ void DropboxUploader::tryRefreshToken()
         return;
     }
 
-    // 🔒 prevenim refresh paralel
+    // prevenim refresh paralel
     if (m_state == UploadState::RefreshingToken)
         return;
 
@@ -208,7 +208,7 @@ void DropboxUploader::onRefreshSuccess()
     m_retryAfterRefresh = false;
     m_state = UploadState::Idle;
 
-    startUpload();   // 🔥 explicit, nu implicit
+    startUpload();
 }
 
 /*

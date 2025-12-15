@@ -13,6 +13,11 @@
 
 #include <QLineEdit>
 
+/*
+ * Clasa pentru:
+ *   - QLineEdit cu functia vizualizarii proprietatii
+ *     setEchoMode(QLineEdit::Password)
+ */
 class LineEditPassword : public QLineEdit
 {
     Q_OBJECT

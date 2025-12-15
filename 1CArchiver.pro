@@ -56,6 +56,7 @@ TRANSLATIONS += \
 DISTFILES += \
     CHANGELOG.md \
     LICENSE \
+    PRIVACY.md \
     README.md \
     README_RU.md \
     app.manifest \

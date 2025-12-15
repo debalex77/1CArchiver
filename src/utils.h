@@ -13,7 +13,7 @@
 #include <QCryptographicHash>
 
 inline QByteArray deriveKey() {
-    QByteArray base = "1CArchiver-Secure-Key";     // cheia ta
+    QByteArray base = "1CArchiver-Secure-Key"; // La necesitate schimbam -> pu instalarea parolei la rhive
     return QCryptographicHash::hash(base, QCryptographicHash::Sha256);
 }
 
