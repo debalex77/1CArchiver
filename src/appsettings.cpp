@@ -68,6 +68,7 @@ AppSettings::AppSettings(QWidget *parent) : QDialog(parent)
                     conDlgDropbox->exec();
                     conDlgDropbox->deleteLater();
                 }
+                emit onActivateDropbox();
             });
 
     // connect(btn_syncGoogleDrive, &SwitchButton::toggled, this, [&](bool on) {
@@ -76,6 +77,22 @@ AppSettings::AppSettings(QWidget *parent) : QDialog(parent)
 
     //     }
     // });
+
+    connect(btn_deleteArchives, &SwitchButton::toggled, this, [&](bool on) {
+        globals::deleteArchives = on;
+        if (globals::deleteArchives) {
+            if (globals::lastNrDay > 0) {
+                last_nr_day->setText(QString::number(globals::lastNrDay));
+            } else {
+                last_nr_day->setText(QString::number(5));
+                globals::lastNrDay = last_nr_day->text().toInt();
+            }
+        } else {
+            last_nr_day->setText("");
+            globals::lastNrDay = -1;
+        }
+        updateUI();
+    });
 
     connect(btn_closeApp, &SwitchButton::toggled, this, [&](bool on) {
         globals::questionCloseApp = on;
@@ -252,6 +269,51 @@ void AppSettings::setupUI()
 
     layout_spacer2->addWidget(line2);
 
+    // ----- eliminarea arhivelor -------------
+    auto* layout_deleteArchive = new QHBoxLayout;
+    layout_deleteArchive->setContentsMargins(10,10,10,0);
+    layout_deleteArchive->setSpacing(10);
+
+    auto* layout_deleteArchive1 = new QHBoxLayout;
+    layout_deleteArchive1->setContentsMargins(0,10,10,10);
+    layout_deleteArchive1->setSpacing(10);
+
+    lbl_deleteArchives = new QLabel(this);
+    lbl_deleteArchives->setStyleSheet("font-size: 12px;");
+    lbl_deleteArchives->setText(tr("Eliminarea automată a arhivelor vechi.<br>"
+                                   "La finisarea arhivării o să fie lansată automat eliminarea arhivelor vechi."));
+
+    btn_deleteArchives = new SwitchButton(this);
+    btn_deleteArchives->setChecked(globals::deleteArchives);
+
+    lbl_lastNrDay = new QLabel(this);
+    lbl_lastNrDay->setStyleSheet("font-size: 12px;");
+    lbl_lastNrDay->setText(tr("... se vor șterge arhivele mai vechi de ... (zile)"));
+
+    last_nr_day = new QLineEdit(this);
+    if (globals::deleteArchives && globals::lastNrDay > 0)
+        last_nr_day->setText(QString::number(globals::lastNrDay));
+
+    layout_deleteArchive->addWidget(lbl_deleteArchives);
+    layout_deleteArchive->addStretch();
+    layout_deleteArchive->addWidget(btn_deleteArchives);
+
+    layout_deleteArchive1->addStretch();
+    layout_deleteArchive1->addWidget(lbl_lastNrDay);
+    layout_deleteArchive1->addWidget(last_nr_day);
+
+    // ----- separator4 -----
+    auto* layout_spacer3 = new QHBoxLayout;
+    layout_spacer3->setContentsMargins(10,0,10,10);
+    layout_spacer3->setSpacing(10);
+
+    QFrame* line3 = new QFrame(this);
+    line3->setFrameShape(QFrame::HLine);
+    line3->setFrameShadow(QFrame::Plain);
+    line3->setFixedHeight(1);
+
+    layout_spacer3->addWidget(line3);
+
     // ----- sincronizarea cu GoogleDrive -----
     // auto* layout_syncGoogleDrive = new QHBoxLayout;
     // layout_syncGoogleDrive->setContentsMargins(10,10,10,10);
@@ -321,8 +383,10 @@ void AppSettings::setupUI()
     v->addLayout(layout_spacer1);
     v->addLayout(layout_syncDropbox);
     v->addLayout(layout_spacer2);
+    v->addLayout(layout_deleteArchive);
+    v->addLayout(layout_deleteArchive1);
+    v->addLayout(layout_spacer3);
     // v->addLayout(layout_syncGoogleDrive);
-    // v->addLayout(layout_spacer3);
     v->addLayout(layout_closeApp);
     v->addLayout(layout_spacer4);
 
@@ -347,6 +411,8 @@ void AppSettings::updateUI()
 {
     lbl_pwd->setVisible(btn_setArchivePassword->isChecked());
     edit_pwd->setVisible(btn_setArchivePassword->isChecked());
+    lbl_lastNrDay->setVisible(btn_deleteArchives->isChecked());
+    last_nr_day->setVisible(btn_deleteArchives->isChecked());
 }
 
 void AppSettings::closeEvent(QCloseEvent *event)
@@ -356,6 +422,32 @@ void AppSettings::closeEvent(QCloseEvent *event)
         globals::setArchivePassword = false;
         edit_pwd->setText("");
         globals::archivePassword = "";
+    }
+
+    if (btn_deleteArchives) {
+        if (last_nr_day->text().isEmpty()) {
+            QMessageBox msg(
+                QMessageBox::Question,
+                tr("Verificarea"),
+                tr("Este activată eliminarea automată a arhivelor,<br>"
+                   "dar nu este indicate vechimea arhivelor !!! Continuăm ?"),
+                QMessageBox::NoButton,
+                this
+                );
+
+            QPushButton* yesButton = msg.addButton(tr("Da"), QMessageBox::YesRole);
+            QPushButton* noButton  = msg.addButton(tr("Nu"), QMessageBox::NoRole);
+
+            msg.exec();
+            if (msg.clickedButton() == yesButton) {
+                globals::lastNrDay = 0;
+                event->accept();
+            } else if (msg.clickedButton() == noButton){
+                event->ignore();
+            }
+        } else {
+            globals::lastNrDay = last_nr_day->text().toInt();
+        }
     }
 
     // verificam daca este activata setarea parolei + parola empty

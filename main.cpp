@@ -16,14 +16,27 @@ int main(int argc, char *argv[])
         MainWindow *w = new MainWindow;
         w->setAttribute(Qt::WA_DontShowOnScreen, true);
 
-        QObject::connect(w, &MainWindow::allJobsFinished,
-            &a, &QCoreApplication::quit);
-
-        /** tray msg info */
         auto *tray = new QSystemTrayIcon(&a);
         tray->setIcon(QIcon(":/icons/icons/backup.png"));
         tray->show();
 
+        /** mesaj pu finalizarea arhivarii */
+        QObject::connect(w, &MainWindow::allJobsFinished,
+                         tray,
+                         [tray]() {
+                             tray->showMessage(
+                                 QObject::tr("Arhivare finalizată"),
+                                 QObject::tr("Arhivarea bazelor de date 1C a fost finalizată cu succes."),
+                                 QSystemTrayIcon::Information,
+                                 15000
+                                 );
+                         });
+
+        /** inchidem aplicaia */
+        QObject::connect(w, &MainWindow::allJobsFinished,
+                         &a, &QCoreApplication::quit);
+
+        /** Mesaj inițial in tray */
         tray->showMessage(
             QObject::tr("Atenție"),
             QObject::tr("Peste 1 minut va fi inițiată arhivarea bazelor de date 1C."),
@@ -31,7 +44,7 @@ int main(int argc, char *argv[])
             10000
             );
 
-        /** pu atentie mai mare folosim QMessageBox */
+        /** Mesaj pu atentie */
         QMessageBox msg;
         msg.setIcon(QMessageBox::Warning);
         msg.setWindowTitle(QObject::tr("Atenție"));

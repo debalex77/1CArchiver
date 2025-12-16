@@ -21,4 +21,7 @@ namespace globals {
     bool activate_syncGoogleDrive = false;    /** activarea sincronizarii GoogleDrive */
     QString loginSuccesGoogleDrive = nullptr; /** data loagrii GoogleDrive */
 
+    bool deleteArchives = false; /** eliminarea arhivelor */
+    int lastNrDay = -1;          /** arhive mai mari de 3 zile (exemplu) */
+
 }

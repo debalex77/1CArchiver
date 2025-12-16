@@ -167,6 +167,8 @@ private:
     void setDropboxConnected();
     void setDropboxAuthRequired();
 
+    void cleanupOldArchives();
+
 protected:
     void closeEvent(QCloseEvent *event) override;
 

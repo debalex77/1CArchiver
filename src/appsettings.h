@@ -37,6 +37,9 @@ public:
     void setChecked(bool on);
     bool isChecked() const;
 
+signals:
+    void onActivateDropbox();
+
 private:
     QString highlightColor;
 
@@ -46,6 +49,8 @@ private:
     QLabel* lbl_fileSHA256;
     QLabel* lbl_closeApp;
     QLabel* lbl_syncDropbox;
+    QLabel* lbl_deleteArchives;
+    QLabel* lbl_lastNrDay;
     // QLabel* lbl_syncGoogleDrive;
 
     SwitchButton* btn_setArchivePassword;
@@ -55,6 +60,9 @@ private:
     SwitchButton* btn_closeApp;
     SwitchButton* btn_syncDropbox;
     SwitchButton* btn_syncGoogleDrive;
+    SwitchButton* btn_deleteArchives;
+
+    QLineEdit* last_nr_day;
 
     void setupUI();
     void updateUI();

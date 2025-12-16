@@ -96,6 +96,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(btnSettings, &QToolButton::clicked, this, [&](){
         app_settings = new AppSettings(this);
         app_settings->setAttribute(Qt::WA_DeleteOnClose);
+        connect(app_settings, &AppSettings::onActivateDropbox, [&]() {
+            setPropertyVisible();
+            if (globals::syncDropbox && globals::activate_syncDropbox)
+                checkDropboxAtStartup();
+        });
         app_settings->show();
     });
 
@@ -691,6 +696,11 @@ void MainWindow::startNextJob()
         btnFolder->setEnabled(true);
         comboCompression->setEnabled(true);
 
+        // eliminam arhive vechi
+        if (globals::deleteArchives) {
+            cleanupOldArchives();
+        }
+
         emit allJobsFinished(); // pu "--autorun" vezi in main.cpp
 
         return;
@@ -786,9 +796,11 @@ void MainWindow::startNextJob()
                         .arg(toWinPath(archivePath),
                              QString::number(sizeMB, 'f', 1)));
 
+                // crearea fisierului .sha256
                 if (globals::createFileSHA256)
                     createSha256File(archivePath);
 
+                // activam sincronizarea cu Dropbox
                 if (globals::syncDropbox && globals::activate_syncDropbox) {
                     m_waitingForDropbox = true;
 
@@ -798,8 +810,7 @@ void MainWindow::startNextJob()
                             archivePath + ".sha256");
                     else
                         startDropboxUpload(archivePath);
-                }
-                else {
+                } else {
                     // fără Dropbox → următorul job imediat
                     startNextJob();
                 }
@@ -1171,6 +1182,12 @@ void MainWindow::loadSettings()
                 table->setColumnWidth(c, w);
         }
     }
+
+    if (obj.contains("deleteArchives"))
+        globals::deleteArchives = obj["deleteArchives"].toBool();
+
+    if (obj.contains("lastNrDay"))
+        globals::lastNrDay = obj["lastNrDay"].toString().toInt();
 }
 
 void MainWindow::saveSettings()
@@ -1191,6 +1208,8 @@ void MainWindow::saveSettings()
     obj["activate_syncGoogleDrive"] = globals::activate_syncGoogleDrive;
     obj["succ_dropbox"]             = globals::loginSuccesDropbox;
     obj["succ_gdrive"]              = globals::loginSuccesGoogleDrive;
+    obj["deleteArchives"]           = globals::deleteArchives;
+    obj["lastNrDay"]                = QString::number(globals::lastNrDay);
 
     // ------------------------------------------
     // Salvăm dimensiunile coloanelor tabelului
@@ -1340,6 +1359,28 @@ void MainWindow::setDropboxAuthRequired()
     currentStatusDropbox->setText(tr("Dropbox: este necesar autorizarea"));
     globals::syncDropbox = false;
     globals::activate_syncDropbox = false;
+}
+
+void MainWindow::cleanupOldArchives()
+{
+    QDir dir(backupFolder);
+    if (!dir.exists())
+        return;
+
+    const QDateTime limit =
+        QDateTime::currentDateTime().addDays(-globals::lastNrDay);
+
+    const QStringList filters = { "*.7z", "*.zip", "*.sha256" };
+
+    for (const QFileInfo &fi :
+         dir.entryInfoList(filters, QDir::Files)) {
+
+        if (fi.lastModified() < limit) {
+            QFile::remove(fi.absoluteFilePath());
+            log(tr("🗑 Șters: %1")
+                    .arg(toWinPath(fi.absoluteFilePath())));
+        }
+    }
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)

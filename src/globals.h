@@ -34,6 +34,9 @@ namespace globals {
     extern bool syncGoogleDrive;
     extern bool activate_syncGoogleDrive;
     extern QString loginSuccesGoogleDrive;
+
+    extern bool deleteArchives;
+    extern int lastNrDay;
 }
 
 #
