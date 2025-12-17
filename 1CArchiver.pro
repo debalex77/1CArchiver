@@ -21,7 +21,9 @@ SOURCES += \
     src/ibaseparser.cpp \
     src/scheduler/scheduledtaskdialog.cpp \
     src/switchbutton.cpp \
-    src/thememanager.cpp
+    src/thememanager.cpp \
+    src/updatechecker.cpp \
+    src/updatedialog.cpp
 
 HEADERS += \
     src/appsettings.h \
@@ -39,6 +41,8 @@ HEADERS += \
     src/scheduler/scheduledtaskdialog.h \
     src/switchbutton.h \
     src/thememanager.h \
+    src/updatechecker.h \
+    src/updatedialog.h \
     src/utils.h \
     src/version.h
 

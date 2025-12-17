@@ -70,6 +70,8 @@ private slots:
     void removeCurrentRow();
     void autoDetectPaths1C();
 
+    void checkForUpdates();
+
 private:
     struct BackupJob {
         int row;
@@ -83,7 +85,7 @@ private:
         bool archiveWholeFolder;
     };
 
-    // UI
+    /** UI */
     QTableWidget *table = nullptr;
 
     QPushButton *btnSelectAll    = nullptr;
@@ -98,35 +100,38 @@ private:
 
     QLabel *currentStatusDropbox     = nullptr;
     QProgressBar *progressBarDropbox = nullptr;
-    QPushButton *btnAbortDropbox = nullptr;
+    QPushButton *btnAbortDropbox     = nullptr;
 
     QTextEdit *logBox         = nullptr;
 
     QComboBox *comboCompression = nullptr;
 
-    // Data
+    /** Data folder backup & path to bases */
     QString backupFolder;
     QVector<IBASEEntry> bases;
 
-    // 7-Zip process
-    QTimer *progressTimer = nullptr;
+    /** 7-Zip process */
+    QTimer *progressTimer      = nullptr;
     QString currentArchivePath = nullptr;
     qint64 sourceFileSize = 0;
 
-    // Job queue
+    /** Job queue compress, archive */
     QVector<BackupJob> jobs;
     int currentJob = -1;
 
     QString settingsFilePath;
 
+    /** lib for bit7z */
     bit7z::Bit7zLibrary* m_lib = nullptr;
     bit7z::BitFileCompressor* m_compressor = nullptr;
 
-    qint64 m_currentTotalBytes = 0;   // dimensiunea totală a 1Cv8.1CD pentru job-ul curent
+    qint64 m_currentTotalBytes = 0;   /** dimensiunea totală a 1Cv8.1CD pentru job-ul curent */
 
     QLabel *lblCompression;
     QTranslator translator;
     QString currentLang;
+
+    /** button switch - theme & lang */
     SwitchButton* themeSwitch;
     SwitchButton* lblSwitch;
     QLabel* lblLang;
@@ -135,9 +140,12 @@ private:
     AppSettings* app_settings;
 
     DropboxUploader *m_dbxUploader = nullptr;
-    bool m_waitingForDropbox = false;
 
+    /** for dropbox */
+    bool m_waitingForDropbox = false;
     bool m_dropboxStartupCheckRunning = false;
+
+    bool m_checkedUpdates = false;
 
 private:
     void check7ZipInstallation();
@@ -170,6 +178,7 @@ private:
     void cleanupOldArchives();
 
 protected:
+    void showEvent(QShowEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
 
 };

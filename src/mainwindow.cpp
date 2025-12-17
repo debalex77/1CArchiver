@@ -2,6 +2,8 @@
 #include "ibaseparser.h"
 #include "compressworker.h"
 #include "switchbutton.h"
+#include "updatedialog.h"
+#include "updatechecker.h"
 #include "src/version.h"
 #include "src/globals.h"
 #include "src/utils.h"
@@ -626,6 +628,19 @@ void MainWindow::autoDetectPaths1C()
         statusItem->setTextAlignment(Qt::AlignCenter);
         table->setItem(i, 3, statusItem);
     }
+}
+
+void MainWindow::checkForUpdates()
+{
+    auto *checker = new UpdateChecker(this);
+
+    connect(checker, &UpdateChecker::updateAvailable,
+            this, [this](const QString &ver) {
+                UpdateDialog dlg(ver, this);
+                dlg.exec();
+            });
+
+    checker->checkForUpdates(VER);
 }
 
 // ======================================
@@ -1398,6 +1413,17 @@ void MainWindow::cleanupOldArchives()
                     .arg(toWinPath(fi.absoluteFilePath())));
         }
     }
+}
+
+void MainWindow::showEvent(QShowEvent *event)
+{
+    QMainWindow::showEvent(event);
+
+    if (m_checkedUpdates)
+        return;
+
+    m_checkedUpdates = true;
+    checkForUpdates();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
