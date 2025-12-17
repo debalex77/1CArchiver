@@ -16,6 +16,7 @@
 
 namespace globals {
 
+    extern bool isAutorun;
     extern bool isDark;
     extern QString currentLang;
 

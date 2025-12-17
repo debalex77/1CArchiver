@@ -275,7 +275,7 @@ void AppSettings::setupUI()
     layout_deleteArchive->setSpacing(10);
 
     auto* layout_deleteArchive1 = new QHBoxLayout;
-    layout_deleteArchive1->setContentsMargins(0,10,10,10);
+    // layout_deleteArchive1->setContentsMargins(10,0,10,10);
     layout_deleteArchive1->setSpacing(10);
 
     lbl_deleteArchives = new QLabel(this);
@@ -288,9 +288,14 @@ void AppSettings::setupUI()
 
     lbl_lastNrDay = new QLabel(this);
     lbl_lastNrDay->setStyleSheet("font-size: 12px;");
-    lbl_lastNrDay->setText(tr("... se vor șterge arhivele mai vechi de ... (zile)"));
+    lbl_lastNrDay->setText(tr("... se vor șterge arhivele mai vechi de "));
+
+    lbl_lastDay = new QLabel(this);
+    lbl_lastDay->setStyleSheet("font-size: 12px;");
+    lbl_lastDay->setText(tr("zile"));
 
     last_nr_day = new QLineEdit(this);
+    last_nr_day->setMaximumWidth(50);
     if (globals::deleteArchives && globals::lastNrDay > 0)
         last_nr_day->setText(QString::number(globals::lastNrDay));
 
@@ -301,6 +306,7 @@ void AppSettings::setupUI()
     layout_deleteArchive1->addStretch();
     layout_deleteArchive1->addWidget(lbl_lastNrDay);
     layout_deleteArchive1->addWidget(last_nr_day);
+    layout_deleteArchive1->addWidget(lbl_lastDay);
 
     // ----- separator4 -----
     auto* layout_spacer3 = new QHBoxLayout;
@@ -413,6 +419,7 @@ void AppSettings::updateUI()
     edit_pwd->setVisible(btn_setArchivePassword->isChecked());
     lbl_lastNrDay->setVisible(btn_deleteArchives->isChecked());
     last_nr_day->setVisible(btn_deleteArchives->isChecked());
+    lbl_lastDay->setVisible(btn_deleteArchives->isChecked());
 }
 
 void AppSettings::closeEvent(QCloseEvent *event)

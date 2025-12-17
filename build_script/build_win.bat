@@ -10,7 +10,12 @@ set "QIF_PATH=C:\Qt\Tools\QtInstallerFramework\4.10\bin"
 set "WDEPLOY=%QT_PATH%\bin\windeployqt6.exe"
 set "BUILD_EXE=%BUILD_PATH%\Desktop_Qt_6_9_3_MSVC2022_64bit-Release\release\1CArchiver.exe"
 
-set "PREBUILD_PATH=%BUILD_PATH%\1CArchiver_v1.6"
+::------------------------------------------
+:: Citim versiunea
+set "VERSION="
+for /f "delims=" %%i in (%PROJECT_PATH%\version.txt) do set "VERSION=%%i"
+
+set "PREBUILD_PATH=%BUILD_PATH%\1CArchiver_v%VERSION%"
 
 ::------------------------------------------
 :: Ștergem și recreăm folderul de build
@@ -25,6 +30,9 @@ copy "%BUILD_EXE%" "%PREBUILD_PATH%\1CArchiver.exe"
 :: Rulăm windeployqt pentru a include toate dependințele Qt
 "%WDEPLOY%" "%PREBUILD_PATH%\1CArchiver.exe"
 "%WDEPLOY%" --release "%PREBUILD_PATH%\1CArchiver.exe"
+
+copy "C:\Install\VC_redist.x64.exe" "%PREBUILD_PATH%\VC_redist.x64.exe" /Y
+
 goto skip_1
 
 ::------------------------------------------
@@ -44,11 +52,6 @@ copy "%PROJECT_PATH%\icons\backup.ico" "%INSTALLER_PATH%\packages\com.oxvalprim.
 ::------------------------------------------
 :: Modificăm TargetDir în config.xml
 set CONFIGXML_PATH=%INSTALLER_PATH%\config\config.xml
-
-::------------------------------------------
-:: Citim versiunea
-set "VERSION="
-for /f "delims=" %%i in (%PROJECT_PATH%\version.txt) do set "VERSION=%%i"
 
 ::------------------------------------------
 echo === Running binarycreator... ===

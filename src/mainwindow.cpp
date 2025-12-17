@@ -419,6 +419,23 @@ void MainWindow::onChooseBackupFolder()
 
 void MainWindow::onStartArchive()
 {
+    if (!globals::isAutorun) {
+        QMessageBox msg(QMessageBox::Warning,
+                        tr("Atenție"),
+                        tr("Pentru o arhivare corectă este necesar să închideți<br>"
+                           "toate bazele de date 1C.<br>"
+                           "Doriți să continuați ?"),
+                        QMessageBox::NoButton, this);
+        QPushButton *yesButton = msg.addButton(tr("Da"), QMessageBox::YesRole);
+        QPushButton *noButton  = msg.addButton(tr("Nu"), QMessageBox::NoRole);
+        yesButton->setMinimumWidth(80);
+        noButton->setMinimumWidth(80);
+        msg.exec();
+        if (msg.clickedButton() == noButton){
+            return;
+        }
+    }
+
     // Dezactivarea UI button
     btnSelectAll->setEnabled(false);
     btnArchive->setEnabled(false);

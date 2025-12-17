@@ -2,6 +2,7 @@
 
 namespace globals {
 
+    bool isAutorun          = false;    /** autorun app */
     bool isDark             = false;    /** tema aplicatiei */
     QString currentLang     = nullptr;  /** limaba intefetei */
 

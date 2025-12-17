@@ -50,6 +50,7 @@ private:
     QLabel* lbl_closeApp;
     QLabel* lbl_syncDropbox;
     QLabel* lbl_deleteArchives;
+    QLabel* lbl_lastDay;
     QLabel* lbl_lastNrDay;
     // QLabel* lbl_syncGoogleDrive;
 

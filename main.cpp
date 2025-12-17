@@ -13,6 +13,9 @@ int main(int argc, char *argv[])
     const auto args = QCoreApplication::arguments();
     const bool autoRun = args.contains("--autorun");
     if (autoRun) {
+
+        globals::isAutorun = true;
+
         MainWindow *w = new MainWindow;
         w->setAttribute(Qt::WA_DontShowOnScreen, true);
 

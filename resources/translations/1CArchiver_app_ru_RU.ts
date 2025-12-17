@@ -40,44 +40,49 @@
         <translation>Автоматическое удаление старых архивов.&lt;br&gt;После завершения архивации активируется автоматическое &lt;br&gt;удаление архивов.</translation>
     </message>
     <message>
-        <location filename="../../src/appsettings.cpp" line="291"/>
-        <source>... se vor șterge arhivele mai vechi de ... (zile)</source>
-        <translation>... будут удалены архивы больше ... (дни)</translation>
-    </message>
-    <message>
-        <location filename="../../src/appsettings.cpp" line="354"/>
+        <location filename="../../src/appsettings.cpp" line="360"/>
         <source>Interogarea la închiderea aplicaţiei</source>
         <translation>Вопрос перед закрытием программы</translation>
     </message>
     <message>
-        <location filename="../../src/appsettings.cpp" line="431"/>
+        <location filename="../../src/appsettings.cpp" line="438"/>
         <source>Verificarea</source>
         <translation>Проверка</translation>
     </message>
     <message>
-        <location filename="../../src/appsettings.cpp" line="432"/>
+        <location filename="../../src/appsettings.cpp" line="439"/>
         <source>Este activată eliminarea automată a arhivelor,&lt;br&gt;dar nu este indicate vechimea arhivelor !!! Continuăm ?</source>
         <translation>Автоматическое удаление архивов активировано,&lt;br&gt;но не указано дни !!! Продолжить ?</translation>
     </message>
     <message>
-        <location filename="../../src/appsettings.cpp" line="457"/>
+        <location filename="../../src/appsettings.cpp" line="464"/>
         <source>Verificarea parolei</source>
         <translation>Проверка пароля</translation>
     </message>
     <message>
-        <location filename="../../src/appsettings.cpp" line="458"/>
+        <location filename="../../src/appsettings.cpp" line="465"/>
         <source>Este activată setarea parolei pentru arhive,&lt;br&gt;iar parola nu este indicată !!! Continuăm ?</source>
         <translation>Активирована установка пароля для архивов,&lt;br&gt;но пароль не указан !!! Продолжить ?</translation>
     </message>
     <message>
-        <location filename="../../src/appsettings.cpp" line="438"/>
-        <location filename="../../src/appsettings.cpp" line="464"/>
+        <location filename="../../src/appsettings.cpp" line="445"/>
+        <location filename="../../src/appsettings.cpp" line="471"/>
         <source>Da</source>
         <translation>Да</translation>
     </message>
     <message>
-        <location filename="../../src/appsettings.cpp" line="439"/>
-        <location filename="../../src/appsettings.cpp" line="465"/>
+        <location filename="../../src/appsettings.cpp" line="291"/>
+        <source>... se vor șterge arhivele mai vechi de </source>
+        <translation>... будут удалены архивы старше </translation>
+    </message>
+    <message>
+        <location filename="../../src/appsettings.cpp" line="295"/>
+        <source>zile</source>
+        <translation>дней</translation>
+    </message>
+    <message>
+        <location filename="../../src/appsettings.cpp" line="446"/>
+        <location filename="../../src/appsettings.cpp" line="472"/>
         <source>Nu</source>
         <translation>Нет</translation>
     </message>
@@ -126,84 +131,84 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="1267"/>
+        <location filename="../../src/mainwindow.cpp" line="1282"/>
         <source>Dark theme:</source>
         <translation>Тема тёмная:</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="1268"/>
+        <location filename="../../src/mainwindow.cpp" line="1283"/>
         <source>Limba RO:</source>
         <translation>Язык RO:</translation>
     </message>
     <message>
         <location filename="../../src/mainwindow.cpp" line="156"/>
-        <location filename="../../src/mainwindow.cpp" line="1274"/>
+        <location filename="../../src/mainwindow.cpp" line="1289"/>
         <source>Select</source>
         <translation>Выбрать</translation>
     </message>
     <message>
         <location filename="../../src/mainwindow.cpp" line="83"/>
-        <location filename="../../src/mainwindow.cpp" line="1257"/>
+        <location filename="../../src/mainwindow.cpp" line="1272"/>
         <source>1CArchiver v%1 – Backup al bazelor de date 1C:Enterprise</source>
         <translation>1CArchiver v%1 – Архивация баз данных 1С:Предприятие</translation>
     </message>
     <message>
         <location filename="../../src/mainwindow.cpp" line="157"/>
-        <location filename="../../src/mainwindow.cpp" line="1275"/>
+        <location filename="../../src/mainwindow.cpp" line="1290"/>
         <source>Denumire BD</source>
         <translation>Наименование баз данных</translation>
     </message>
     <message>
         <location filename="../../src/mainwindow.cpp" line="158"/>
-        <location filename="../../src/mainwindow.cpp" line="1276"/>
+        <location filename="../../src/mainwindow.cpp" line="1291"/>
         <source>Cale</source>
         <translation>Путь</translation>
     </message>
     <message>
         <location filename="../../src/mainwindow.cpp" line="159"/>
-        <location filename="../../src/mainwindow.cpp" line="1277"/>
+        <location filename="../../src/mainwindow.cpp" line="1292"/>
         <source>Status</source>
         <translation>Статус</translation>
     </message>
     <message>
         <location filename="../../src/mainwindow.cpp" line="174"/>
-        <location filename="../../src/mainwindow.cpp" line="1260"/>
+        <location filename="../../src/mainwindow.cpp" line="1275"/>
         <source>Selectează toate</source>
         <translation>Выбрать все</translation>
     </message>
     <message>
         <location filename="../../src/mainwindow.cpp" line="175"/>
-        <location filename="../../src/mainwindow.cpp" line="1261"/>
+        <location filename="../../src/mainwindow.cpp" line="1276"/>
         <source>Directoriu cu BD</source>
         <translation>Папка с БД</translation>
     </message>
     <message>
         <location filename="../../src/mainwindow.cpp" line="176"/>
         <location filename="../../src/mainwindow.cpp" line="409"/>
-        <location filename="../../src/mainwindow.cpp" line="1262"/>
+        <location filename="../../src/mainwindow.cpp" line="1277"/>
         <source>Alege folder backup</source>
         <translation>Папка для архивов</translation>
     </message>
     <message>
         <location filename="../../src/mainwindow.cpp" line="177"/>
-        <location filename="../../src/mainwindow.cpp" line="1263"/>
+        <location filename="../../src/mainwindow.cpp" line="1278"/>
         <source>Arhivează selectatele</source>
         <translation>Архивация</translation>
     </message>
     <message>
         <location filename="../../src/mainwindow.cpp" line="229"/>
-        <location filename="../../src/mainwindow.cpp" line="1264"/>
+        <location filename="../../src/mainwindow.cpp" line="1279"/>
         <source>Oprește Dropbox</source>
         <translation>Остановить Dropbox</translation>
     </message>
     <message>
         <location filename="../../src/mainwindow.cpp" line="285"/>
-        <location filename="../../src/mainwindow.cpp" line="763"/>
+        <location filename="../../src/mainwindow.cpp" line="778"/>
         <source>Progres: %1%</source>
         <translation>Прогресс: %1%</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="588"/>
+        <location filename="../../src/mainwindow.cpp" line="603"/>
         <source>Nu am găsit nicio bază în ibases.v8i.</source>
         <translation>Не найдена ни одна база данных в файле ibases.v8i.</translation>
     </message>
@@ -214,7 +219,7 @@
     </message>
     <message>
         <location filename="../../src/mainwindow.cpp" line="178"/>
-        <location filename="../../src/mainwindow.cpp" line="1265"/>
+        <location filename="../../src/mainwindow.cpp" line="1280"/>
         <source>Generează Task XML</source>
         <translation>Создать задание</translation>
     </message>
@@ -225,7 +230,7 @@
     </message>
     <message>
         <location filename="../../src/mainwindow.cpp" line="342"/>
-        <location filename="../../src/mainwindow.cpp" line="562"/>
+        <location filename="../../src/mainwindow.cpp" line="577"/>
         <source>Confirmare</source>
         <translation>Подтверждение</translation>
     </message>
@@ -247,226 +252,238 @@ Doriți să adăugați încă %1 baze?</source>
         <translation>Папка для архивов: </translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="442"/>
+        <location filename="../../src/mainwindow.cpp" line="423"/>
+        <source>Atenție</source>
+        <translation>Внимание</translation>
+    </message>
+    <message>
+        <location filename="../../src/mainwindow.cpp" line="424"/>
+        <source>Pentru o arhivare corectă este necesar să închideți&lt;br&gt;toate bazele de date 1C.&lt;br&gt;Doriți să continuați ?</source>
+        <translation>Для успешной архивации необходимо&lt;br&gt; закрыть все базы данных 1С:Предприятия.&lt;br&gt;Продолжить ?</translation>
+    </message>
+    <message>
+        <location filename="../../src/mainwindow.cpp" line="457"/>
         <source>Nu găsesc 1Cv8.1CD în: </source>
         <translation>Не найден файл 1Cv8.1CD в: </translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="460"/>
+        <location filename="../../src/mainwindow.cpp" line="475"/>
         <source>Nu sunt baze selectate pentru backup.</source>
         <translation>Не выбраны базы данных для архивации.</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="464"/>
+        <location filename="../../src/mainwindow.cpp" line="479"/>
         <source>Încep backup pentru %1 baze...</source>
         <translation>Инициализация архивации для %1 баз данных...</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="516"/>
+        <location filename="../../src/mainwindow.cpp" line="531"/>
         <source>Dropbox: anulat</source>
         <translation>Dropbox: анулирован</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="538"/>
+        <location filename="../../src/mainwindow.cpp" line="553"/>
         <source>🧹 Elimină toate rândurile</source>
         <translation>🧹 Удалить все строки</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="539"/>
+        <location filename="../../src/mainwindow.cpp" line="554"/>
         <source>❌ Elimină rândul curent</source>
         <translation>❌ Удалить текущую строку</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="541"/>
+        <location filename="../../src/mainwindow.cpp" line="556"/>
         <source>🔍 Detectare automată baze 1C</source>
         <translation>🔍 Автомат.определение баз данных 1С пользователя</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="563"/>
+        <location filename="../../src/mainwindow.cpp" line="578"/>
         <source>Sigur doriți să eliminați toate rândurile?</source>
         <translation>Удалить все строки?</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="624"/>
+        <location filename="../../src/mainwindow.cpp" line="639"/>
         <source>7-Zip lipsă</source>
         <translation>Отсутствие 7-Zip</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="625"/>
+        <location filename="../../src/mainwindow.cpp" line="640"/>
         <source>Nu am găsit executabilul 7z.exe.
 Instalează 7-Zip de pe https://www.7-zip.org/</source>
         <translation>Не найден исполняемый файл 7z.exe.
 Установите 7-Zip с сайта https://www.7-zip.org/</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="634"/>
+        <location filename="../../src/mainwindow.cpp" line="649"/>
         <source>7-Zip DLL lipsă</source>
         <translation>Отсутствие 7-Zip DLL</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="635"/>
+        <location filename="../../src/mainwindow.cpp" line="650"/>
         <source>Am găsit 7z.exe dar nu și 7z.dll în același folder.
 bit7z NU va putea comprima arhive fără această bibliotecă.</source>
         <translation>Найден 7z.exe , но отсутствует библиотека 7z.dll в папке.
 bit7z необходима данная библиотека для архивации.</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="641"/>
+        <location filename="../../src/mainwindow.cpp" line="656"/>
         <source>Determinat 7-zip: </source>
         <translation>Определён 7-zip: </translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="689"/>
+        <location filename="../../src/mainwindow.cpp" line="704"/>
         <source>Toate backup-urile finalizate.</source>
         <translation>Архивация всех баз данных успешно выполнена.</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="712"/>
+        <location filename="../../src/mainwindow.cpp" line="727"/>
         <source>Arhivez: </source>
         <translation>Архивация: </translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="722"/>
+        <location filename="../../src/mainwindow.cpp" line="737"/>
         <source>Arhivare: ...</source>
         <translation>Архивация: ...</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="726"/>
+        <location filename="../../src/mainwindow.cpp" line="741"/>
         <source>Încărcarea în Dropbox: ...</source>
         <translation>Загрузка в Dropbox: ...</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="782"/>
+        <location filename="../../src/mainwindow.cpp" line="797"/>
         <source>✔ Backup finalizat</source>
         <translation>✔ Архивация завершена</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="795"/>
+        <location filename="../../src/mainwindow.cpp" line="810"/>
         <source>📦 Arhivă: %1 (%2 MB)</source>
         <translation>📦 Архив: %1 (%2 MB)</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="877"/>
+        <location filename="../../src/mainwindow.cpp" line="892"/>
         <source>🌍 Dropbox: inițierea încărcării...</source>
         <translation>🌍 Dropbox: инициализация загрузки...</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="884"/>
+        <location filename="../../src/mainwindow.cpp" line="899"/>
         <source>⛔ Dropbox: nu este conectat, încărcarea omisă.</source>
         <translation>⛔ Dropbox: нет соединения, загрузка отменена.</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="907"/>
+        <location filename="../../src/mainwindow.cpp" line="922"/>
         <source>Încărcarea în Dropbox: %1% (%2 / %3 MB))</source>
         <translation>Загрузка в Dropbox: %1% (%2 / %3 MB))</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="918"/>
+        <location filename="../../src/mainwindow.cpp" line="933"/>
         <source>⛔ Dropbox: încărcarea nereușită: </source>
         <translation>⛔ Dropbox: загрузка не произведена: </translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="921"/>
+        <location filename="../../src/mainwindow.cpp" line="936"/>
         <source>🌍 Dropbox: încărcarea finalizată: </source>
         <translation>🌍 Dropbox: загрузка завершена: </translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="928"/>
+        <location filename="../../src/mainwindow.cpp" line="943"/>
         <source>🌍 Dropbox: inițirea încărcării fișierului SHA256...</source>
         <translation>🌍 Dropbox: инициализация загрузки файла SHA256...</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="941"/>
+        <location filename="../../src/mainwindow.cpp" line="956"/>
         <source>✔ Arhivarea și încărcarea în Dropbox reușită</source>
         <translation>✔ Архивация и загрузка в Dropbox завершена</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="955"/>
+        <location filename="../../src/mainwindow.cpp" line="970"/>
         <source>Dropbox: este necesar autorizare</source>
         <translation>Dropbox: необходима авторизация</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="959"/>
+        <location filename="../../src/mainwindow.cpp" line="974"/>
         <source>Dropbox sync disabled. Please reconnect.</source>
         <translation>Dropbox синхронизация деактивирована. Пожалуйста выполните авторизацию.</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="962"/>
+        <location filename="../../src/mainwindow.cpp" line="977"/>
         <source>🌍 Dropbox: start încărcarea: </source>
         <translation>🌍 Dropbox: страт загрузки: </translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="1168"/>
+        <location filename="../../src/mainwindow.cpp" line="1183"/>
         <source>Baza de date &apos;%1&apos; încărcată din setări.</source>
         <translation>База данных &apos;%1&apos; загружена из настроек.</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="1271"/>
+        <location filename="../../src/mainwindow.cpp" line="1286"/>
         <source>Arhivarea: ... inactiv</source>
         <translation>Архивация: ... ожидание</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="783"/>
+        <location filename="../../src/mainwindow.cpp" line="798"/>
         <source>❌ Backup eșuat</source>
         <translation>❌ Архивация не выполнена</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="970"/>
+        <location filename="../../src/mainwindow.cpp" line="985"/>
         <source>❌ Nu pot deschide fișierul pentru SHA-256: %1</source>
         <translation>❌ Не возможно открыть файл для SHA-256: %1</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="989"/>
+        <location filename="../../src/mainwindow.cpp" line="1004"/>
         <source>❌ Nu pot crea fișierul SHA-256: %1</source>
         <translation>❌ Не возможно создать файл SHA-256: %1</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="1001"/>
+        <location filename="../../src/mainwindow.cpp" line="1016"/>
         <source>🔐 Creat fișier SHA-256: %1</source>
         <translation>🔐 Создан файл SHA-256: %1</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="1088"/>
+        <location filename="../../src/mainwindow.cpp" line="1103"/>
         <source>Folder backup încărcat din setări: </source>
         <translation>Папка для архивов (из настроек): </translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="1269"/>
+        <location filename="../../src/mainwindow.cpp" line="1284"/>
         <source>Compresie:</source>
         <translation>Сжатие:</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="1353"/>
+        <location filename="../../src/mainwindow.cpp" line="1368"/>
         <source>Dropbox: conectat (...așteptare)</source>
         <translation>Dropbox: соединён (...ожидание)</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="1359"/>
+        <location filename="../../src/mainwindow.cpp" line="1374"/>
         <source>Dropbox: este necesar autorizarea</source>
         <translation>Dropbox: необходима авторизация</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="1380"/>
+        <location filename="../../src/mainwindow.cpp" line="1395"/>
         <source>🗑 Șters: %1</source>
         <translation>🗑 Удалён: %1</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="1397"/>
+        <location filename="../../src/mainwindow.cpp" line="1412"/>
         <source>Finisarea lucrului</source>
         <translation>Закрытие программы</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="1398"/>
+        <location filename="../../src/mainwindow.cpp" line="1413"/>
         <source>Doriți să închideți aplicația?</source>
         <translation>Закрыть программу ?</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="1403"/>
+        <location filename="../../src/mainwindow.cpp" line="428"/>
+        <location filename="../../src/mainwindow.cpp" line="1418"/>
         <source>Da</source>
         <translation>Да</translation>
     </message>
     <message>
-        <location filename="../../src/mainwindow.cpp" line="1404"/>
+        <location filename="../../src/mainwindow.cpp" line="429"/>
+        <location filename="../../src/mainwindow.cpp" line="1419"/>
         <source>Nu</source>
         <translation>Нет</translation>
     </message>
