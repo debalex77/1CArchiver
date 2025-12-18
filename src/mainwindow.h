@@ -94,6 +94,7 @@ private:
     QPushButton *btnArchive      = nullptr;
     QPushButton *btnGenerateTask = nullptr;
     QToolButton *btnSettings     = nullptr;
+    QToolButton *btnAbout        = nullptr;
 
     QLabel *currentStatus     = nullptr;
     QProgressBar *progressBar = nullptr;

@@ -8,6 +8,7 @@ TARGET = 1CArchiver
 
 SOURCES += \
     main.cpp \
+    src/aboutdialog.cpp \
     src/appsettings.cpp \
     src/compressworker.cpp \
     src/dropbox/connectordropbox.cpp \
@@ -26,6 +27,7 @@ SOURCES += \
     src/updatedialog.cpp
 
 HEADERS += \
+    src/aboutdialog.h \
     src/appsettings.h \
     src/compressworker.h \
     src/dropbox/connectordropbox.h \

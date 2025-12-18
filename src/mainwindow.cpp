@@ -4,6 +4,7 @@
 #include "switchbutton.h"
 #include "updatedialog.h"
 #include "updatechecker.h"
+#include "aboutdialog.h"
 #include "src/version.h"
 #include "src/globals.h"
 #include "src/utils.h"
@@ -92,8 +93,18 @@ MainWindow::MainWindow(QWidget *parent)
     topBar->setContentsMargins(0,0,0,0);
     topBar->setSpacing(10);
 
+    //--- about
+    btnAbout = new QToolButton(this);
+    btnAbout->setToolTip(tr("Despre aplicația"));
+    btnAbout->setIcon(QIcon(":/icons/icons/about.png"));
+    connect(btnAbout, &QToolButton::clicked, this, [&](){
+        AboutDialog dlg(this);
+        dlg.exec();
+    });
+
     //--- btn setari
     btnSettings = new QToolButton(this);
+    btnSettings->setToolTip(tr("Setările aplicației"));
     btnSettings->setIcon(QIcon(":/icons/icons/settings.png"));
     connect(btnSettings, &QToolButton::clicked, this, [&](){
         app_settings = new AppSettings(this);
@@ -134,6 +145,7 @@ MainWindow::MainWindow(QWidget *parent)
     topBar->addWidget(themeLabel);
     topBar->addWidget(themeSwitch);
     topBar->addWidget(btnSettings);
+    topBar->addWidget(btnAbout);
 
     // central widget
     // ---------------------------------------------------------
@@ -178,6 +190,15 @@ MainWindow::MainWindow(QWidget *parent)
     btnFolder       = new QPushButton(tr("Alege folder backup"));
     btnArchive      = new QPushButton(tr("Arhivează selectatele"));
     btnGenerateTask = new QPushButton(tr("Generează Task XML"));
+
+    btnSelectAll->setToolTip(tr("Selectează toate <br>"
+                                "bazele de date din tabel"));
+    btnWithDb->setToolTip(tr("Calea spre directoriu,<br>"
+                             "unde sunt baze de date 1C"));
+    btnFolder->setToolTip(tr("Calea spre directoriu,<br>"
+                             "unde v-a fi păstrate arhive"));
+    btnArchive->setToolTip(tr("Lansarea arhivării/sincronizării"));
+    btnGenerateTask->setToolTip(tr("Generarea task"));
 
     btnSelectAll->setMinimumWidth(140);
     btnWithDb->setMinimumWidth(140);
@@ -953,7 +974,7 @@ void MainWindow::startDropboxUpload(const QString &localPath, const QString &fil
                     log(tr("🌍 Dropbox: încărcarea finalizată: ")
                         + QFileInfo(localPath).fileName());
 
-                    // upload SHA256 DUPĂ .7z
+                    /** upload SHA256 DUPĂ .7z */
                     if (!fileSHA256.isEmpty() &&
                         QFile::exists(fileSHA256)) {
 
@@ -969,7 +990,7 @@ void MainWindow::startDropboxUpload(const QString &localPath, const QString &fil
                         return;
                     }
 
-                    // FINAL JOB
+                    /** FINAL JOB */
                     log(tr("✔ Arhivarea și încărcarea în Dropbox reușită"));
                 }
 
@@ -986,7 +1007,7 @@ void MainWindow::startDropboxUpload(const QString &localPath, const QString &fil
                 log(msg);
                 currentStatusDropbox->setText(tr("Dropbox: este necesar autorizare"));
                 progressBarDropbox->setValue(0);
-                globals::syncDropbox = false;          // dezactivează sincronizarea
+                globals::syncDropbox = false;          /** dezactivează sincronizarea */
                 globals::activate_syncDropbox = false;
                 log(tr("Dropbox sync disabled. Please reconnect."));
             });
@@ -1005,7 +1026,7 @@ bool MainWindow::createSha256File(const QString &filePath)
 
     QCryptographicHash hash(QCryptographicHash::Sha256);
 
-    // Citește fișierul în blocuri mari → rapid și sigur
+    /** Citim fișierul în blocuri mari */
     while (!file.atEnd()) {
         hash.addData(file.read(1024 * 1024));  // 1 MB
     }
@@ -1013,7 +1034,7 @@ bool MainWindow::createSha256File(const QString &filePath)
     QByteArray sha = hash.result().toHex();
     file.close();
 
-    // Construim calea fișierului .sha256
+    /** Construim calea fișierului .sha256 */
     QString shaFile = filePath + ".sha256";
     QFile out(shaFile);
 
@@ -1022,7 +1043,7 @@ bool MainWindow::createSha256File(const QString &filePath)
         return false;
     }
 
-    // Format standard: sha256 + spatiu + * + nume fisier
+    /** Format standard: sha256 + spatiu + * + nume fisier */
     QString line = QString("%1 *%2\n")
                        .arg(QString::fromLatin1(sha),
                             QFileInfo(filePath).fileName());
@@ -1030,6 +1051,7 @@ bool MainWindow::createSha256File(const QString &filePath)
     out.write(line.toUtf8());
     out.close();
 
+    /** logarea */
     log(tr("🔐 Creat fișier SHA-256: %1").arg(toWinPath(shaFile)));
     return true;
 }
@@ -1072,7 +1094,7 @@ void MainWindow::loadSettings()
 {
     QFile f(settingsFilePath);
     if (!f.exists()) {
-        //--- presupunem ca prima lansare
+        /** --- presupunem ca prima lansare */
 
         globals::currentLang = "app_ru_RU";
         lblSwitch->setChecked(globals::currentLang == "app_ro_RO");
@@ -1178,7 +1200,7 @@ void MainWindow::loadSettings()
             int row = table->rowCount();
             table->insertRow(row);
 
-            // === col 0: checkbox ===
+            /** === col 0: checkbox === */
             QWidget *cw   = createCheckBoxWidget(table);
             QCheckBox *cb = cw->findChild<QCheckBox*>();
             if (cb)
@@ -1186,13 +1208,13 @@ void MainWindow::loadSettings()
 
             table->setCellWidget(row, 0, cw);
 
-            // === col 1: nume BD ===
+            /** === col 1: nume BD === */
             table->setItem(row, 1, new QTableWidgetItem(name));
 
-            // === col 2: path BD ===
+            /** === col 2: path BD === */
             table->setItem(row, 2, new QTableWidgetItem(path));
 
-            // === col 3: status ===
+            /** === col 3: status === */
             QTableWidgetItem *statusItem = new QTableWidgetItem("");
             statusItem->setTextAlignment(Qt::AlignCenter);
             table->setItem(row, 3, statusItem);
@@ -1252,7 +1274,7 @@ void MainWindow::saveSettings()
     obj["columnWidths"] = arr;
 
     // ------------------------------------------
-    // Salvăm baze de date marcate
+    // Salvăm baze de date marcate si nemarcate
     // ------------------------------------------
     QJsonArray arr_db;
     for (int i = 0; i < table->rowCount(); ++i) {
@@ -1296,6 +1318,17 @@ void MainWindow::retranslateUi()
     btnAbortDropbox->setText(tr("Oprește Dropbox"));
     btnGenerateTask->setText(tr("Generează Task XML"));
 
+    btnAbout->setToolTip(tr("Despre aplicația"));
+    btnSettings->setToolTip(tr("Setările aplicației"));
+    btnSelectAll->setToolTip(tr("Selectează toate <br>"
+                                "bazele de date din tabel"));
+    btnWithDb->setToolTip(tr("Calea spre directoriu,<br>"
+                             "unde sunt baze de date 1C"));
+    btnFolder->setToolTip(tr("Calea spre directoriu,<br>"
+                             "unde v-a fi păstrate arhive"));
+    btnArchive->setToolTip(tr("Lansarea arhivării/sincronizării"));
+    btnGenerateTask->setToolTip(tr("Generarea task"));
+
     themeLabel->setText(tr("Dark theme:"));
     lblLang->setText(tr("Limba RO:"));
     lblCompression->setText(tr("Compresie:"));
@@ -1312,6 +1345,7 @@ void MainWindow::retranslateUi()
 
 void MainWindow::checkDropboxAtStartup()
 {
+    /** verificam variabile globale daca active */
     if (!globals::syncDropbox || !globals::activate_syncDropbox)
         return;
 
@@ -1319,7 +1353,7 @@ void MainWindow::checkDropboxAtStartup()
     const QString access  = s.value("dropbox/access_token").toString();
     const QString refresh = s.value("dropbox/refresh_token").toString();
 
-    // Fără refresh token → verdict final
+    /** Fără refresh token */
     if (refresh.isEmpty()) {
         setDropboxAuthRequired();
         return;
@@ -1327,13 +1361,13 @@ void MainWindow::checkDropboxAtStartup()
 
     auto *checker = new DropboxHealthChecker(this);
 
-    // TOKEN OK
+    /** TOKEN OK */
     connect(checker, &DropboxHealthChecker::connected,
             this, [this]() {
                 setDropboxConnected();
             });
 
-    // TOKEN EXPIRAT → încercăm refresh, NU afișăm eroare încă
+    /** TOKEN EXPIRAT → încercăm refresh, NU afișăm eroare încă */
     connect(checker, &DropboxHealthChecker::authorizationRequired,
             this, [this, refresh]() {
 
@@ -1352,31 +1386,35 @@ void MainWindow::checkDropboxAtStartup()
                                 return;
                             }
 
-                            // retry health-check pe token NOU
+                            /** retry health-check pe token NOU */
                             auto *checker2 = new DropboxHealthChecker(this);
 
+                            /** msg pu conectarea reusita */
                             connect(checker2, &DropboxHealthChecker::connected,
                                     this, [this]() {
                                         setDropboxConnected();
                                     });
 
+                            /** msg pu necesitatea autorizarii */
                             connect(checker2, &DropboxHealthChecker::authorizationRequired,
                                     this, [this]() {
                                         setDropboxAuthRequired();
                                     });
 
+                            /** pornim verificarea conectarii la Dropbox */
                             checker2->check(newAccess);
                         });
 
                 connect(oauth, &DropboxOAuth2_PKCE::refreshFailed,
                         this, [this, oauth](const QString &) {
                             oauth->deleteLater();
-                            setDropboxAuthRequired();       // refresh a eșuat
+                            setDropboxAuthRequired();       /** refresh a eșuat */
                         });
 
-                oauth->refreshAccessToken();
+                oauth->refreshAccessToken(); /** refresh token Dropbox */
             });
 
+    /** pornim verificarea conectarii la Dropbox */
     checker->check(access);
 }
 
@@ -1399,11 +1437,14 @@ void MainWindow::cleanupOldArchives()
     if (!dir.exists())
         return;
 
+    /** determinam data limita */
     const QDateTime limit =
         QDateTime::currentDateTime().addDays(-globals::lastNrDay);
 
+    /** filtru pu fisiere */
     const QStringList filters = { "*.7z", "*.zip", "*.sha256" };
 
+    /** bucla pu depistarea fisierelor */
     for (const QFileInfo &fi :
          dir.entryInfoList(filters, QDir::Files)) {
 
@@ -1423,12 +1464,13 @@ void MainWindow::showEvent(QShowEvent *event)
         return;
 
     m_checkedUpdates = true;
-    checkForUpdates();
+    if (!globals::isAutorun) /** daca autorun nu verificam versiunea noua */
+        checkForUpdates();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    // Dacă nu cerem confirmare → ieșim direct
+    /** Dacă nu cerem confirmare → ieșim direct */
     if (!globals::questionCloseApp) {
         saveSettings();
         event->accept();

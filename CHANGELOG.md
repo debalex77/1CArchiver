@@ -13,6 +13,78 @@ and this project follows Semantic Versioning.
 
 ---
 
+# Changelog
+
+## [1.7] – 2025-12-18
+
+---
+
+### 🇬🇧 English
+
+#### Added
+- General application description and improved informational texts.
+- Automatic check for new application versions.
+- Update notification dialog with version comparison and user-friendly interface.
+- Optional automatic removal of old backup archives based on retention period.
+- System tray notifications for backup start and completion.
+- Improved autorun mode with background execution and tray-only notifications.
+
+#### Improved
+- More reliable handling of system tray messages (fixed missing notifications on application exit).
+- Clearer and more consistent user messages in dialogs and tray notifications.
+- Improved application startup flow to avoid UI blocking.
+
+#### Fixed
+- Fixed issues where tray notifications were not displayed due to immediate application shutdown.
+- Fixed logic issues related to backup completion and background execution.
+- Minor UI and wording fixes across the application.
+
+---
+
+### 🇷🇴 Română
+
+#### Adăugat
+- Descriere generală a aplicației și texte informative îmbunătățite.
+- Verificare automată a existenței unei versiuni noi a aplicației.
+- Dialog de notificare pentru actualizare, cu comparare corectă a versiunilor.
+- Eliminare automată opțională a arhivelor vechi, pe baza numărului de zile configurat.
+- Notificări în System Tray pentru pornirea și finalizarea arhivării.
+- Mod autorun îmbunătățit, cu rulare în fundal și notificări exclusiv în tray.
+
+#### Îmbunătățit
+- Gestionare mai fiabilă a mesajelor din System Tray (remedierea cazurilor în care mesajele nu apăreau).
+- Mesaje mai clare și coerente în dialoguri și notificări.
+- Flux de pornire al aplicației optimizat, fără blocarea interfeței.
+
+#### Corectat
+- Corectarea problemei în care notificările tray nu erau afișate din cauza închiderii rapide a aplicației.
+- Corectarea logicii de finalizare a backup-ului în modul automat.
+- Corecții minore de interfață și formulare a mesajelor.
+
+---
+
+### 🇷🇺 Русский
+
+#### Добавлено
+- Общее описание приложения и улучшенные информационные тексты.
+- Автоматическая проверка наличия новой версии приложения.
+- Диалог уведомления об обновлении с корректным сравнением версий.
+- Опциональное автоматическое удаление старых архивов по заданному сроку хранения.
+- Уведомления в системном трее о начале и завершении архивирования.
+- Улучшенный режим автозапуска с работой в фоновом режиме и уведомлениями только через трей.
+
+#### Улучшено
+- Более надёжная обработка уведомлений системного трея (исправлены случаи, когда уведомления не отображались).
+- Более понятные и единообразные сообщения в диалогах и уведомлениях.
+- Оптимизирован процесс запуска приложения без блокировки интерфейса.
+
+#### Исправлено
+- Исправлена проблема, при которой уведомления в трее не отображались из-за слишком быстрого завершения приложения.
+- Исправлена логика завершения резервного копирования в автоматическом режиме.
+- Небольшие исправления интерфейса и текстов сообщений.
+
+---
+
 ## [1.6] - 2025-12-15
 
 ### 🇬🇧 English

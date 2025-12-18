@@ -51,6 +51,9 @@ UpdateDialog::UpdateDialog(const QString &version, QWidget *parent)
     m_btn = new QPushButton(tr("Instalează acum"));
     m_btn->setDefault(true);
 
+    m_btn->setMinimumWidth(100);
+    btnLater->setMinimumWidth(100);
+
     btnLay->addWidget(btnLater);
     btnLay->addWidget(m_btn);
 

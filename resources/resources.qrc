@@ -18,6 +18,7 @@
         <file>icons/dropbox_black.svg</file>
         <file>icons/dropbox_blue.svg</file>
         <file>icons/update.png</file>
+        <file>icons/about.png</file>
     </qresource>
     <qresource prefix="/">
         <file>styles/main_style.qss</file>

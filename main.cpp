@@ -26,18 +26,19 @@ int main(int argc, char *argv[])
         /** mesaj pu finalizarea arhivarii */
         QObject::connect(w, &MainWindow::allJobsFinished,
                          tray,
-                         [tray]() {
+                         [tray, &a]() {
+
+                             /** prezentam msg de finalizarea arhivarii - 15 secunde */
                              tray->showMessage(
                                  QObject::tr("Arhivare finalizată"),
                                  QObject::tr("Arhivarea bazelor de date 1C a fost finalizată cu succes."),
                                  QSystemTrayIcon::Information,
                                  15000
                                  );
-                         });
 
-        /** inchidem aplicaia */
-        QObject::connect(w, &MainWindow::allJobsFinished,
-                         &a, &QCoreApplication::quit);
+                             /** inchidem aplicaia peste 5 secunde */
+                             QTimer::singleShot(5000, &a, &QCoreApplication::quit);
+                         });
 
         /** Mesaj inițial in tray */
         tray->showMessage(
@@ -57,6 +58,7 @@ int main(int argc, char *argv[])
             ));
         msg.setStandardButtons(QMessageBox::Ok);
         msg.setWindowModality(Qt::ApplicationModal);
+        QTimer::singleShot(15000, &msg, &QMessageBox::accept); /** auto-close peste 15 secunde */
         msg.exec();
 
         /** lansam startBackup() dupa ce utilizatorul a vizualizat mesaje */
