@@ -4,7 +4,8 @@
 ![bit7z](https://img.shields.io/badge/bit7z-4.0.10-lightgrey)
 ![License](https://img.shields.io/github/license/debalex77/1CArchiver)
 [![GitHub stars](https://img.shields.io/github/stars/debalex77/1CArchiver)](https://github.com/debalex77/1CArchiver/stargazers)
-[![GitHub release](https://img.shields.io/github/v/release/debalex77/1CArchiver)](https://github.com/debalex77/1CArchiver/releases)
+![Latest Release](https://img.shields.io/github/v/release/debalex77/1CArchiver)
+![Downloads](https://img.shields.io/github/downloads/debalex77/1CArchiver/total?style=flat-square)
 
 ---
 
