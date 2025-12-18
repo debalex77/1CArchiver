@@ -3,9 +3,9 @@
 ![bit7z](https://img.shields.io/badge/bit7z-4.0.10-lightgrey)
 ![License](https://img.shields.io/github/license/debalex77/1CArchiver)
 ![Latest Release](https://img.shields.io/github/v/release/debalex77/1CArchiver)
-![Downloads](https://img.shields.io/github/downloads/debalex77/1CArchiver/total?style=flat-square)
+![Downloads](https://img.shields.io/github/downloads/debalex77/1CArchiver/total)
 ![Status](https://img.shields.io/badge/status-active-success)
-![Installer](https://img.shields.io/badge/installer-Inno%20Setup-orange)
+![Installer](https://img.shields.io/badge/installer-Inno%20Setup-lightblue)
 ![Security](https://img.shields.io/badge/encryption-AES--256-critical)
 
 ---
