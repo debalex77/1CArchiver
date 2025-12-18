@@ -14,7 +14,8 @@
 ---
 
 ## 📸 Screenshot
-<img width="898" height="676" alt="2025-12-07_17-48" src="https://github.com/user-attachments/assets/6703aba0-75bf-4e3b-94d0-f8c98fc1c141" />
+<img width="920" height="709" alt="2025-12-18_12-16" src="https://github.com/user-attachments/assets/4ed843b4-61dd-4a72-ae80-9fe754cb9d8a" />
+
 
 # 1CArchiver  
 ### Fast & Secure Backup Tool for 1C:Enterprise Databases  
