@@ -31,7 +31,7 @@ The project is built with:
 
 - **Qt 6.9.3 (MSVC 2022)**
 - **C++17**
-- **bit7z 4.0.10 (SevenZip SDK)**
+- **[bit7z](https://github.com/rikyoz/bit7z) 4.0.10 (SevenZip SDK)**
 - **Windows 64-bit support**
 
 ---
