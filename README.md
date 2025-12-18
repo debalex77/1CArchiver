@@ -96,7 +96,7 @@ qmake
 ./release/1CArchiver.exe
 ```
 
-----
+---
 
 ## 📦 Packaging & Installer
 
@@ -108,11 +108,15 @@ To create the installer:
 binarycreator --config config/config.xml --packages packages 1CArchiverInstaller.exe
 ```
 
+---
+
 ## 🔒 Security Notes
 
 - Password-protected archives use AES-256 encryption (7-Zip standard)
 - SHA-256 checksum files ensure archive integrity
 - No telemetry or external communication of user data
+
+---
 
 ## 📖 Documentation
 
