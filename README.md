@@ -114,3 +114,7 @@ binarycreator --config config/config.xml --packages packages 1CArchiverInstaller
 - SHA-256 checksum files ensure archive integrity
 - No telemetry or external communication of user data
 
+## 📖 Documentation
+
+- [User Manual (RU, PDF)](https://github.com/debalex77/1CArchiver/releases/latest)
+
