@@ -114,4 +114,8 @@ binarycreator --config config/config.xml --packages packages 1CArchiverInstaller
 - Файлы SHA-256 обеспечивают контроль целостности архива
 - Приложение не отправляет и не собирает пользовательские данные
 
+---
 
+## 📖 Документация
+
+- [Руководство пользователя (RU, PDF)](https://github.com/debalex77/1CArchiver/blob/master/docs/1CArchiver-User-Manual-RU.pdf)
