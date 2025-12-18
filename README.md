@@ -82,7 +82,7 @@ The project is built with:
 - Qt 6.9.3 (MSVC 2022)  
 - Visual Studio Build Tools 2022  
 - 7-Zip installed (for `7z.dll`)  
-- bit7z 4.0.10  
+- [bit7z 4.0.10](https://github.com/rikyoz/bit7z)  
 
 ---
 
