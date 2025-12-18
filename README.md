@@ -81,7 +81,7 @@ The project is built with:
 - Windows 10/11 64-bit  
 - Qt 6.9.3 (MSVC 2022)  
 - Visual Studio Build Tools 2022  
-- 7-Zip installed (for `7z.dll`)  
+- [7-Zip](https://www.7-zip.org/) installed (for `7z.dll`)  
 - [bit7z 4.0.10](https://github.com/rikyoz/bit7z)  
 
 ---
@@ -112,7 +112,7 @@ binarycreator --config config/config.xml --packages packages 1CArchiverInstaller
 
 ## 🔒 Security Notes
 
-- Password-protected archives use AES-256 encryption (7-Zip standard)
+- Password-protected archives use AES-256 encryption ([7-Zip](https://www.7-zip.org/) standard)
 - SHA-256 checksum files ensure archive integrity
 - No telemetry or external communication of user data
 
