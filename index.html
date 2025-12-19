@@ -3,33 +3,211 @@
 <head>
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="R5v8WOtd-sYLEHyfQ7DYG_5DCOyIwAl4toFetQ3nBfc" />
-    <title>1CArchiver – Arhivare baze 1C</title>
+
+    <title>1CArchiver – Arhivare automată baze 1C</title>
+
     <meta name="description"
-          content="1CArchiver este o aplicație pentru arhivarea automată a bazelor de date 1C:Enterprise, backup securizat și sincronizare Dropbox.">
+          content="1CArchiver este o aplicație desktop pentru arhivarea automată a bazelor de date 1C:Enterprise. Backup securizat, SHA-256, criptare AES și sincronizare Dropbox.">
+
+    <meta name="keywords"
+          content="1C, 1C Enterprise, backup 1C, arhivare baze 1C, 1C Archiver, 7-Zip, Dropbox backup">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #111827;
+            --text: #e5e7eb;
+            --muted: #9ca3af;
+            --accent: #3b82f6;
+            --accent2: #22c55e;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Arial, sans-serif;
+            background: linear-gradient(135deg, #020617, #020617 40%, #020617);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        header {
+            padding: 64px 20px;
+            text-align: center;
+            background: radial-gradient(circle at top, #1e293b, #020617);
+        }
+
+        header h1 {
+            font-size: 3rem;
+            margin: 0;
+            letter-spacing: 1px;
+        }
+
+        header p {
+            max-width: 700px;
+            margin: 16px auto 0;
+            color: var(--muted);
+            font-size: 1.1rem;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            padding: 40px 20px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background: linear-gradient(180deg, #020617, #020617);
+            border: 1px solid #1f2933;
+            border-radius: 14px;
+            padding: 24px;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            font-size: 1.2rem;
+        }
+
+        .card p {
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .cta {
+            text-align: center;
+            margin-top: 60px;
+        }
+
+        .cta a {
+            display: inline-block;
+            margin: 10px;
+            padding: 14px 28px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            color: #fff;
+            background: linear-gradient(135deg, var(--accent), #2563eb);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .cta a.secondary {
+            background: linear-gradient(135deg, var(--accent2), #16a34a);
+        }
+
+        .cta a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(59,130,246,0.35);
+        }
+
+        footer {
+            padding: 30px 20px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            border-top: 1px solid #1f2933;
+        }
+    </style>
 </head>
+
 <body>
 
-<h1>1CArchiver</h1>
-<p>
-Aplicație desktop pentru arhivarea automată a bazelor de date
-<b>1C:Enterprise</b>.
-</p>
+<header>
+    <h1>📦 1CArchiver</h1>
+    <p>
+        Aplicație desktop profesională pentru <b>arhivarea automată</b> a bazelor de date
+        <b>1C:Enterprise</b>. Siguranță, automatizare și control total.
+    </p>
+</header>
 
-<h2>Funcționalități</h2>
-<ul>
-    <li>📦 Arhivare automată baze 1C</li>
-    <li>🔐 Protecție cu parolă + AES</li>
-    <li>🧾 SHA-256 – verificare integritate</li>
-    <li>☁️ Sincronizare Dropbox</li>
-    <li>⏱️ Programare automată</li>
-</ul>
+<main class="container">
 
-<p>
-<a href="https://github.com/debalex77/1CArchiver">
-👉 Vezi proiectul pe GitHub
-</a>
-</p>
+    <section>
+        <h2>🚀 Funcționalități principale</h2>
+
+        <div class="features">
+            <div class="card">
+                <h3>📦 Arhivare automată</h3>
+                <p>
+                    Arhivarea completă a bazelor de date 1C folosind motor 7-Zip,
+                    cu suport pentru programare automată.
+                </p>
+            </div>
+
+            <div class="card">
+                <h3>🔐 Securitate avansată</h3>
+                <p>
+                    Protecție cu parolă, criptare AES și generare automată
+                    a sumelor de control SHA-256.
+                </p>
+            </div>
+
+            <div class="card">
+                <h3>☁️ Sincronizare Dropbox</h3>
+                <p>
+                    Încărcarea automată a arhivelor în Dropbox prin API oficial,
+                    fără stocarea parolelor.
+                </p>
+            </div>
+
+            <div class="card">
+                <h3>⏱️ Automatizare completă</h3>
+                <p>
+                    Integrare cu Task Scheduler, rulare în fundal și notificări
+                    în system tray.
+                </p>
+            </div>
+
+            <div class="card">
+                <h3>🧾 Verificare integritate</h3>
+                <p>
+                    Fiecare arhivă poate fi verificată împotriva modificărilor
+                    sau deteriorărilor accidentale.
+                </p>
+            </div>
+
+            <div class="card">
+                <h3>🖥️ Interfață clară</h3>
+                <p>
+                    Interfață intuitivă, meniu contextual și monitorizare vizuală
+                    a progresului operațiilor.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta">
+        <a href="https://github.com/debalex77/1CArchiver" target="_blank">
+            🔗 Vezi proiectul pe GitHub
+        </a>
+        <a class="secondary" href="https://github.com/debalex77/1CArchiver/releases" target="_blank">
+            ⬇️ Descarcă ultima versiune
+        </a>
+    </section>
+
+</main>
+
+<footer>
+    © 2025 1CArchiver · Licență MIT · Dezvoltat cu Qt / C++
+</footer>
 
 </body>
 </html>
+
