@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- Pagina principală (RO) -->
+  <url>
+    <loc>https://debalex77.github.io/1CArchiver/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Pagina rusă -->
+  <url>
+    <loc>https://debalex77.github.io/1CArchiver/ru/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- User Manual RO -->
+  <url>
+    <loc>https://github.com/debalex77/1CArchiver/blob/master/docs/1CArchiver-User-Manual-RO.pdf</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- User Manual RU -->
+  <url>
+    <loc>https://github.com/debalex77/1CArchiver/blob/master/docs/1CArchiver-User-Manual-RU.pdf</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+</urlset>
