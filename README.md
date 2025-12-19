@@ -122,5 +122,6 @@ binarycreator --config config/config.xml --packages packages 1CArchiverInstaller
 
 ## 📖 Documentation
 
+- [User Manual (RO, PDF)](https://github.com/debalex77/1CArchiver/blob/master/docs/1CArchiver-User-Manual-RO.pdf)<br>
 - [User Manual (RU, PDF)](https://github.com/debalex77/1CArchiver/blob/master/docs/1CArchiver-User-Manual-RU.pdf)
 
