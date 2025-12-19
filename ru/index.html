@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="google-site-verification" content="R5v8WOtd-sYLEHyfQ7DYG_5DCOyIwAl4toFetQ3nBfc" />
+
+    <title>1CArchiver — Архивация баз 1С</title>
+
+    <meta name="description"
+          content="1CArchiver — настольное приложение для автоматического архивирования баз данных 1С:Предприятие. Безопасное резервное копирование, SHA-256, AES и синхронизация с Dropbox.">
+
+    <meta name="keywords"
+          content="1C Archiver, 1С, 1С Предприятие, резервное копирование 1С, архивирование баз 1С, backup 1С, 7-Zip, Dropbox backup">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #111827;
+            --text: #e5e7eb;
+            --muted: #9ca3af;
+            --accent: #3b82f6;
+            --accent2: #22c55e;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Arial, sans-serif;
+            background: linear-gradient(135deg, #020617, #020617 40%, #020617);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        header {
+            padding: 64px 20px;
+            text-align: center;
+            background: radial-gradient(circle at top, #1e293b, #020617);
+        }
+
+        header h1 {
+            font-size: 3rem;
+            margin: 0;
+            letter-spacing: 1px;
+        }
+
+        header p {
+            max-width: 700px;
+            margin: 16px auto 0;
+            color: var(--muted);
+            font-size: 1.1rem;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            padding: 40px 20px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background: linear-gradient(180deg, #020617, #020617);
+            border: 1px solid #1f2933;
+            border-radius: 14px;
+            padding: 24px;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            font-size: 1.2rem;
+        }
+
+        .card p {
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .cta {
+            text-align: center;
+            margin-top: 60px;
+        }
+
+        .cta a {
+            display: inline-block;
+            margin: 10px;
+            padding: 14px 28px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            color: #fff;
+            background: linear-gradient(135deg, var(--accent), #2563eb);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .cta a.secondary {
+            background: linear-gradient(135deg, var(--accent2), #16a34a);
+        }
+
+        .cta a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(59,130,246,0.35);
+        }
+
+        .logo {
+            width: 56px;
+            height: 56px;
+            filter: drop-shadow(0 0 8px rgba(255,255,255,0.6))
+                    drop-shadow(0 0 16px rgba(59,130,246,0.6));
+        }
+
+        footer {
+            padding: 30px 20px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            border-top: 1px solid #1f2933;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1 class="title">
+        <img src="https://raw.githubusercontent.com/debalex77/1CArchiver/master/icons/backup.png"
+             alt="1CArchiver logo"
+             class="logo">
+        1CArchiver
+    </h1>
+    <p>
+      Профессиональное настольное приложение для
+      <b>автоматического архивирования</b> баз данных
+      <b>1С:Предприятие</b>. Надёжность, автоматизация и полный контроль.
+    </p>
+</header>
+
+<main class="container">
+
+    <section>
+        <h2>🚀 Основные возможности</h2>
+
+        <div class="features">
+            <div class="card">
+                <h3>📦 Автоматическое архивирование</h3>
+                <p>
+                  Полное архивирование баз данных 1С с использованием движка 7-Zip
+                  и поддержкой автоматического запуска.
+                </p>
+            </div>
+
+            <div class="card">
+                <h3>🔐 Повышенная безопасность</h3>
+                <p>
+                  Защита паролем, шифрование AES и автоматическое создание
+                  контрольных сумм SHA-256.
+                </p>
+            </div>
+
+            <div class="card">
+                <h3>☁️ Синхронизация с Dropbox</h3>
+                <p>
+                  Автоматическая загрузка архивов в Dropbox через официальный API
+                  с использованием механизма авторизации OAuth, без хранения паролей.
+                </p>
+            </div>
+
+            <div class="card">
+                <h3>⏱️ Полная автоматизация</h3>
+                <p>
+                  Интеграция с планировщиком задач, работа в фоновом режиме
+                  и уведомления в системном трее.
+                </p>
+            </div>
+
+            <div class="card">
+                <h3>🧾 Проверка целостности</h3>
+                <p>
+                  Каждая архивная копия может быть проверена для обнаружения
+                  изменений или случайных повреждений.
+                </p>
+            </div>
+
+            <div class="card">
+                <h3>🖥️ Удобный интерфейс</h3>
+                <p>
+                  Интуитивно понятный интерфейс, контекстное меню и визуальный
+                  контроль хода выполнения операций.
+                </p>
+            </div>
+        </div>
+    </section>
+    
+    <section class="cta">
+        <a href="https://github.com/debalex77/1CArchiver" target="_blank">
+            🔗 Посмотреть проект на GitHub
+        </a>
+        <a class="secondary" href="https://github.com/debalex77/1CArchiver/releases" target="_blank">
+            ⬇️ Скачать последнюю версию
+        </a>
+        <a class="secondary" href="https://github.com/debalex77/1CArchiver/blob/master/docs/1CArchiver-User-Manual-RU.pdf" target="_blank">
+            📄 Скачать руководство пользователя 
+        </a>
+    </section>
+
+</main>
+
+<footer>
+    © 2025 1CArchiver · Лицензия MIT · Разработана с Qt / C++
+</footer>
+
+</body>
+</html>
