@@ -1,10 +1,12 @@
-![platform](https://img.shields.io/badge/platform-Windows%20x64-blue)
-![qt](https://img.shields.io/badge/Qt-6.9.3-brightgreen)
-![cpp](https://img.shields.io/badge/C%2B%2B-17-orange)
+![Platform](https://img.shields.io/badge/platform-Windows%20x64-blue)
+![Qt](https://img.shields.io/badge/Qt-6.9.3-brightgreen)
 ![bit7z](https://img.shields.io/badge/bit7z-4.0.10-lightgrey)
 ![License](https://img.shields.io/github/license/debalex77/1CArchiver)
-[![GitHub stars](https://img.shields.io/github/stars/debalex77/1CArchiver)](https://github.com/debalex77/1CArchiver/stargazers)
-[![GitHub release](https://img.shields.io/github/v/release/debalex77/1CArchiver)](https://github.com/debalex77/1CArchiver/releases)
+![Latest Release](https://img.shields.io/github/v/release/debalex77/1CArchiver)
+![Downloads](https://img.shields.io/github/downloads/debalex77/1CArchiver/total)
+![Status](https://img.shields.io/badge/status-active-success)
+![Installer](https://img.shields.io/badge/installer-Inno%20Setup-lightblue)
+![Security](https://img.shields.io/badge/encryption-AES--256-critical)
 
 ---
 
