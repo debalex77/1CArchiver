@@ -130,6 +130,28 @@
             right: 15px;
             z-index: 1000;
         }
+        
+        /* link */
+        .lang-switch a {
+            color: #0066cc;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .lang-switch a:hover {
+            text-decoration: underline;
+        }
+        
+        /* dark mode */
+        @media (prefers-color-scheme: dark) {
+            .lang-switch a {
+                color: #7ab8ff;
+            }
+        
+            .lang-switch a:hover {
+                color: #a6d1ff;
+            }
+        }
 
         footer {
             padding: 30px 20px;
