@@ -124,12 +124,24 @@
                     drop-shadow(0 0 16px rgba(59,130,246,0.6));
         }
 
-        .lang-switch {
-            position: fixed;
-            color: #4da3ff;
-            top: 10px;
-            right: 15px;
-            z-index: 1000;
+        .lang-switch a {
+            color: #0066cc;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .lang-switch a:hover {
+            text-decoration: underline;
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            .lang-switch a {
+                color: #7ab8ff;
+            }
+        
+            .lang-switch a:hover {
+                color: #a6d1ff;
+            }
         }
 
         footer {
