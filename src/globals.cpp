@@ -25,4 +25,13 @@ namespace globals {
     bool deleteArchives = false; /** eliminarea arhivelor */
     int lastNrDay = -1;          /** arhive mai mari de 3 zile (exemplu) */
 
+    bool pl_mssql     = false; /** plugin mssql activat */
+    bool set_pl_mssql = false; /** plugin mssql setat */
+
+    bool pl_rsync     = false; /** plugin rsync activat */
+    bool set_pl_rsync = false; /** plugin rsync setat */
+
+    bool pl_onedrive     = false; /** plugin onedrive activat */
+    bool set_pl_onedrive = false; /** plugin onedrive setat */
+
 }

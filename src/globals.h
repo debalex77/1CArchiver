@@ -38,6 +38,15 @@ namespace globals {
 
     extern bool deleteArchives;
     extern int lastNrDay;
+
+    extern bool pl_mssql;
+    extern bool set_pl_mssql;
+
+    extern bool pl_rsync;
+    extern bool set_pl_rsync;
+
+    extern bool pl_onedrive;
+    extern bool set_pl_onedrive;
 }
 
 #

@@ -67,7 +67,13 @@ DISTFILES += \
     README_RU.md \
     app.manifest \
     app.rc \
+    assets/first_image.png \
+    assets/first_image_ru.png \
     build_script/build_win.bat \
+    build_script/build_win_old.bat \
+    docs/1CArchiver-User-Manual-RO.pdf \
+    docs/1CArchiver-User-Manual-RU.pdf \
+    index.html \
     installer/config/backup.png \
     installer/config/config.xml \
     installer/config/style.qss \
@@ -76,6 +82,8 @@ DISTFILES += \
     installer/packages/com.oxvalprim.archiver/meta/installscript.qs \
     installer/packages/com.oxvalprim.archiver/meta/license.txt \
     installer/packages/com.oxvalprim.archiver/meta/package.xml \
+    ru/index.html \
+    sitemap.xml \
     version.txt
 
 # IMPORTANT: Biblioteci Windows necesare pentru bit7z
@@ -88,10 +96,15 @@ else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/3rdparty/bit7z/lib/x64/
 INCLUDEPATH += $$PWD/3rdparty/bit7z/include
 DEPENDPATH += $$PWD/3rdparty/bit7z/include
 
-win32{
+win32 {
     QMAKE_PROJECT_DEPTH = 0
     RC_FILE = app.rc
     LIBS += -ladvapi32
+
+    DLL_SRC = $$shell_path($$PWD/3rdparty/bit7z/bin/7z.dll)
+    DLL_DST = $$shell_path($$OUT_PWD/release/7z.dll)
+
+    QMAKE_POST_LINK += cmd /c copy /Y "$$DLL_SRC" "$$DLL_DST"
 }
 
 

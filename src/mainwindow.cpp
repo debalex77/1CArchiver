@@ -29,15 +29,14 @@
 #include <QDirIterator>
 #include <QSettings>
 
-#ifdef Q_OS_WIN
-#include <windows.h>
-#include <dwmapi.h>
-
 #include <src/dropbox/connectordropbox.h>
 #include <src/dropbox/dropboxhealthchecker.h>
 #include <src/dropbox/dropboxoauth2_pkce.h>
-
 #include <src/scheduler/scheduledtaskdialog.h>
+
+#ifdef Q_OS_WIN
+#include <windows.h>
+#include <dwmapi.h>
 
 #pragma comment(lib, "dwmapi.lib")
 
@@ -93,7 +92,7 @@ MainWindow::MainWindow(QWidget *parent)
     topBar->setContentsMargins(0,0,0,0);
     topBar->setSpacing(10);
 
-    //--- about
+    /** --- about */
     btnAbout = new QToolButton(this);
     btnAbout->setToolTip(tr("Despre aplicația"));
     btnAbout->setIcon(QIcon(":/icons/icons/about.png"));
@@ -102,7 +101,7 @@ MainWindow::MainWindow(QWidget *parent)
         dlg.exec();
     });
 
-    //--- btn setari
+    /** --- btn setari */
     btnSettings = new QToolButton(this);
     btnSettings->setToolTip(tr("Setările aplicației"));
     btnSettings->setIcon(QIcon(":/icons/icons/settings.png"));
@@ -117,7 +116,7 @@ MainWindow::MainWindow(QWidget *parent)
         app_settings->show();
     });
 
-    //--- tema
+    /** --- tema */
     themeLabel = new QLabel(this);
     // themeLabel->setText(tr("Dark theme:"));
 
@@ -129,7 +128,7 @@ MainWindow::MainWindow(QWidget *parent)
         applyTheme();
     });
 
-    //--- limba
+    /** --- limba */
     lblLang = new QLabel(this);
     // lblLang->setText(tr("Limba RO:"));
     lblSwitch = new SwitchButton(this);
@@ -287,7 +286,7 @@ MainWindow::MainWindow(QWidget *parent)
     // ---------------------------------------------------------
     loadSettings();
 
-    // Verificam instalarea 7-zip
+    // Verificam prezenta 7z.dll
     // ---------------------------------------------------------
     check7ZipInstallation();
 
@@ -622,7 +621,8 @@ void MainWindow::autoDetectPaths1C()
     QString ibasesPath = QDir(QDir::homePath() + "/AppData/Roaming/1C/1CEStart")
     .filePath("ibases.v8i");
 
-    bases = IBASEParser::parse(ibasesPath);
+    QVector<IBASEEntry> bases =
+        QVector<IBASEEntry>::fromList(IBASEParser::parse(ibasesPath));
 
     if (bases.isEmpty()) {
         log(tr("Nu am găsit nicio bază în ibases.v8i."));
@@ -651,6 +651,18 @@ void MainWindow::autoDetectPaths1C()
     }
 }
 
+void MainWindow::saveLogToFile()
+{
+    QFile file(backupFolder + "/log_" + QDateTime::currentDateTime().toString("yyyy-MM-dd_HH.mm.ss") + ".log");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        return;
+
+    QTextStream out(&file);
+    out << logBox->toPlainText();
+
+    file.close();
+}
+
 void MainWindow::checkForUpdates()
 {
     auto *checker = new UpdateChecker(this);
@@ -670,28 +682,17 @@ void MainWindow::checkForUpdates()
 
 void MainWindow::check7ZipInstallation()
 {
-    QString exe = get7zPath();
+    QString dll = QCoreApplication::applicationDirPath() + "/7z.dll";
 
-    if (exe.isEmpty()) {
-        QMessageBox::critical(
-            this, tr("7-Zip lipsă"),
-            tr("Nu am găsit executabilul 7z.exe.\n"
-            "Instalează 7-Zip de pe https://www.7-zip.org/")
-            );
-        return;
-    }
-
-    QString dll = QFileInfo(exe).absolutePath() + "/7z.dll";
     if (!QFile::exists(dll)) {
         QMessageBox::critical(
-            this, tr("7-Zip DLL lipsă"),
-            tr("Am găsit 7z.exe dar nu și 7z.dll în același folder.\n"
-               "bit7z NU va putea comprima arhive fără această bibliotecă.")
+            this,
+            tr("Componentă 7z.dll"),
+            tr("7z.dll nu a fost găsit.\n"
+               "Reinstalează aplicația.")
             );
-        return;
+        qApp->quit();
     }
-
-    log(tr("Determinat 7-zip: ") + toWinPath(exe));
 }
 
 QStringList MainWindow::find1CDBaseFolders(const QString &rootDir)
@@ -753,6 +754,10 @@ void MainWindow::startNextJob()
         if (globals::deleteArchives) {
             cleanupOldArchives();
         }
+
+        // inscrim logul in fisier daca e "--autorun"
+        if (globals::isAutorun)
+            saveLogToFile();
 
         emit allJobsFinished(); // pu "--autorun" vezi in main.cpp
 
@@ -1247,6 +1252,22 @@ void MainWindow::loadSettings()
 void MainWindow::saveSettings()
 {
     QJsonObject obj;
+
+    // ----------------------------------------
+    // Salvam plugin-ri
+    // ----------------------------------------
+    QJsonArray arr_plugins;
+    QJsonObject obj_plugin;
+    obj_plugin["mssql"]    = globals::pl_mssql;
+    obj_plugin["rsync"]    = globals::pl_rsync;
+    obj_plugin["onedrive"] = globals::pl_onedrive;
+    arr_plugins.append(obj_plugin);
+
+    obj["plugins"] = arr_plugins;
+
+    // ----------------------------------------
+    // Salvam date generale
+    // ----------------------------------------
     obj["compression"]              = comboCompression->currentIndex();
     obj["backupFolder"]             = backupFolder;
     obj["currentLang"]              = currentLang;
@@ -1442,7 +1463,14 @@ void MainWindow::cleanupOldArchives()
         QDateTime::currentDateTime().addDays(-globals::lastNrDay);
 
     /** filtru pu fisiere */
-    const QStringList filters = { "*.7z", "*.zip", "*.sha256" };
+    const QStringList filters =
+    {
+        "*.7z",
+        "*.zip",
+        "*.sha256",
+        "*.log",
+        "*.txt"
+    };
 
     /** bucla pu depistarea fisierelor */
     for (const QFileInfo &fi :

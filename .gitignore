@@ -2,6 +2,8 @@
 # Qt / Qt Creator
 # ===============================
 build*/
+!build_script/
+!build_script/**
 *.pro.user
 *.pro.user.*
 *.qbs.user

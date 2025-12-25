@@ -23,7 +23,18 @@ CompressWorker::CompressWorker(QString input,
 
 void CompressWorker::process() {
     try {
-        Bit7zLibrary lib{"C:/Program Files/7-Zip/7z.dll" };
+
+        /*
+         * --- 1. Variant (relativ cu indicarea aplicatiei)
+         * QString dllPath = QCoreApplication::applicationDirPath() + "/7z.dll";
+         * bit7z::Bit7zLibrary lib{ dllPath.toStdWString() };
+         *
+         * --- 2. Variant (Indicarea nemijlocita unde e instalat 7-zip)
+         * Bit7zLibrary lib{"C:/Program Files/7-Zip/7z.dll" };
+         *
+         * --- 3. Variant (Windows gaseste automat)
+         */
+        bit7z::Bit7zLibrary lib;
         BitFileCompressor compressor{ lib, BitFormat::SevenZip };
 
         //--- setam parola

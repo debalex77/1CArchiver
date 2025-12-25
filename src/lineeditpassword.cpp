@@ -23,6 +23,9 @@
 
 #include "lineeditpassword.h"
 
+#include <QAction>
+#include <QIcon>
+
 LineEditPassword::LineEditPassword(QWidget *parent) : QLineEdit(parent)
 {
     action_hideShowPassword = this->addAction(QIcon(":/icons/icons/lock.png"), QLineEdit::ActionPosition::TrailingPosition);

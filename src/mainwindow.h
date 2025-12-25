@@ -70,6 +70,7 @@ private slots:
     void removeCurrentRow();
     void autoDetectPaths1C();
 
+    void saveLogToFile();
     void checkForUpdates();
 
 private:

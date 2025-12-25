@@ -31,6 +31,7 @@ copy "%BUILD_EXE%" "%PREBUILD_PATH%\1CArchiver.exe"
 "%WDEPLOY%" "%PREBUILD_PATH%\1CArchiver.exe"
 "%WDEPLOY%" --release "%PREBUILD_PATH%\1CArchiver.exe"
 
+copy "%PROJECT_PATH%\3rdparty\bit7z\bin\7z.dll" "%PREBUILD_PATH%\7z.dll" /Y
 copy "C:\Install\VC_redist.x64.exe" "%PREBUILD_PATH%\VC_redist.x64.exe" /Y
 
 goto skip_1

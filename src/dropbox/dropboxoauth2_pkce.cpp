@@ -30,11 +30,15 @@ QString DropboxOAuth2_PKCE::generateCodeVerifier()
     static const char chars[] =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
 
+    constexpr int charsCount = sizeof(chars) - 1;
+
     QString verifier;
     verifier.reserve(64);
 
-    for (int i = 0; i < 64; i++)
-        verifier.append(chars[QRandomGenerator::global()->bounded(sizeof(chars) - 1)]);
+    for (int i = 0; i < 64; ++i)
+        verifier.append(chars[
+            QRandomGenerator::global()->bounded(charsCount)
+        ]);
 
     return verifier;
 }
