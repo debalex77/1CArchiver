@@ -19,9 +19,11 @@
         <file>icons/dropbox_blue.svg</file>
         <file>icons/update.png</file>
         <file>icons/about.png</file>
+        <file>icons/plugin.png</file>
     </qresource>
     <qresource prefix="/">
         <file>styles/main_style.qss</file>
         <file>styles/dark_style.qss</file>
+        <file>plugins/mssql/config_mssql.json</file>
     </qresource>
 </RCC>

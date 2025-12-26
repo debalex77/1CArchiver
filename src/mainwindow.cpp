@@ -29,6 +29,8 @@
 #include <QDirIterator>
 #include <QSettings>
 
+#include <src/core/pluginactivator.h>
+#include <src/core/pluginmanager.h>
 #include <src/dropbox/connectordropbox.h>
 #include <src/dropbox/dropboxhealthchecker.h>
 #include <src/dropbox/dropboxoauth2_pkce.h>
@@ -101,6 +103,17 @@ MainWindow::MainWindow(QWidget *parent)
         dlg.exec();
     });
 
+    /** --- plugins */
+    // btnPlugins = new QToolButton(this);
+    // btnPlugins->setToolTip(tr("Activarea plugin-lor"));
+    // btnPlugins->setIcon(QIcon(":/icons/icons/plugin.png"));
+    // connect(btnPlugins, &QToolButton::clicked, this, [&]() {
+    //     PluginActivator *pl_activator = new PluginActivator(this);
+    //     connect(pl_activator, &PluginActivator::addedDatabaseMSSQL,
+    //             this, &MainWindow::onAddedDatabaseMSSQL);
+    //     pl_activator->exec();
+    // });
+
     /** --- btn setari */
     btnSettings = new QToolButton(this);
     btnSettings->setToolTip(tr("Setările aplicației"));
@@ -144,6 +157,7 @@ MainWindow::MainWindow(QWidget *parent)
     topBar->addWidget(themeLabel);
     topBar->addWidget(themeSwitch);
     topBar->addWidget(btnSettings);
+    // topBar->addWidget(btnPlugins);
     topBar->addWidget(btnAbout);
 
     // central widget
@@ -288,7 +302,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Verificam prezenta 7z.dll
     // ---------------------------------------------------------
+#ifndef QT_DEBUG
     check7ZipInstallation();
+#endif
 
     // Timer progres bazat pe dimensiunea arhivei
     // ---------------------------------------------------------
@@ -649,6 +665,69 @@ void MainWindow::autoDetectPaths1C()
         statusItem->setTextAlignment(Qt::AlignCenter);
         table->setItem(i, 3, statusItem);
     }
+}
+
+void MainWindow::onAddedDatabaseMSSQL(const QVariantMap &dbInfo)
+{
+    /** --- Valorile primite */
+    const QString typeDB  = dbInfo.value("typeDB").toString().trimmed();
+    const QString dbName  = dbInfo.value("database").toString().trimmed();
+    const QString server  = dbInfo.value("server").toString().trimmed();
+    const QString cfgPath = dbInfo.value("config").toString().trimmed();
+    const bool configured = dbInfo.value("configured").toBool();
+
+    if (dbName.isEmpty() || server.isEmpty())
+        return;
+
+    /** --- Evitam duplicarea (database + server) */
+    for (int r = 0; r < table->rowCount(); ++r) {
+        auto *itemDb  = table->item(r, 1);
+        auto *itemSrv = table->item(r, 2);
+        if (!itemDb || !itemSrv)
+            continue;
+
+        if (itemDb->text() == dbName &&
+            itemSrv->text() == server) {
+            table->selectRow(r); /** deja exista -> selectam randul și iesim */
+            return;
+        }
+    }
+
+    /** --- Adaugam rand nou */
+    const int row = table->rowCount();
+    table->insertRow(row);
+
+    /** --- Col 0: checkbox */
+    QWidget *cw = new QWidget(table);
+    auto *h     = new QHBoxLayout(cw);
+    auto *cb    = new QCheckBox(cw);
+    h->addWidget(cb);
+    h->setAlignment(Qt::AlignCenter);
+    h->setContentsMargins(0, 0, 0, 0);
+    cw->setLayout(h);
+    table->setCellWidget(row, 0, cw);
+
+    /** --- Col 1: Database */
+    auto *dbItem = new QTableWidgetItem(dbName);
+    table->setItem(row, 1, dbItem);
+
+    /** --- Col 2: Server */
+    auto *srvItem = new QTableWidgetItem(server);
+    table->setItem(row, 2, srvItem);
+
+    /** --- Col 3: Status */
+    auto *statusItem = new QTableWidgetItem(tr("Not configured"));
+    statusItem->setTextAlignment(Qt::AlignCenter);
+    statusItem->setForeground(Qt::darkYellow);
+    table->setItem(row, 3, statusItem);
+
+    /** --- Metadata interna (FOARTE IMPORTANT) */
+    dbItem->setData(Qt::UserRole,        typeDB);     /** typeDB -> "mssql" */
+    dbItem->setData(Qt::UserRole + 1,    configured); /** configured -> true or false */
+    dbItem->setData(Qt::UserRole + 2,    cfgPath);    /** path config JSON */
+
+    /** --- Selectam automat randul nou */
+    table->selectRow(row);
 }
 
 void MainWindow::saveLogToFile()
@@ -1099,17 +1178,29 @@ void MainWindow::loadSettings()
 {
     QFile f(settingsFilePath);
     if (!f.exists()) {
-        /** --- presupunem ca prima lansare */
 
+        /** --- presupunem ca prima lansare */
+        /** limba implicita a aplicatiei */
         globals::currentLang = "app_ru_RU";
         lblSwitch->setChecked(globals::currentLang == "app_ro_RO");
         switchLanguage(globals::currentLang);
+        retranslateUi();
 
+        /** tema implicita a aplicatiei */
         globals::isDark = false;
         themeSwitch->setChecked(globals::isDark);
         applyTheme();
 
+        /** compresia implicita */
         comboCompression->setCurrentIndex(5);
+
+        /** setam latimea sectiilor */
+        table->setColumnWidth(0, 62);
+        table->setColumnWidth(1, 168);
+        table->setColumnWidth(2, 488);
+
+        /** ascundem elementele status si progresbar Dropbox */
+        setPropertyVisible();
 
         return;
     }
@@ -1126,6 +1217,33 @@ void MainWindow::loadSettings()
         return;
 
     QJsonObject obj = doc.object();
+
+    PluginManager plugin_manager;
+    plugin_manager.load();
+
+    //--------------------------------------------------------------------------
+    // QMenu *menuDb = new QMenu(this);
+
+    // // acțiune de bază
+    // QAction *actOpenDir = menuDb->addAction(tr("Deschide director"));
+    // connect(actOpenDir, &QAction::triggered, this, &MyClass::openDir);
+
+    // // dacă pluginul MSSQL este activ → adăugăm submeniu
+    // if (globals::pl_mssql) {
+    //     QMenu *mssqlMenu = menuDb->addMenu(tr("MSSQL"));
+
+    //     QAction *actConnect = mssqlMenu->addAction(tr("Conectare"));
+    //     QAction *actSettings = mssqlMenu->addAction(tr("Setări"));
+
+    //     connect(btnWithDb, &QPushButton::clicked, this, [=]() {
+    //         menuDb->exec(btnWithDb->mapToGlobal(QPoint(0, btnWithDb->height())));
+    //     });
+
+        // connect(actConnect, &QAction::triggered, this, &MyClass::connectMssql);
+        // connect(actSettings, &QAction::triggered, this, &MyClass::mssqlSettings);
+    // }
+
+    //---------------------------------------------------------------------------
 
     if (obj.contains("currentLang")) {
         globals::currentLang = obj["currentLang"].toString();

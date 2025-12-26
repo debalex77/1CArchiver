@@ -1,13 +1,14 @@
 #include "appsettings.h"
+#include <src/dropbox/dropboxconnectdialog.h>
+
 #include <QHBoxLayout>
+#include <QMessageBox>
+#include <QPushButton>
 
 #ifdef Q_OS_WIN
 #include <windows.h>
 #include <dwmapi.h>
-#include <QMessageBox>
-#include <QPushButton>
 
-#include <src/dropbox/dropboxconnectdialog.h>
 #pragma comment(lib, "dwmapi.lib")
 
 static void enableDarkTitlebar(QWidget* w) {
@@ -70,13 +71,6 @@ AppSettings::AppSettings(QWidget *parent) : QDialog(parent)
                 }
                 emit onActivateDropbox();
             });
-
-    // connect(btn_syncGoogleDrive, &SwitchButton::toggled, this, [&](bool on) {
-    //     globals::syncGoogleDrive = on;
-    //     if (! globals::activate_syncGoogleDrive && on) {
-
-    //     }
-    // });
 
     connect(btn_deleteArchives, &SwitchButton::toggled, this, [&](bool on) {
         globals::deleteArchives = on;
@@ -431,7 +425,7 @@ void AppSettings::closeEvent(QCloseEvent *event)
         globals::archivePassword = "";
     }
 
-    if (btn_deleteArchives) {
+    if (btn_deleteArchives->isChecked()) {
         if (last_nr_day->text().isEmpty()) {
             QMessageBox msg(
                 QMessageBox::Question,

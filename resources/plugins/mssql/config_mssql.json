@@ -1,0 +1,48 @@
+{
+  "ui": {
+    "fields":
+    [
+      {
+        "id": "typeDB",
+        "type": "enum",
+        "values": ["mssql", "postgresql"],
+        "default": "mssql"
+      },
+      {
+        "id": "server",
+        "type": "string",
+        "label": "Adresa SQL Server",
+        "placeholder": "localhost\\SQLEXPRESS",
+        "required": true
+      },
+      {
+        "id": "database",
+        "type": "string",
+        "label": "Denumirea bazei de date",
+        "placeholder": "base_sql",
+        "required": true
+      },	  
+      {
+        "id": "auth",
+        "type": "enum",
+        "label": "Authentication",
+        "values": ["windows", "sql"],
+        "default": "sql"
+      },
+      {
+        "id": "user",
+        "type": "string",
+        "label": "User",
+        "placeholder": "sa",
+        "visible_if": { "auth": "sql" }
+      },
+      {
+        "id": "password",
+        "type": "password",
+        "label": "Parola",
+        "placeholder": "123456",
+        "required": true
+      }	  
+    ]
+  }
+}

@@ -11,6 +11,8 @@ SOURCES += \
     src/aboutdialog.cpp \
     src/appsettings.cpp \
     src/compressworker.cpp \
+    src/core/pluginactivator.cpp \
+    src/core/pluginmanager.cpp \
     src/dropbox/connectordropbox.cpp \
     src/dropbox/dropboxconnectdialog.cpp \
     src/dropbox/dropboxhealthchecker.cpp \
@@ -23,6 +25,8 @@ SOURCES += \
     src/scheduler/scheduledtaskdialog.cpp \
     src/switchbutton.cpp \
     src/thememanager.cpp \
+    src/ui/dynamicpluginform.cpp \
+    src/ui/pluginconfigdialog.cpp \
     src/updatechecker.cpp \
     src/updatedialog.cpp
 
@@ -30,6 +34,9 @@ HEADERS += \
     src/aboutdialog.h \
     src/appsettings.h \
     src/compressworker.h \
+    src/core/IBackupPlugin.h \
+    src/core/pluginactivator.h \
+    src/core/pluginmanager.h \
     src/dropbox/connectordropbox.h \
     src/dropbox/dropboxconnectdialog.h \
     src/dropbox/dropboxhealthchecker.h \
@@ -43,6 +50,8 @@ HEADERS += \
     src/scheduler/scheduledtaskdialog.h \
     src/switchbutton.h \
     src/thememanager.h \
+    src/ui/dynamicpluginform.h \
+    src/ui/pluginconfigdialog.h \
     src/updatechecker.h \
     src/updatedialog.h \
     src/utils.h \

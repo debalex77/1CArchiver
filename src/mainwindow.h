@@ -70,6 +70,8 @@ private slots:
     void removeCurrentRow();
     void autoDetectPaths1C();
 
+    void onAddedDatabaseMSSQL(const QVariantMap &dbInfo);
+
     void saveLogToFile();
     void checkForUpdates();
 
@@ -94,6 +96,7 @@ private:
     QPushButton *btnFolder       = nullptr;
     QPushButton *btnArchive      = nullptr;
     QPushButton *btnGenerateTask = nullptr;
+    // QToolButton *btnPlugins      = nullptr;
     QToolButton *btnSettings     = nullptr;
     QToolButton *btnAbout        = nullptr;
 
