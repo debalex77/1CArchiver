@@ -1,0 +1,4 @@
+This product includes 7-Zip (7z.dll).
+7-Zip Copyright (C) Igor Pavlov.
+Licensed under the GNU LGPL v2.1.
+https://www.7-zip.org/
