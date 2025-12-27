@@ -87,7 +87,6 @@ private:
         QLabel *statusLabel = nullptr;
         bool archiveWholeFolder;
     };
-
     /** UI */
     QTableWidget *table = nullptr;
 

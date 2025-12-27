@@ -82,6 +82,9 @@ MainWindow::MainWindow(QWidget *parent)
     m_lib(nullptr),
     m_compressor(nullptr)
 {
+    // Titlu aplicatiei
+    // ---------------------------------------------------------
+
     resize(920, 680);
     setWindowIcon(QIcon(":/icons/icons/backup.png"));
     setWindowTitle(tr("1CArchiver v%1 – Backup al bazelor de date 1C:Enterprise")
@@ -165,6 +168,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     QWidget *w = new QWidget(this);
     setCentralWidget(w);
+
     QVBoxLayout *v = new QVBoxLayout(w);
 
     v->addLayout(topBar);
@@ -330,10 +334,18 @@ MainWindow::MainWindow(QWidget *parent)
     footerLayout->setContentsMargins(0, 10, 0, 5);
     footerLayout->setAlignment(Qt::AlignCenter);
 
-    auto* infoOrganization = new QLabel(this);
-    infoOrganization->setStyleSheet("color: #888; font-size: 11px;");
-    infoOrganization->setText(QString(ORGANIZATION) + ", " + QString::number(QDate::currentDate().year()));
-    footerLayout->addWidget(infoOrganization);
+    auto* infoApp = new QLabel(this);
+    infoApp->setStyleSheet("color: #888; font-size: 11px;");
+
+    const int startYear = 2025;
+    const int currentYear = QDate::currentDate().year();
+
+    QString years = (currentYear == startYear)
+                        ? QString::number(startYear)
+                        : QString("%1–%2").arg(startYear).arg(currentYear);
+
+    infoApp->setText(QString("© %1 · 1carchiver.app@gmail.com").arg(years));
+    footerLayout->addWidget(infoApp);
 
     v->addLayout(footerLayout);
 
