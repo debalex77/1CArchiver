@@ -21,7 +21,7 @@ https://debalex77.github.io/1CArchiver/
 ---
 
 ## 📸 Screenshot
-<img width="920" height="709" alt="2025-12-18_12-16" src="https://github.com/user-attachments/assets/4ed843b4-61dd-4a72-ae80-9fe754cb9d8a" />
+<img width="920" height="709" alt="2025-12-18_12-16" src="assets/first_image.png" />
 
 
 # 1CArchiver  
