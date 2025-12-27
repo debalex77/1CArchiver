@@ -130,3 +130,18 @@ binarycreator --config config/config.xml --packages packages 1CArchiverInstaller
 - [User Manual (RO, PDF)](https://github.com/debalex77/1CArchiver/blob/master/docs/1CArchiver-User-Manual-RO.pdf)<br>
 - [User Manual (RU, PDF)](https://github.com/debalex77/1CArchiver/blob/master/docs/1CArchiver-User-Manual-RU.pdf)
 
+---
+
+## ⚖️ License
+
+This project is licensed under the **Mozilla Public License 2.0 (MPL-2.0)**.  
+See the [LICENSE](LICENSE) file for details.
+
+### Third-party licenses
+
+This project includes third-party components with their own licenses:
+
+- **7-Zip (7z.dll)**  
+  Licensed under the **GNU LGPL v2.1**  
+  See the [THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES.txt) file for details.
+
