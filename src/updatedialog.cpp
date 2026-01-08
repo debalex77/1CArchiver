@@ -71,9 +71,15 @@ void UpdateDialog::startDownload()
     m_progress->setVisible(true);
     m_btn->setEnabled(false);
 
+#if QT_VERSION_MAJOR < 6
+    const QString url =
+        QString("https://github.com/debalex77/1CArchiver/releases/download/v%1/1CArchiver_v%1_qt5_Windows7-11_amd64.exe")
+            .arg(m_version);
+#else
     const QString url =
         QString("https://github.com/debalex77/1CArchiver/releases/download/v%1/1CArchiver_v%1_Windows_amd64.exe")
             .arg(m_version);
+#endif
 
     m_reply = m_net.get(QNetworkRequest(QUrl(url)));
 
