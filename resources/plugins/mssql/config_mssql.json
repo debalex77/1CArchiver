@@ -5,20 +5,21 @@
       {
         "id": "typeDB",
         "type": "enum",
+        "label": "Type database",
         "values": ["mssql", "postgresql"],
         "default": "mssql"
       },
       {
         "id": "server",
         "type": "string",
-        "label": "Adresa SQL Server",
+        "label": "SQL Server address",
         "placeholder": "localhost\\SQLEXPRESS",
         "required": true
       },
       {
         "id": "database",
         "type": "string",
-        "label": "Denumirea bazei de date",
+        "label": "Name database",
         "placeholder": "base_sql",
         "required": true
       },	  
@@ -39,7 +40,7 @@
       {
         "id": "password",
         "type": "password",
-        "label": "Parola",
+        "label": "Password",
         "placeholder": "123456",
         "required": true
       }	  

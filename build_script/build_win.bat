@@ -15,7 +15,7 @@ set "BUILD_EXE=%BUILD_PATH%\Desktop_Qt_6_9_3_MSVC2022_64bit-Release\release\1CAr
 set "VERSION="
 for /f "delims=" %%i in (%PROJECT_PATH%\version.txt) do set "VERSION=%%i"
 
-set "PREBUILD_PATH=%BUILD_PATH%\1CArchiver_v%VERSION%"
+set "PREBUILD_PATH=%BUILD_PATH%\1CArchiver_v%VERSION%_qt6"
 
 ::------------------------------------------
 :: Ștergem și recreăm folderul de build

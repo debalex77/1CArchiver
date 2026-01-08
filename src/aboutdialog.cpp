@@ -13,7 +13,7 @@ AboutDialog::AboutDialog(QWidget *parent)
 {
     setWindowTitle(tr("Despre aplicație"));
     setModal(true);
-    resize(520, 320);
+    resize(520, 360);
 
     auto *mainLay = new QVBoxLayout(this);
     mainLay->setSpacing(12);
@@ -59,7 +59,10 @@ AboutDialog::AboutDialog(QWidget *parent)
            "<a href=\"https://github.com/debalex77/1CArchiver/blob/master/LICENSE\" "
            "style=\"color:#1E90FF; text-decoration:none;\">MIT</a>.<br>"
            "Utilizarea, modificarea și redistribuirea sunt permise "
-           "în conformitate cu termenii acestei licențe."));
+           "în conformitate cu termenii acestei licențe.<br>"
+           "Acest software folosește componente 7-Zip (7z.dll).<br>"
+           "7-Zip este licențiat sub GNU LGPL v2.1."
+           "https://www.7-zip.org/"));
 
     lblLicense->setTextFormat(Qt::RichText);
     lblLicense->setOpenExternalLinks(true);

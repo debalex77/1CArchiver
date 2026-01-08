@@ -1,12 +1,12 @@
-/*
+/*****************************************************************************
  * 1CArchiver is a Qt/C++ application designed for fast, reliable,
  * and automated backup of 1C:Enterprise file-based databases.
- * Copyright (c) 2024-2025 Codreanu Alexandru - All Rights Reserved.
+ * Copyright (c) 2024-2026 Codreanu Alexandru - All Rights Reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
+ *****************************************************************************/
 
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
@@ -36,6 +36,7 @@
 #include "ibaseentry.h"
 #include "switchbutton.h"
 #include "appsettings.h"
+#include "IBASEEntry.h"
 
 namespace bit7z {
     class Bit7zLibrary;
@@ -57,6 +58,7 @@ signals:
     void allJobsFinished();           // pu "--autorun" vezi in main.cpp
 
 private slots:
+    void onActivatePlugins(const QString &IdPlugin, const bool on);
     void onSelectAll();
     void onChooseDirWithDb();
     void onChooseBackupFolder();
@@ -75,12 +77,19 @@ private slots:
     void saveLogToFile();
     void checkForUpdates();
 
+    void onAddMssqlDb();
+    void onEditMssqlDb();
+    void onRemoveMssqlDb();
+
 private:
     struct BackupJob {
         int row;
         QString dbName;
         QString dbFolder;
+        QString typeDB;
         QString file1CD;
+        QString fileBak;
+        QString configPath;
         QString archivePath;
 
         QMovie *spinner = nullptr;
@@ -95,7 +104,7 @@ private:
     QPushButton *btnFolder       = nullptr;
     QPushButton *btnArchive      = nullptr;
     QPushButton *btnGenerateTask = nullptr;
-    // QToolButton *btnPlugins      = nullptr;
+    QToolButton *btnPlugins      = nullptr;
     QToolButton *btnSettings     = nullptr;
     QToolButton *btnAbout        = nullptr;
 
@@ -151,14 +160,21 @@ private:
 
     bool m_checkedUpdates = false;
 
+    QMenu *menuAddDb = nullptr;
+
 private:
     void check7ZipInstallation();
 
     QStringList find1CDBaseFolders(const QString& rootDir);
 
-    void log(const QString &msg);
+    Q_SLOT void log(const QString &msg);
 
     QString buildArchiveName(const QString &dbName) const;
+    QString buildArchiveNameMSSQL(const QString &dbName) const;
+
+    void proceedWithArchive(BackupJob &job);
+    void proceedWithArchiveMssql(BackupJob &job);
+
     void startNextJob();
     void updateRowStatusIcon(int row, bool ok);
     QString get7zPath() const;
@@ -180,6 +196,8 @@ private:
     void setDropboxAuthRequired();
 
     void cleanupOldArchives();
+
+    void createSubmenuMSSQL();
 
 protected:
     void showEvent(QShowEvent *event) override;

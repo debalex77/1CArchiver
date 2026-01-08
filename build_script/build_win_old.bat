@@ -15,7 +15,7 @@ set "BUILD_EXE=%BUILD_PATH%\Desktop_Qt_5_15_2_MSVC2019_64bit-Release\release\1CA
 set "VERSION="
 for /f "delims=" %%i in (%PROJECT_PATH%\version.txt) do set "VERSION=%%i"
 
-set "PREBUILD_PATH=%BUILD_PATH%\1CArchiver_qt5_v%VERSION%"
+set "PREBUILD_PATH=%BUILD_PATH%\1CArchiver_v%VERSION%_qt5"
 
 ::------------------------------------------
 :: Ștergem și recreăm folderul de build

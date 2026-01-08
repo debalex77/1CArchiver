@@ -9,11 +9,151 @@ and this project follows Semantic Versioning.
 
 ## [Unreleased]
 
-- Planned improvements and fixes.
+Planned improvements and fixes:
+  - uploading data using 1C tools
+  - archive synchronization via RSYNC
+  - synchronization of archives with the external OneDrive service
 
 ---
 
 # Changelog
+
+---
+
+## [1.8] – 2026-01-08
+
+### 🇬🇧 English
+
+#### New Features
+- Added **MSSQL backup support (Beta)**:
+  - Automatic creation of `.bak` files using `sqlcmd`
+  - Real-time backup progress via SQL Server system views
+  - Seamless integration into the existing backup pipeline
+- Implemented **dynamic plugin system**:
+  - Plugins can be enabled or disabled at runtime
+  - MSSQL plugin activation via dedicated Plugin Manager
+- Added **dynamic configuration UI from JSON schema**:
+  - MSSQL configuration forms are generated dynamically
+  - Supports validation, conditional fields, and presets
+- Unified backup workflow:
+  - MSSQL backups are converted internally to ONE_FILE jobs
+  - `.bak` -> `.7z` -> `.sha256` -> Dropbox (optional)
+  
+#### Security & Data Handling
+- Password fields are **encrypted before saving** in configuration files
+- Temporary MSSQL `.bak` files are **automatically removed** after successful archive creation
+
+#### UI / UX Improvements
+- Added **Plugin Manager dialog** with advanced-user warning
+- Context-aware menus for database addition:
+  - 1C File Database
+  - MSSQL Database
+- Clear visual indicators for:
+  - Configured / non-configured MSSQL databases
+  - MSSQL Beta status
+- Improved status messages and logs during MSSQL backup process
+
+#### Technical Improvements
+- Introduced `WorkerMSSQL` for MSSQL backup execution
+- Improved thread safety and lambda capture correctness
+- Fixed archive overwrite issues (`Wrong update mode`)
+- Improved path handling and cross-platform include portability
+- Refactored backup logic to reduce MainWindow complexity
+
+#### Notes
+- MSSQL support is currently **in beta testing**
+- Tested with Microsoft SQL Server **2012–2019**
+- Windows Authentication supported
+
+---
+
+### 🇷🇴 Română
+
+#### Funcționalități noi
+- Suport pentru **backup MSSQL (Beta)**:
+  - Crearea automată a fișierelor `.bak` folosind `sqlcmd`
+  - Afișarea progresului în timp real
+  - Integrare completă în fluxul existent de backup
+- Sistem de **pluginuri dinamice**:
+  - Activare / dezactivare pluginuri în timp real
+  - Gestionare prin Plugin Manager
+- Interfață de configurare **dinamică din fișiere JSON**:
+  - Formulare generate automat
+  - Validare câmpuri și afișare condițională
+- Flux unificat de backup:
+  - MSSQL -> `.bak` -> `.7z` -> `.sha256` -> Dropbox (opțional)
+
+#### Securitate și date
+- Câmpurile de tip parolă sunt **criptate** la salvare
+- Fișierele temporare `.bak` sunt **șterse automat** după arhivare reușită
+
+#### UI / UX
+- Dialog nou **Plugin Manager** cu mesaj de atenționare
+- Meniu contextual pentru adăugare baze de date:
+  - Bază 1C
+  - Bază MSSQL
+- Indicatori vizuali pentru:
+  - Configurare MSSQL validă / invalidă
+  - Funcționalitate MSSQL în beta
+- Mesaje de status și log îmbunătățite
+
+#### Îmbunătățiri tehnice
+- Introducerea clasei `WorkerMSSQL`
+- Corectarea capturilor lambda și gestionarea threadurilor
+- Eliminarea erorilor de suprascriere arhivă
+- Compatibilitate îmbunătățită cross-platform
+- Refactorizare logică de backup pentru claritate
+
+#### Note
+- Backup-ul MSSQL este **în stadiu de beta-testare**
+- Testat cu Microsoft SQL Server **2012–2019**
+- Suport pentru autentificare Windows
+
+---
+
+### 🇷🇺 Русский
+
+#### Новые возможности
+- Добавлена поддержка **резервного копирования MSSQL (Beta)**:
+  - Автоматическое создание файлов `.bak` через `sqlcmd`
+  - Отображение прогресса в реальном времени
+  - Полная интеграция в существующий процесс резервного копирования
+- Реализована **плагинная архитектура**:
+  - Включение и отключение плагинов во время работы
+  - Управление через Plugin Manager
+- **Динамический UI конфигурации из JSON**:
+  - Формы создаются автоматически
+  - Поддержка валидации и условных полей
+- Унифицированный процесс резервного копирования:
+  - MSSQL -> `.bak` -> `.7z` -> `.sha256` → Dropbox (опционально)
+
+#### Безопасность
+- Пароли **шифруются перед сохранением**
+- Временные `.bak` файлы **удаляются автоматически** после успешного архивирования
+
+#### Интерфейс
+- Добавлен диалог **Plugin Manager** с предупреждением
+- Контекстное меню добавления баз данных:
+  - 1C
+  - MSSQL
+- Визуальные индикаторы:
+  - Статус конфигурации MSSQL
+  - MSSQL в стадии beta
+- Улучшены сообщения состояния и логирование
+
+#### Технические улучшения
+- Добавлен класс `WorkerMSSQL`
+- Исправлены ошибки захвата lambda
+- Устранены проблемы обновления архивов
+- Улучшена переносимость путей и include-файлов
+- Оптимизирована архитектура MainWindow
+
+#### Примечания
+- Поддержка MSSQL находится **в стадии beta-тестирования**
+- Протестировано с Microsoft SQL Server **2012–2019**
+- Поддерживается Windows-аутентификация
+
+---
 
 ## [1.7] – 2025-12-18
 

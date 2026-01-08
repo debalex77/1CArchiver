@@ -1,5 +1,6 @@
 #include "pluginconfigdialog.h"
 #include "dynamicpluginform.h"
+#include "src/utils.h"
 
 #include <QVBoxLayout>
 #include <QPushButton>
@@ -24,10 +25,8 @@ PluginConfigDialog::PluginConfigDialog(const QString &pluginId,
     loadConfig();
 
     m_form = new DynamicPluginForm(m_schema, this);
-
-    // Preumple câmpurile din config existent
-    for (auto it = m_config.begin(); it != m_config.end(); ++it)
-        m_form->findChild<QWidget*>(it.key());
+    if (!m_config.isEmpty())
+        m_form->setValues(m_config.toVariantMap());
 
     auto *buttons = new QDialogButtonBox(
         QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
@@ -91,8 +90,15 @@ void PluginConfigDialog::saveConfig()
     QVariantMap values = m_form->values();
 
     QJsonObject obj = m_config;
-    for (auto it = values.begin(); it != values.end(); ++it)
-        obj[it.key()] = QJsonValue::fromVariant(it.value());
+    for (auto it = values.begin(); it != values.end(); ++it) {
+        if (it.key() == "password") {
+            const QString plain = it.value().toString();
+            if (!plain.isEmpty())
+                obj[it.key()] = encryptPassword(plain);
+        } else {
+            obj[it.key()] = QJsonValue::fromVariant(it.value());
+        }
+    }
 
     obj["configured"] = true;
 
@@ -118,8 +124,8 @@ void PluginConfigDialog::saveConfig()
 
     f.write(QJsonDocument(obj).toJson(QJsonDocument::Indented));
 
-    /** !!! dupa ce au fost salvate datele e necesar de emis signal cu transmiterea datelor
-      in tabela */
+    /** !!! dupa ce au fost salvate datele e necesar de emis signal
+     *  cu transmiterea datelor in tabela */
     QVariantMap dbInfo;
     dbInfo["typeDB"]     = obj.value("typeDB").toString();
     dbInfo["database"]   = obj.value("database").toString();

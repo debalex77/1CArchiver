@@ -1,4 +1,5 @@
-QT += core gui widgets network
+QT += core gui widgets network \
+    sql
 
 CONFIG += c++17
 CONFIG += debug_and_release
@@ -13,15 +14,16 @@ SOURCES += \
     src/compressworker.cpp \
     src/core/pluginactivator.cpp \
     src/core/pluginmanager.cpp \
+    src/core/workermssql.cpp \
     src/dropbox/connectordropbox.cpp \
     src/dropbox/dropboxconnectdialog.cpp \
     src/dropbox/dropboxhealthchecker.cpp \
     src/dropbox/dropboxoauth2_pkce.cpp \
     src/dropbox/dropboxuploader.cpp \
     src/globals.cpp \
+    src/ibaseparser.cpp \
     src/lineeditpassword.cpp \
     src/mainwindow.cpp \
-    src/ibaseparser.cpp \
     src/scheduler/scheduledtaskdialog.cpp \
     src/switchbutton.cpp \
     src/thememanager.cpp \
@@ -31,22 +33,22 @@ SOURCES += \
     src/updatedialog.cpp
 
 HEADERS += \
+    src/IBASEEntry.h \
     src/aboutdialog.h \
     src/appsettings.h \
     src/compressworker.h \
-    src/core/IBackupPlugin.h \
     src/core/pluginactivator.h \
     src/core/pluginmanager.h \
+    src/core/workermssql.h \
     src/dropbox/connectordropbox.h \
     src/dropbox/dropboxconnectdialog.h \
     src/dropbox/dropboxhealthchecker.h \
     src/dropbox/dropboxoauth2_pkce.h \
     src/dropbox/dropboxuploader.h \
     src/globals.h \
+    src/ibaseparser.h \
     src/lineeditpassword.h \
     src/mainwindow.h \
-    src/ibaseparser.h \
-    src/IBASEEntry.h \
     src/scheduler/scheduledtaskdialog.h \
     src/switchbutton.h \
     src/thememanager.h \
@@ -91,6 +93,7 @@ DISTFILES += \
     installer/packages/com.oxvalprim.archiver/meta/installscript.qs \
     installer/packages/com.oxvalprim.archiver/meta/license.txt \
     installer/packages/com.oxvalprim.archiver/meta/package.xml \
+    plugins/backup_mssql/plugin_mssql.json \
     ru/index.html \
     sitemap.xml \
     version.txt

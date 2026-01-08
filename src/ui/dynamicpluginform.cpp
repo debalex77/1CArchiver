@@ -7,6 +7,7 @@
 #include <QLineEdit>
 
 #include <src/lineeditpassword.h>
+#include <src/utils.h>
 
 DynamicPluginForm::DynamicPluginForm(const QJsonObject &schema, QWidget *parent)
     : QWidget(parent),
@@ -49,6 +50,35 @@ QVariantMap DynamicPluginForm::values() const
         map[it.key()] = fieldValue(it.key());
 
     return map;
+}
+
+void DynamicPluginForm::setValues(const QVariantMap &values)
+{
+    for (auto it = values.begin(); it != values.end(); ++it) {
+
+        const QString &key  = it.key();
+        const QVariant &val = it.value();
+
+        QWidget *w = m_fields.value(key, nullptr);
+        if (!w)
+            continue;
+
+        if (auto *le = qobject_cast<QLineEdit*>(w)) {
+            if (key == "password") {
+                le->setText(decryptPassword(val.toString()));
+            } else {
+                le->setText(val.toString());
+            }
+        }
+        else if (auto *cb = qobject_cast<QComboBox*>(w)) {
+            cb->setCurrentText(val.toString());
+        }
+        else if (auto *chk = qobject_cast<QCheckBox*>(w)) {
+            chk->setChecked(val.toBool());
+        }
+    }
+
+    updateVisibility();
 }
 
 void DynamicPluginForm::updateVisibility()

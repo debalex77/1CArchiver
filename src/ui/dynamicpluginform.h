@@ -1,12 +1,12 @@
-/*
+/*****************************************************************************
  * 1CArchiver is a Qt/C++ application designed for fast, reliable,
  * and automated backup of 1C:Enterprise file-based databases.
- * Copyright (c) 2024-2025 Codreanu Alexandru - All Rights Reserved.
+ * Copyright (c) 2024-2026 Codreanu Alexandru - All Rights Reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
+ *****************************************************************************/
 
 #ifndef DYNAMICPLUGINFORM_H
 #define DYNAMICPLUGINFORM_H
@@ -33,9 +33,10 @@ public:
 
     bool validate(QString *errorMessage = nullptr) const; /** verificam daca tot e completat */
     QVariantMap values() const;                           /** valorile introduse de utilizator */
+    void setValues(const QVariantMap &values);            /** setam valorile din QVariantMap */
 
 private slots:
-    void updateVisibility(); /** actualiyam vizibilitatea câmpurilor (visible_if) */
+    void updateVisibility(); /** actualizam vizibilitatea campurilor (visible_if) */
 
 private:
     void buildForm();

@@ -66,10 +66,13 @@ void CompressWorker::process() {
         }
 
         emit backupCreated(m_output);
-        emit finished(true, m_output);
+        emit finished(true, m_output, QString());
 
     } catch (const BitException& ex) {
-        emit error(QString::fromStdString(ex.what()));
-        emit finished(false, m_output);
+        // emit error(QString::fromStdString(ex.what()));
+        // emit finished(false, m_output);
+        const QString msg = QString::fromStdString(ex.what());
+        emit error(msg);
+        emit finished(false, m_output, msg);
     }
 }

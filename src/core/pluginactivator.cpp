@@ -46,6 +46,49 @@ void PluginActivator::setupUI()
     QVBoxLayout *v = new QVBoxLayout(this);
 
     //-------------------------------------------------
+    // --- INFO atentie utilizatori
+    //-------------------------------------------------
+    auto *layout_info = new QHBoxLayout;
+    layout_info->setContentsMargins(10,10,10,10);
+    layout_info->setSpacing(10);
+
+    lblInfo = new QLabel(
+        tr("⚠ Pluginurile opționale sunt destinate utilizatorilor avansați.\n"
+           "Activarea acestora poate modifica comportamentul aplicației.\n"
+           "Activați doar pluginurile pe care le înțelegeți și le utilizați."),
+        this);
+
+    lblInfo->setWordWrap(true);
+    lblInfo->setAlignment(Qt::AlignCenter | Qt::AlignVCenter);
+    lblInfo->setStyleSheet(
+        globals::isDark
+            ? "QLabel {"
+              "background-color: #3a2f1a;"
+              "border: 1px solid #6b5b2a;"
+              "color: #f5e6b3;"
+              "padding: 8px;"
+              "border-radius: 4px;"
+              "}"
+            : "QLabel {"
+              "background: #fff3cd;"
+              "border: 1px solid #ffeeba;"
+              "color: #664d03;"
+              "padding: 8px;"
+              "border-radius: 4px;"
+              "}"
+        );
+
+    layout_info->addWidget(lblInfo);
+
+    QFrame* line_info = new QFrame(this);
+    line_info->setFrameShape(QFrame::HLine);
+    line_info->setFrameShadow(QFrame::Plain);
+    line_info->setFixedHeight(1);
+
+    v->addLayout(layout_info);
+    v->addWidget(line_info);
+
+    //-------------------------------------------------
     // --- MSSQL
     //-------------------------------------------------
 
@@ -62,7 +105,11 @@ void PluginActivator::setupUI()
 
     desc_mssql = new QLabel(this);
     desc_mssql->setStyleSheet("font-size: 11px;");
-    desc_mssql->setText(tr("Activarea pluginului pentru baze de date MSSQL"));
+    desc_mssql->setText(
+        tr("Activarea pluginului pentru baze de date<br>"
+           "Microsoft SQL Server (compatibil cu versiunile 2012<br>"
+           "și mai noi).")
+        );
 
     btnConfigMSSQL = new QPushButton(this);
     btnConfigMSSQL->setText(tr("Add database"));
@@ -186,6 +233,9 @@ void PluginActivator::updateUI()
 void PluginActivator::onClickMSSQL(bool on)
 {
     globals::pl_mssql = on;
+
+    emit activatePlugin("mssql", on);
+
     if (on)
         checkPluginMSSQL();
     updateUI();
@@ -213,18 +263,14 @@ void PluginActivator::onClickConfigMSSQL()
         = new PluginConfigDialog("mssql",
                                  QString(),
                                  this);
-    connect(config_dlg_mssql, &PluginConfigDialog::onAddedDatabase, this, &PluginActivator::addedDatabaseMSSQL);
+    connect(config_dlg_mssql, &PluginConfigDialog::onAddedDatabase,
+            this, &PluginActivator::addedDatabaseMSSQL, Qt::UniqueConnection);
     config_dlg_mssql->exec();
 }
 
 void PluginActivator::checkPluginMSSQL()
 {
-    // QFile file(QCoreApplication::applicationDirPath() + "/plugins/plugin_mssql.dll");
-    // if (!file.exists())
-    //     status_mssql->setText(tr("Biblioteca plugin-lui MSSQL nu este incărcată"));
-    // else
-    //     status_mssql->setText(tr("Biblioteca plugin-lui MSSQL este determinat"));
-    status_mssql->setText(tr("Se află în procesul de dezvoltare !!!"));
+    status_mssql->setText(tr("Funcționalitate în stadiu de beta-testare."));
 }
 
 void PluginActivator::checkPluginRsync()
