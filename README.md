@@ -7,6 +7,7 @@
 ![Status](https://img.shields.io/badge/status-active-success)
 ![Installer](https://img.shields.io/badge/installer-Inno%20Setup-lightblue)
 ![Security](https://img.shields.io/badge/encryption-AES--256-critical)
+[![Sponsor](https://img.shields.io/badge/Sponsor-GitHub-ea4aaa?logo=github)](https://github.com/sponsors/debalex77)
 
 ---
 
@@ -144,4 +145,17 @@ This project includes third-party components with their own licenses:
 - **7-Zip (7z.dll)**  
   Licensed under the **GNU LGPL v2.1**  
   See the [THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES.txt) file for details.
+
+---
+
+## ❤️ Support
+
+If this project helps you archive or maintain 1C databases,
+consider supporting its development via
+[GitHub Sponsors](https://github.com/sponsors/debalex77).
+
+Your support helps with:
+- maintenance & bug fixing
+- new features
+- long-term sustainability
 
