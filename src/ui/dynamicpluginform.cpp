@@ -2,12 +2,9 @@
 
 #include <QCheckBox>
 #include <QComboBox>
-#include <QDateEdit>
 #include <QFormLayout>
 #include <QJsonArray>
-#include <QLabel>
 #include <QLineEdit>
-#include <QSpinBox>
 
 #include <src/lineeditpassword.h>
 #include <src/utils.h>
@@ -17,7 +14,7 @@ DynamicPluginForm::DynamicPluginForm(const QJsonObject &schema, QWidget *parent)
       m_schema(schema)
 {
     buildForm();
-    updateVisibility(); /** functioneaza si inainte de show() -> se bazeaza pe isHidden() */
+    updateVisibility();
 }
 
 bool DynamicPluginForm::validate(QString *errorMessage) const
@@ -31,7 +28,7 @@ bool DynamicPluginForm::validate(QString *errorMessage) const
             continue;
 
         QWidget *w = m_fields.value(id);
-        if (!w || w->isHidden())
+        if (!w->isVisible())
             continue;
 
         QVariant val = fieldValue(id);
@@ -80,139 +77,33 @@ void DynamicPluginForm::setValues(const QVariantMap &values)
             chk->setChecked(val.toBool());
         }
     }
+
     updateVisibility();
-}
-
-void DynamicPluginForm::setValue(const QString &key, const QVariant &value)
-{
-    if (!m_fields.contains(key))
-        return;
-
-    QWidget *w = m_fields.value(key);
-    if (!w)
-        return;
-
-    // QLineEdit / Password
-    if (auto *le = qobject_cast<QLineEdit*>(w)) {
-        le->setText(value.toString());
-        return;
-    }
-
-    // QComboBox (enum)
-    if (auto *cb = qobject_cast<QComboBox*>(w)) {
-        int idx = cb->findText(value.toString());
-        if (idx >= 0)
-            cb->setCurrentIndex(idx);
-        return;
-    }
-
-    // QCheckBox
-    if (auto *ch = qobject_cast<QCheckBox*>(w)) {
-        ch->setChecked(value.toBool());
-        return;
-    }
-
-    // QSpinBox
-    if (auto *sb = qobject_cast<QSpinBox*>(w)) {
-        sb->setValue(value.toInt());
-        return;
-    }
-
-    // QDoubleSpinBox
-    if (auto *dsb = qobject_cast<QDoubleSpinBox*>(w)) {
-        dsb->setValue(value.toDouble());
-        return;
-    }
-
-    // QDateEdit
-    if (auto *de = qobject_cast<QDateEdit*>(w)) {
-        if (value.canConvert<QDate>())
-            de->setDate(value.toDate());
-        return;
-    }
-
-    // QTimeEdit
-    if (auto *te = qobject_cast<QTimeEdit*>(w)) {
-        if (value.canConvert<QTime>())
-            te->setTime(value.toTime());
-        return;
-    }
-
-    // QDateTimeEdit
-    if (auto *dte = qobject_cast<QDateTimeEdit*>(w)) {
-        if (value.canConvert<QDateTime>())
-            dte->setDateTime(value.toDateTime());
-        return;
-    }
-
-    // fallback – nimic de setat
 }
 
 void DynamicPluginForm::updateVisibility()
 {
-    auto *form = qobject_cast<QFormLayout*>(layout());
-    if (!form)
-        return;
-
-    bool anyChanged = false;
-
     for (auto it = m_fieldDefs.begin(); it != m_fieldDefs.end(); ++it) {
-        const QString &id = it.key();
-        const QJsonObject &def = it.value();
+        QString id = it.key();
+        QJsonObject def = it.value();
 
+        if (!def.contains("visible_if")) {
+            m_fields[id]->setVisible(true);
+            continue;
+        }
+
+        QJsonObject cond = def.value("visible_if").toObject();
         bool visible = true;
 
-        if (def.contains("visible_if")) {
-            QJsonObject cond = def["visible_if"].toObject();
-
-            for (auto c = cond.begin(); c != cond.end(); ++c) {
-                QVariant actual   = fieldValue(c.key());
-                QVariant expected = c.value().toVariant();
-
-                /** valoare inexistenta -> nu blocheaza */
-                if (!actual.isValid())
-                    continue;
-
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-                const int expType = expected.typeId();
-#else
-                const int expType = expected.type();
-#endif
-                if (expType == QMetaType::Bool) {
-                    if (actual.toBool() != expected.toBool()) {
-                        visible = false;
-                        break;
-                    }
-                } else {
-                    if (actual.toString() != expected.toString()) {
-                        visible = false;
-                        break;
-                    }
-                }
+        for (auto c = cond.begin(); c != cond.end(); ++c) {
+            QVariant actual = fieldValue(c.key());
+            if (actual.toString() != c.value().toString()) {
+                visible = false;
+                break;
             }
         }
 
-        QWidget *editor = m_fields.value(id);
-        if (!editor)
-            continue;
-
-        /** isHidden() reflecta starea explicita a widget-ului,
-         *  isVisible() ar fi false cat timp dialogul nu e afisat */
-        if (editor->isHidden() == visible) {
-            editor->setVisible(visible);
-
-            QWidget *labelWidget = form->labelForField(editor);
-            if (labelWidget)
-                labelWidget->setVisible(visible);
-
-            anyChanged = true;
-        }
-    }
-
-    if (anyChanged) {
-        layout()->invalidate();
-        layout()->activate();
-        emit sizeChanged();   /** QDialog va face adjustSize() */
+        m_fields[id]->setVisible(visible);
     }
 }
 
@@ -287,9 +178,8 @@ QWidget *DynamicPluginForm::createField(const QJsonObject &field)
         return cb;
     }
 
-    if (type == "bool" || type == "checkbox") {
+    if (type == "bool") {
         auto *chk = new QCheckBox(this);
-        chk->setChecked(field.value("default").toBool(false));
         return chk;
     }
 

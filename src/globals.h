@@ -39,7 +39,6 @@ namespace globals {
     extern bool deleteArchives;
     extern int lastNrDay;
 
-    extern bool pl_export1c;
     extern bool pl_mssql;
     extern bool set_pl_mssql;
 

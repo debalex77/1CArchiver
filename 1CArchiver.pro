@@ -14,7 +14,6 @@ SOURCES += \
     src/compressworker.cpp \
     src/core/pluginactivator.cpp \
     src/core/pluginmanager.cpp \
-    src/core/workerexport1c.cpp \
     src/core/workermssql.cpp \
     src/dropbox/connectordropbox.cpp \
     src/dropbox/dropboxconnectdialog.cpp \
@@ -31,18 +30,15 @@ SOURCES += \
     src/ui/dynamicpluginform.cpp \
     src/ui/pluginconfigdialog.cpp \
     src/updatechecker.cpp \
-    src/updatedialog.cpp \
-    src/utils.cpp
+    src/updatedialog.cpp
 
 HEADERS += \
     src/IBASEEntry.h \
     src/aboutdialog.h \
     src/appsettings.h \
-    src/common/defaultoperations.h \
     src/compressworker.h \
     src/core/pluginactivator.h \
     src/core/pluginmanager.h \
-    src/core/workerexport1c.h \
     src/core/workermssql.h \
     src/dropbox/connectordropbox.h \
     src/dropbox/dropboxconnectdialog.h \
@@ -51,7 +47,6 @@ HEADERS += \
     src/dropbox/dropboxuploader.h \
     src/globals.h \
     src/ibaseparser.h \
-    src/common/itemroles.h \
     src/lineeditpassword.h \
     src/mainwindow.h \
     src/scheduler/scheduledtaskdialog.h \
@@ -76,7 +71,6 @@ TRANSLATIONS += \
 #lrelease resources/translations/1CArchiver_app_ru_RU.ts -qm resources/translations/1CArchiver_app_ru_RU.qm
 
 DISTFILES += \
-    .github/workflows/build.yml \
     CHANGELOG.md \
     LICENSE \
     PRIVACY.md \
@@ -105,7 +99,7 @@ DISTFILES += \
     version.txt
 
 # IMPORTANT: Biblioteci Windows necesare pentru bit7z
-LIBS += -loleaut32 -lole32 -luuid -luser32
+LIBS += -loleaut32 -lole32 -luuid
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/3rdparty/bit7z/lib/x64/release/ -lbit7z
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/3rdparty/bit7z/lib/x64/debug/ -lbit7z
@@ -117,11 +111,10 @@ DEPENDPATH += $$PWD/3rdparty/bit7z/include
 win32 {
     QMAKE_PROJECT_DEPTH = 0
     RC_FILE = app.rc
-    LIBS += -ladvapi32 -lcrypt32
+    LIBS += -ladvapi32
 
     DLL_SRC = $$shell_path($$PWD/3rdparty/bit7z/bin/7z.dll)
-    CONFIG(debug, debug|release): DLL_DST = $$shell_path($$OUT_PWD/debug/7z.dll)
-    else:                         DLL_DST = $$shell_path($$OUT_PWD/release/7z.dll)
+    DLL_DST = $$shell_path($$OUT_PWD/release/7z.dll)
 
     QMAKE_POST_LINK += cmd /c copy /Y "$$DLL_SRC" "$$DLL_DST"
 }

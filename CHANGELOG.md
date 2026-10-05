@@ -10,92 +10,13 @@ and this project follows Semantic Versioning.
 ## [Unreleased]
 
 Planned improvements and fixes:
+  - uploading data using 1C tools
   - archive synchronization via RSYNC
   - synchronization of archives with the external OneDrive service
 
 ---
 
 # Changelog
-
----
-
-## [1.9] – 2026-10-05
-
-### 🇬🇧 English
-
-#### New Features
-- Added **Export 1C plugin**:
-  - Full infobase dump (`.dt`) via `1cv8.exe DESIGNER /DumpIB`
-  - File (`/F`) and client-server (`/S`) infobases
-  - Per-database or global configuration (`%APPDATA%/plugins/export_1c/`)
-  - `.dt` -> `.7z` -> `.sha256` -> Dropbox (optional)
-  - Falls back to archiving the `.1CD` file when the plugin is disabled or not configured
-
-#### Security & Data Handling
-- Saved passwords are encrypted with **Windows DPAPI** instead of the previous fixed-key encryption
-- Passwords saved by older versions are still read correctly
-- Temporary `.dt` files are **automatically removed** after successful archive creation
-
-#### Technical Improvements
-- Fixed the order of completion events after archive creation (Dropbox upload and notifications could start too early)
-- `7z.dll` is copied into the output folder for Debug builds
-- Updated **bit7z to v4.1.0** (MSVC 2022)
-- Installers and portable packages for Qt5 and Qt6 are built by **GitHub Actions**
-
-#### Notes
-- With DPAPI, saved passwords are bound to the **Windows user and computer**; after moving the configuration to another PC or account, passwords must be re-entered
-
----
-
-### 🇷🇴 Română
-
-#### Funcționalități noi
-- Plugin nou **Export 1C**:
-  - Descărcarea completă a bazei (`.dt`) prin `1cv8.exe DESIGNER /DumpIB`
-  - Baze de tip fișier (`/F`) și client-server (`/S`)
-  - Configurare per bază sau globală (`%APPDATA%/plugins/export_1c/`)
-  - `.dt` -> `.7z` -> `.sha256` -> Dropbox (opțional)
-  - Dacă pluginul e dezactivat sau neconfigurat, se arhivează fișierul `.1CD` ca înainte
-
-#### Securitate și date
-- Parolele salvate sunt criptate cu **Windows DPAPI** în locul criptării anterioare cu cheie fixă
-- Parolele salvate de versiunile vechi sunt citite în continuare corect
-- Fișierele temporare `.dt` sunt **șterse automat** după arhivare reușită
-
-#### Îmbunătățiri tehnice
-- Corectată ordinea evenimentelor de finalizare după crearea arhivei (încărcarea în Dropbox și notificările puteau porni prea devreme)
-- `7z.dll` se copiază în folderul de ieșire și pentru build-urile Debug
-- **bit7z actualizat la v4.1.0** (MSVC 2022)
-- Installerele și pachetele portabile Qt5 și Qt6 sunt construite de **GitHub Actions**
-
-#### Note
-- Cu DPAPI, parolele salvate sunt legate de **utilizatorul Windows și de calculator**; după mutarea configurației pe alt PC sau alt cont, parolele trebuie introduse din nou
-
----
-
-### 🇷🇺 Русский
-
-#### Новые возможности
-- Добавлен плагин **Выгрузка 1С**:
-  - Полная выгрузка информационной базы (`.dt`) через `1cv8.exe DESIGNER /DumpIB`
-  - Файловые (`/F`) и клиент-серверные (`/S`) базы
-  - Настройка для отдельной базы или общая (`%APPDATA%/plugins/export_1c/`)
-  - `.dt` -> `.7z` -> `.sha256` -> Dropbox (опционально)
-  - Если плагин отключён или не настроен, архивируется файл `.1CD`, как раньше
-
-#### Безопасность
-- Сохранённые пароли шифруются с помощью **Windows DPAPI** вместо прежнего шифрования с фиксированным ключом
-- Пароли, сохранённые предыдущими версиями, по-прежнему читаются корректно
-- Временные `.dt` файлы **удаляются автоматически** после успешного архивирования
-
-#### Технические улучшения
-- Исправлен порядок событий завершения после создания архива (загрузка в Dropbox и уведомления могли начинаться слишком рано)
-- `7z.dll` копируется в выходную папку и для Debug-сборок
-- **bit7z обновлён до v4.1.0** (MSVC 2022)
-- Установщики и портативные пакеты Qt5 и Qt6 собираются через **GitHub Actions**
-
-#### Примечания
-- С DPAPI сохранённые пароли привязаны к **пользователю Windows и компьютеру**; после переноса настроек на другой ПК или учётную запись пароли нужно ввести заново
 
 ---
 

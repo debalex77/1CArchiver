@@ -90,7 +90,6 @@ private:
         QString file1CD;
         QString fileBak;
         QString configPath;
-        QString exportConfig;   /** config export_1c -> exportul .dt in loc de arhivarea .1CD */
         QString archivePath;
 
         QMovie *spinner = nullptr;
@@ -172,11 +171,9 @@ private:
 
     QString buildArchiveName(const QString &dbName) const;
     QString buildArchiveNameMSSQL(const QString &dbName) const;
-    QString buildDumpNameExport1C(const QString &dbName) const;
 
     void proceedWithArchive(BackupJob &job);
     void proceedWithArchiveMssql(BackupJob &job);
-    void proceedWithExport1C(BackupJob &job);
 
     void startNextJob();
     void updateRowStatusIcon(int row, bool ok);

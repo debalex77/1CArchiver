@@ -126,7 +126,7 @@ void AppSettings::setupUI()
     lbl_setArchivePassword = new QLabel(this);
     lbl_setArchivePassword->setStyleSheet("font-size: 12px;");
     lbl_setArchivePassword->setText(tr("Setarea parolei la arhive.<br>"
-                                       "La salvarea parolei se criptează <b><span%1>(Windows DPAPI)</span></b>")
+                                       "La salvarea parolei se criptează <b><span%1>(AES-like XOR + hashed key)</span></b>")
                                         .arg(highlightColor));
 
     btn_setArchivePassword = new SwitchButton(this);

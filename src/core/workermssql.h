@@ -56,7 +56,6 @@ private:
     QString m_server;
     QString m_database;
     QString m_outputBak;
-    QString m_configError; /** eroare la citirea config-ului, raportata in process() */
 };
 
 #endif // WORKERMSSQL_H
