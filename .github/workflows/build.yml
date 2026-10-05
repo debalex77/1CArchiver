@@ -1,0 +1,119 @@
+# Build 1CArchiver pentru Qt5 si Qt6 (Windows x64)
+#
+#   - push pe master / pull request / manual -> pachetele raman ca artifacts
+#   - push tag "v*" (ex. v1.9)              -> se creeaza un release DRAFT cu
+#                                              arhivele .zip + .sha256 atasate
+#
+# Pachetul repeta build_script/build_win.bat:
+#   1CArchiver.exe + windeployqt + 7z.dll + VC_redist.x64.exe
+
+name: Build
+
+on:
+  push:
+    branches: [master]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.name }} (Qt ${{ matrix.qt }})
+    runs-on: windows-2022
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: qt5
+            qt: '5.15.2'
+            arch: win64_msvc2019_64
+          - name: qt6
+            qt: '6.9.3'
+            arch: win64_msvc2022_64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalare Qt ${{ matrix.qt }}
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ matrix.qt }}
+          arch: ${{ matrix.arch }}
+          cache: true
+
+      - name: Mediu MSVC x64
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      #--- versiunea se ia din src/version.h (version.txt se schimba abia dupa release)
+      - name: Versiunea
+        shell: pwsh
+        run: |
+          $m = Select-String -Path src/version.h -Pattern '#define VER "([^"]+)"'
+          if (-not $m) { throw 'VER nu a fost gasit in src/version.h' }
+          $ver = $m.Matches[0].Groups[1].Value
+          if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -ne "v$ver") {
+            throw "Tag-ul $env:GITHUB_REF_NAME nu corespunde cu VER=$ver din src/version.h"
+          }
+          "VERSION=$ver" >> $env:GITHUB_ENV
+          "PKG=1CArchiver_v${ver}_${{ matrix.name }}" >> $env:GITHUB_ENV
+
+      - name: Build (release)
+        shell: cmd
+        env:
+          CL: /MP
+        run: |
+          mkdir build-ci
+          cd build-ci
+          qmake ..\1CArchiver.pro CONFIG+=release || exit /b 1
+          nmake /nologo -f Makefile.Release || exit /b 1
+
+      - name: Deploy
+        shell: pwsh
+        run: |
+          $dist = "dist/$env:PKG"
+          New-Item -ItemType Directory -Force $dist | Out-Null
+          Copy-Item build-ci/release/1CArchiver.exe $dist
+          windeployqt --release --no-compiler-runtime "$dist/1CArchiver.exe"
+          if ($LASTEXITCODE -ne 0) { throw 'windeployqt a esuat' }
+          Copy-Item 3rdparty/bit7z/bin/7z.dll $dist
+          Invoke-WebRequest https://aka.ms/vs/17/release/vc_redist.x64.exe -OutFile "$dist/VC_redist.x64.exe"
+
+      - name: Arhivare + SHA256
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "dist/$env:PKG/*" -DestinationPath "dist/$env:PKG.zip"
+          $hash = (Get-FileHash "dist/$env:PKG.zip" -Algorithm SHA256).Hash.ToLower()
+          "$hash  $env:PKG.zip" | Out-File -Encoding ascii "dist/$env:PKG.zip.sha256"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PKG }}
+          path: |
+            dist/${{ env.PKG }}.zip
+            dist/${{ env.PKG }}.zip.sha256
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Release draft
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          name: 1CArchiver ${{ github.ref_name }}
+          files: |
+            dist/*.zip
+            dist/*.sha256
