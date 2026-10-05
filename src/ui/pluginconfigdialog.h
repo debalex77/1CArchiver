@@ -34,7 +34,7 @@ private slots:
 private:
     void loadSchema();
     void loadConfig();
-    void saveConfig();
+    bool saveConfig();
 
     QString schemaPath() const;
 

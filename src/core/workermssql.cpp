@@ -51,7 +51,8 @@ void WorkerMssql::setConfigFile(const QString &path)
     QString err;
     QVariantMap dbCfg = loadJsonConfig(path, &err);
     if (dbCfg.isEmpty()) {
-        emit finished(false, QString(), "Config error: " + err);
+        /** apelat inainte de connect() -> semnalul s-ar pierde; il emitem in process() */
+        m_configError = "Config error: " + err;
         return;
     }
     m_server   = dbCfg.value("server").toString();
@@ -68,6 +69,11 @@ void WorkerMssql::setOutputBak(const QString &bakPath)
 
 void WorkerMssql::process()
 {
+    if (!m_configError.isEmpty()) {
+        emit finished(false, QString(), m_configError);
+        return;
+    }
+
     emit log(tr("MSSQL backup started"));
 
     // -------------------------------------------------
@@ -80,10 +86,16 @@ void WorkerMssql::process()
             this,
             &WorkerMssql::onSqlcmdFinished);
 
+    /** escapare: ']' in identificator, '\'' in literal */
+    QString dbIdent = m_database;
+    dbIdent.replace("]", "]]");
+    QString bakLiteral = m_outputBak;
+    bakLiteral.replace("'", "''");
+
     QString sql =
         QString("BACKUP DATABASE [%1] TO DISK='%2' "
                 "WITH INIT, COMPRESSION")
-            .arg(m_database, m_outputBak);
+            .arg(dbIdent, bakLiteral);
 
     QStringList args;
     args << "-S" << m_server
@@ -95,8 +107,12 @@ void WorkerMssql::process()
     if (auth == "windows") {
         args << "-E";
     } else {
-        args << "-U" << m_user
-             << "-P" << m_pass;
+        /** parola prin SQLCMDPASSWORD, nu prin -P (vizibila in lista proceselor) */
+        args << "-U" << m_user;
+
+        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+        env.insert("SQLCMDPASSWORD", m_pass);
+        m_proc->setProcessEnvironment(env);
     }
 
     emit log(tr("Executing sqlcmd..."));
@@ -168,7 +184,13 @@ bool WorkerMssql::openProgressDb()
     QString conn;
     conn += "Driver={SQL Server};";
     conn += "Server=" + m_server + ";";
-    conn += "Trusted_Connection=Yes;";
+    if (m_auth == "windows") {
+        conn += "Trusted_Connection=Yes;";
+    } else {
+        /** autentificare SQL - aceleasi date ca pentru sqlcmd */
+        conn += "UID=" + m_user + ";";
+        conn += "PWD={" + QString(m_pass).replace("}", "}}") + "};";
+    }
 
     m_db.setDatabaseName(conn);
     if (m_db.open()) {

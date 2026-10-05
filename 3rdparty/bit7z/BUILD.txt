@@ -1,1 +1,1 @@
-v4.0.10 msvc2022_x64 
+v4.1.0 msvc2019_x64 (lib/x64/msvc2019), msvc2022_x64 (lib/x64/msvc2022)

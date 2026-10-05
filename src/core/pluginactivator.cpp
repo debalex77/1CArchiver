@@ -259,13 +259,12 @@ void PluginActivator::onClickOneDrive(bool on)
 
 void PluginActivator::onClickConfigMSSQL()
 {
-    PluginConfigDialog *config_dlg_mssql
-        = new PluginConfigDialog("mssql",
-                                 QString(),
-                                 this);
-    connect(config_dlg_mssql, &PluginConfigDialog::onAddedDatabase,
+    PluginConfigDialog config_dlg_mssql("mssql",
+                                        QString(),
+                                        this);
+    connect(&config_dlg_mssql, &PluginConfigDialog::onAddedDatabase,
             this, &PluginActivator::addedDatabaseMSSQL, Qt::UniqueConnection);
-    config_dlg_mssql->exec();
+    config_dlg_mssql.exec();
 }
 
 void PluginActivator::checkPluginMSSQL()

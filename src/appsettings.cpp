@@ -2,6 +2,7 @@
 #include <src/dropbox/dropboxconnectdialog.h>
 
 #include <QHBoxLayout>
+#include <QIntValidator>
 #include <QMessageBox>
 #include <QPushButton>
 
@@ -20,15 +21,24 @@ static void enableDarkTitlebar(QWidget* w) {
 
 AppSettings::AppSettings(QWidget *parent) : QDialog(parent)
 {
-    QString highlightColor = globals::isDark ? " style='color:#61AFEF'"
-                                             : "";
+    /** membrul clasei - folosit in setupUI() */
+    highlightColor = globals::isDark ? " style='color:#61AFEF'"
+                                     : "";
 
     setupUI();
     updateUI();
 
     connect(btn_setArchivePassword, &SwitchButton::toggled, this, [&](bool on) {
         globals::setArchivePassword = on;
+        if (on)
+            globals::archivePassword = edit_pwd->text();
         updateUI();
+    });
+
+    /** dialogul e nemodal -> parola se aplica imediat, nu doar la inchidere */
+    connect(edit_pwd, &QLineEdit::textChanged, this, [](const QString &text) {
+        if (globals::setArchivePassword)
+            globals::archivePassword = text;
     });
 
     connect(btn_backupExtFiles, &SwitchButton::toggled, this, [&](bool on) {
@@ -40,7 +50,7 @@ AppSettings::AppSettings(QWidget *parent) : QDialog(parent)
     });
 
     connect(btn_syncDropbox, &SwitchButton::toggled,
-            this, [this, highlightColor](bool on)
+            this, [this](bool on)
             {
                 globals::syncDropbox = on;
                 globals::activate_syncDropbox = !on;
@@ -49,7 +59,7 @@ AppSettings::AppSettings(QWidget *parent) : QDialog(parent)
                     auto* conDlgDropbox = new DropboxConnectDialog(this);
 
                     connect(conDlgDropbox, &DropboxConnectDialog::loginSuccesDropbox,
-                            this, [this, highlightColor]()
+                            this, [this]()
                             {
                                 lbl_syncDropbox->setText(
                                     tr("Sincronizarea cu <b><span %1>Dropbox</span></b><br>"
@@ -126,7 +136,7 @@ void AppSettings::setupUI()
     lbl_setArchivePassword = new QLabel(this);
     lbl_setArchivePassword->setStyleSheet("font-size: 12px;");
     lbl_setArchivePassword->setText(tr("Setarea parolei la arhive.<br>"
-                                       "La salvarea parolei se criptează <b><span%1>(AES-like XOR + hashed key)</span></b>")
+                                       "La salvarea parolei se criptează <b><span%1>(Windows DPAPI)</span></b>")
                                         .arg(highlightColor));
 
     btn_setArchivePassword = new SwitchButton(this);
@@ -290,6 +300,7 @@ void AppSettings::setupUI()
 
     last_nr_day = new QLineEdit(this);
     last_nr_day->setMaximumWidth(50);
+    last_nr_day->setValidator(new QIntValidator(1, 3650, last_nr_day));
     if (globals::deleteArchives && globals::lastNrDay > 0)
         last_nr_day->setText(QString::number(globals::lastNrDay));
 
@@ -416,6 +427,12 @@ void AppSettings::updateUI()
     lbl_lastDay->setVisible(btn_deleteArchives->isChecked());
 }
 
+void AppSettings::reject()
+{
+    /** QDialog::reject() ascunde dialogul fara closeEvent */
+    close();
+}
+
 void AppSettings::closeEvent(QCloseEvent *event)
 {
     // golim parola
@@ -437,15 +454,14 @@ void AppSettings::closeEvent(QCloseEvent *event)
                 );
 
             QPushButton* yesButton = msg.addButton(tr("Da"), QMessageBox::YesRole);
-            QPushButton* noButton  = msg.addButton(tr("Nu"), QMessageBox::NoRole);
+            msg.addButton(tr("Nu"), QMessageBox::NoRole);
 
             msg.exec();
-            if (msg.clickedButton() == yesButton) {
-                globals::lastNrDay = 0;
-                event->accept();
-            } else if (msg.clickedButton() == noButton){
-                event->ignore();
+            if (msg.clickedButton() != yesButton) {
+                event->ignore(); /** ramanem in dialog */
+                return;
             }
+            globals::lastNrDay = 0; /** cleanupOldArchives() nu sterge cu 0 */
         } else {
             globals::lastNrDay = last_nr_day->text().toInt();
         }
@@ -463,13 +479,12 @@ void AppSettings::closeEvent(QCloseEvent *event)
             );
 
         QPushButton* yesButton = msg.addButton(tr("Da"), QMessageBox::YesRole);
-        QPushButton* noButton  = msg.addButton(tr("Nu"), QMessageBox::NoRole);
+        msg.addButton(tr("Nu"), QMessageBox::NoRole);
 
         msg.exec();
-        if (msg.clickedButton() == yesButton) {
-            event->accept();
-        } else if (msg.clickedButton() == noButton){
-            event->ignore();
+        if (msg.clickedButton() != yesButton) {
+            event->ignore(); /** ramanem in dialog */
+            return;
         }
     }
 

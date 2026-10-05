@@ -14,6 +14,8 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QFile>
+#include <QJsonObject>
+#include <QNetworkRequest>
 #include <QPointer>
 
 class DropboxOAuth2_PKCE;
@@ -53,6 +55,7 @@ signals:
 private slots:
     void onUploadReply();
     void onUploadProgress(qint64 sent, qint64 total);
+    void onSessionReply();   // raspuns start/append/finish (fisiere mari)
 
     // După refresh token
     void onRefreshSuccess();
@@ -61,6 +64,12 @@ private slots:
 private:
     void startUpload();      // metoda internă pentru upload
     void tryRefreshToken();  // pornește refresh token
+
+    void sendSessionChunk(); // trimite urmatoarea bucata (upload session)
+    void handleReplyError(QNetworkReply::NetworkError err,
+                          const QString &errorMessage);
+    QNetworkRequest contentRequest(const QString &endpoint,
+                                   const QJsonObject &arg) const;
 
 private:
     QString m_localPath;
@@ -75,6 +84,14 @@ private:
     DropboxOAuth2_PKCE *m_oauth = nullptr;
 
     bool m_retryAfterRefresh = false;
+    bool m_refreshAttempted  = false; // un singur refresh per upload
+
+    /** upload session -> fisiere peste limita /files/upload (150 MB) */
+    QString m_sessionId;
+    qint64  m_offset    = 0;
+    qint64  m_fileSize  = 0;
+    qint64  m_chunkSize = 0;
+    bool    m_finishing = false;
 
     UploadState m_state = UploadState::Idle;
 };

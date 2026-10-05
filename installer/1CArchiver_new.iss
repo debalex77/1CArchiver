@@ -3,9 +3,25 @@
 ; Non-commercial use only
 
 #define MyAppName "1CArchiver"
-#define MyAppVersion "1.5"
 #define MyAppPublisher "SC Oxvalprim SRL"
 #define MyAppExeName "1CArchiver.exe"
+
+; Valori implicite - build_script\build_win_common.bat le transmite prin /D
+#ifndef MyAppVersion
+  #define MyAppVersion "1.5"
+#endif
+#ifndef ProjectDir
+  #define ProjectDir "C:\Qt_projects\1CArchiver"
+#endif
+#ifndef AppSourceDir
+  #define AppSourceDir ProjectDir + "\build\1CArchiver_v" + MyAppVersion
+#endif
+#ifndef AppOutputDir
+  #define AppOutputDir ProjectDir + "\build"
+#endif
+#ifndef AppOutputBase
+  #define AppOutputBase "1CArchiver_v" + MyAppVersion + "_Windows_amd64"
+#endif
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
@@ -26,12 +42,12 @@ ArchitecturesAllowed=x64compatible
 ; the 64-bit view of the registry.
 ArchitecturesInstallIn64BitMode=x64compatible
 DisableProgramGroupPage=yes
-LicenseFile=C:\Qt_projects\1CArchiver\LICENSE
+LicenseFile={#ProjectDir}\LICENSE
 ; Uncomment the following line to run in non administrative install mode (install for current user only).
 ;PrivilegesRequired=lowest
-OutputDir=C:\Qt_projects\1CArchiver\build
-OutputBaseFilename=1CArchiver_v1.5_Windows_amd64
-SetupIconFile=C:\Qt_projects\1CArchiver\icons\backup.ico
+OutputDir={#AppOutputDir}
+OutputBaseFilename={#AppOutputBase}
+SetupIconFile={#ProjectDir}\icons\backup.ico
 SolidCompression=yes
 WizardStyle=modern dynamic
 
@@ -43,9 +59,9 @@ Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Qt_projects\1CArchiver\build\1CArchiver_v1.5\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Qt_projects\1CArchiver\build\1CArchiver_v1.5\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\Qt_projects\1CArchiver\build\1CArchiver_v1.5\VC_redist.x64.exe"; Flags: dontcopy
+Source: "{#AppSourceDir}\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#AppSourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#AppSourceDir}\VC_redist.x64.exe"; Flags: dontcopy
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

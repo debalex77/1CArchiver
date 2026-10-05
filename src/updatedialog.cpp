@@ -1,5 +1,8 @@
 #include "updatedialog.h"
 
+#include <QDir>
+#include <QMessageBox>
+
 UpdateDialog::UpdateDialog(const QString &version, QWidget *parent)
     : QDialog(parent), m_version(version)
 {
@@ -81,7 +84,12 @@ void UpdateDialog::startDownload()
             .arg(m_version);
 #endif
 
-    m_reply = m_net.get(QNetworkRequest(QUrl(url)));
+    /** GitHub redirectioneaza descarcarea (302); Qt 5 nu urmeaza implicit */
+    QNetworkRequest req{QUrl(url)};
+    req.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
+                     QNetworkRequest::NoLessSafeRedirectPolicy);
+
+    m_reply = m_net.get(req);
 
     connect(m_reply, &QNetworkReply::downloadProgress,
             this, &UpdateDialog::onDownloadProgress);
@@ -98,18 +106,52 @@ void UpdateDialog::onDownloadProgress(qint64 received, qint64 total)
 
 void UpdateDialog::onFinished()
 {
+    /** la eroare ramanem in aplicatie si permitem o noua incercare */
+    auto fail = [this](const QString &reason) {
+        m_progress->setVisible(false);
+        m_progress->setValue(0);
+        m_btn->setEnabled(true);
+        QMessageBox::warning(this,
+                             tr("Actualizare"),
+                             tr("Actualizarea nu a putut fi descărcată.\n%1")
+                                 .arg(reason));
+    };
+
+    const QNetworkReply::NetworkError err = m_reply->error();
+    const QString errText = m_reply->errorString();
+    const int httpStatus =
+        m_reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    const QByteArray data = m_reply->readAll();
+
+    m_reply->deleteLater();
+    m_reply = nullptr;
+
+    if (err != QNetworkReply::NoError) {
+        fail(errText);
+        return;
+    }
+
+    if (httpStatus != 200 || data.isEmpty()) {
+        fail(tr("Răspuns neașteptat de la server (HTTP %1).").arg(httpStatus));
+        return;
+    }
+
     const QString path =
         QStandardPaths::writableLocation(QStandardPaths::TempLocation)
         + QString("/1CArchiver_v%1_Windows_amd64.exe")
               .arg(m_version);
 
     QFile f(path);
-    if (f.open(QIODevice::WriteOnly))
-        f.write(m_reply->readAll());
-
+    if (!f.open(QIODevice::WriteOnly) || f.write(data) != data.size()) {
+        fail(tr("Nu pot salva fișierul: %1").arg(QDir::toNativeSeparators(path)));
+        return;
+    }
     f.close();
-    m_reply->deleteLater();
 
-    QProcess::startDetached(path);
+    if (!QProcess::startDetached(path)) {
+        fail(tr("Nu pot porni instalarea: %1").arg(QDir::toNativeSeparators(path)));
+        return;
+    }
+
     qApp->quit();
 }

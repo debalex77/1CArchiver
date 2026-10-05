@@ -28,6 +28,7 @@
 #include <QCryptographicHash>
 #include <QTextBlock>
 #include <QDirIterator>
+#include <QSaveFile>
 #include <QSettings>
 
 #include <src/core/WorkerMssql.h>
@@ -45,9 +46,9 @@
 
 #pragma comment(lib, "dwmapi.lib")
 
-static void enableDarkTitlebar(QWidget* w) {
+static void enableDarkTitlebar(QWidget* w, bool on = true) {
     HWND hwnd = (HWND)w->winId();
-    BOOL dark = TRUE;
+    BOOL dark = on ? TRUE : FALSE;
     DwmSetWindowAttribute(hwnd, 20, &dark, sizeof(dark));   // Dark TitleBar
 }
 #endif
@@ -97,9 +98,7 @@ uint64_t folderSize(const QString& path) {
 }
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent),
-    m_lib(nullptr),
-    m_compressor(nullptr)
+    : QMainWindow(parent)
 {
     // Titlu aplicatiei
     // ---------------------------------------------------------
@@ -131,12 +130,12 @@ MainWindow::MainWindow(QWidget *parent)
     btnPlugins->setIcon(QIcon(":/icons/icons/plugin.png"));
     connect(btnPlugins, &QToolButton::clicked, this, [&]() {
 
-        PluginActivator *pl_activator = new PluginActivator(this);
-        connect(pl_activator, &PluginActivator::activatePlugin,
+        PluginActivator pl_activator(this); /** modal -> pe stiva, se elibereaza la iesire */
+        connect(&pl_activator, &PluginActivator::activatePlugin,
                 this, &MainWindow::onActivatePlugins, Qt::UniqueConnection);
-        connect(pl_activator, &PluginActivator::addedDatabaseMSSQL,
+        connect(&pl_activator, &PluginActivator::addedDatabaseMSSQL,
                 this, &MainWindow::onAddedDatabaseMSSQL, Qt::UniqueConnection);
-        pl_activator->exec();
+        pl_activator.exec();
     });
 
     /** --- btn setari */
@@ -332,23 +331,6 @@ MainWindow::MainWindow(QWidget *parent)
     check7ZipInstallation();
 #endif
 
-    // Timer progres bazat pe dimensiunea arhivei
-    // ---------------------------------------------------------
-    progressTimer = new QTimer(this);
-    progressTimer->setInterval(100);
-
-    connect(progressTimer, &QTimer::timeout, this, [this]() {
-        QFileInfo fi(currentArchivePath);
-        if (!fi.exists() || sourceFileSize <= 0) return;
-
-        qint64 curr = fi.size();
-        int pct = int(double(curr) / double(sourceFileSize) * 100.0);
-        if (pct > 100) pct = 100;
-
-        progressBar->setValue(pct);
-        currentStatus->setText(QString(tr("Progres: %1%")).arg(pct));
-    });
-
     // bottom bar
     // ---------------------------------------------------------
 
@@ -373,7 +355,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(this, &MainWindow::jobFinishedSignal, this, &MainWindow::startNextJob);
 
-    enableDarkTitlebar(this);
+    enableDarkTitlebar(this, globals::isDark); /** tema e deja incarcata din setari */
 
 }
 
@@ -562,12 +544,6 @@ void MainWindow::onStartArchive()
         }
     }
 
-    /** Dezactivarea UI button */
-    btnSelectAll->setEnabled(false);
-    btnArchive->setEnabled(false);
-    btnFolder->setEnabled(false);
-    comboCompression->setEnabled(false);
-
     /** construim job-ul */
     jobs.clear();
     currentJob = -1;
@@ -634,10 +610,27 @@ void MainWindow::onStartArchive()
 
     if (jobs.isEmpty()) {
         log(tr("Nu sunt baze selectate pentru backup."));
+
+        /** "--autorun" -> inchidem aplicatia, altfel ramane in tray */
+        if (globals::isAutorun) {
+            saveLogToFile();
+            emit allJobsFinished();
+        }
         return;
     }
 
+    /** Dezactivarea UI button (reactivate in startNextJob la final) */
+    btnSelectAll->setEnabled(false);
+    btnArchive->setEnabled(false);
+    btnFolder->setEnabled(false);
+    comboCompression->setEnabled(false);
+
     log(QString(tr("Încep backup pentru %1 baze...")).arg(jobs.size()));
+
+    /** parola activata, dar lipsa (ex. nedecriptabila DPAPI) -> arhive FARA parola */
+    if (globals::setArchivePassword && globals::archivePassword.isEmpty())
+        log(tr("⚠ Parola arhivelor este activată, dar nu este setată - arhivele se creează fără parolă."));
+
     startNextJob();
 }
 
@@ -680,6 +673,8 @@ void MainWindow::applyTheme()
         f.open(QFile::ReadOnly);
         qApp->setStyleSheet(QString::fromUtf8(f.readAll()));
     }
+
+    enableDarkTitlebar(this, globals::isDark);
 }
 
 void MainWindow::clickedAbortDropbox()
@@ -763,12 +758,24 @@ void MainWindow::autoDetectPaths1C()
 
     if (bases.isEmpty()) {
         log(tr("Nu am găsit nicio bază în ibases.v8i."));
+        return; /** NU golim tabelul */
     }
 
-    table->setRowCount(bases.size());
+    /** caile deja prezente in tabel (fisiere + MSSQL raman neatinse) */
+    QSet<QString> existing;
+    for (int r = 0; r < table->rowCount(); ++r) {
+        if (auto *itemPath = table->item(r, 2))
+            existing.insert(QDir::toNativeSeparators(itemPath->text()).toLower());
+    }
 
-    for (int i = 0; i < bases.size(); ++i)
+    for (const IBASEEntry &base : std::as_const(bases))
     {
+        if (existing.contains(QDir::toNativeSeparators(base.filePath).toLower()))
+            continue;
+
+        const int i = table->rowCount(); /** rand nou la final */
+        table->insertRow(i);
+
         // checkbox
         QWidget *cw    = new QWidget(this);
         QHBoxLayout *h = new QHBoxLayout(cw);
@@ -782,11 +789,11 @@ void MainWindow::autoDetectPaths1C()
         table->setCellWidget(i, 0, cw);
 
         /** 1. denumirea BD */
-        auto *dbItem = new QTableWidgetItem(bases[i].displayName);
+        auto *dbItem = new QTableWidgetItem(base.displayName);
         table->setItem(i, 1, dbItem);
 
         /** 2. calea spre BD */
-        auto *dbFilePath = new QTableWidgetItem(bases[i].filePath);
+        auto *dbFilePath = new QTableWidgetItem(base.filePath);
         table->setItem(i, 2, dbFilePath);
 
         /** 3. status */
@@ -895,10 +902,10 @@ void MainWindow::checkForUpdates()
 
 void MainWindow::onAddMssqlDb()
 {
-    auto dialog_mssql = new PluginConfigDialog("mssql", QString(), this);
-    connect(dialog_mssql, &PluginConfigDialog::onAddedDatabase, this,
+    PluginConfigDialog dialog_mssql("mssql", QString(), this);
+    connect(&dialog_mssql, &PluginConfigDialog::onAddedDatabase, this,
             &MainWindow::onAddedDatabaseMSSQL, Qt::UniqueConnection);
-    dialog_mssql->exec();
+    dialog_mssql.exec();
 }
 
 void MainWindow::onEditMssqlDb()
@@ -920,8 +927,23 @@ void MainWindow::onEditMssqlDb()
         return;
     }
 
-    auto dialog_mssql = new PluginConfigDialog("mssql", configFile, this);
-    dialog_mssql->exec();
+    PluginConfigDialog dialog_mssql("mssql", configFile, this);
+
+    /** dupa salvare actualizam randul (server/baza/calea config pot fi schimbate) */
+    connect(&dialog_mssql, &PluginConfigDialog::onAddedDatabase,
+            this, [this, row](const QVariantMap &dbInfo) {
+                auto *dbItem  = table->item(row, 1);
+                auto *srvItem = table->item(row, 2);
+                if (!dbItem || !srvItem)
+                    return;
+
+                dbItem->setText(dbInfo.value("database").toString().trimmed());
+                srvItem->setText(dbInfo.value("server").toString().trimmed());
+                dbItem->setData(Qt::UserRole + 1, dbInfo.value("configured").toBool());
+                dbItem->setData(Qt::UserRole + 2, dbInfo.value("config").toString());
+            });
+
+    dialog_mssql.exec();
 }
 
 void MainWindow::onRemoveMssqlDb()
@@ -973,7 +995,8 @@ void MainWindow::check7ZipInstallation()
             tr("7z.dll nu a fost găsit.\n"
                "Reinstalează aplicația.")
             );
-        qApp->quit();
+        /** apelat din constructor - quit() direct nu are efect inainte de a.exec() */
+        QTimer::singleShot(0, qApp, &QCoreApplication::quit);
     }
 }
 
@@ -1002,7 +1025,7 @@ QStringList MainWindow::find1CDBaseFolders(const QString &rootDir)
 QString MainWindow::buildArchiveName(const QString &dbName) const
 {
     return QDir(backupFolder).filePath(
-        dbName + "_" +
+        safeFileName(dbName) + "_" +
         QDateTime::currentDateTime().toString("yyyy-MM-dd_HH.mm.ss") +
         ".7z");
 }
@@ -1010,7 +1033,7 @@ QString MainWindow::buildArchiveName(const QString &dbName) const
 QString MainWindow::buildArchiveNameMSSQL(const QString &dbName) const
 {
     return QDir(backupFolder).filePath(
-        dbName + "_mssql_" +
+        safeFileName(dbName) + "_mssql_" +
         QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss") +
         ".bak");
 }
@@ -1059,7 +1082,7 @@ void MainWindow::proceedWithArchive(BackupJob &job)
         comboCompression->currentIndex(),
         job.archiveWholeFolder,
         totalBytes,
-        globals::archivePassword
+        globals::setArchivePassword ? globals::archivePassword : QString()
         );
 
     worker->moveToThread(t);
@@ -1192,7 +1215,7 @@ void MainWindow::proceedWithArchiveMssql(BackupJob &job)
 
     connect(worker, &WorkerMssql::finished,
             this,
-            [=, &job](bool ok, const QString &err) {
+            [=, &job](bool ok, const QString &, const QString &err) {
 
                 mv->stop();
                 mv->deleteLater();
@@ -1295,54 +1318,6 @@ void MainWindow::startNextJob()
     }
 }
 
-// ======================================
-// Setează icon status manual
-// ======================================
-
-void MainWindow::updateRowStatusIcon(int row, bool ok)
-{
-    table->removeCellWidget(row, 3);
-    QTableWidgetItem *it = new QTableWidgetItem(ok ? "✔" : "❌");
-    it->setTextAlignment(Qt::AlignCenter);
-    table->setItem(row, 3, it);
-}
-
-// ======================================
-// Detectare 7-Zip
-// ======================================
-
-QString MainWindow::get7zPath() const
-{
-#if defined(Q_OS_WIN)
-    QStringList candidates = {
-        "7z.exe",
-        "7za.exe",
-        "7zz.exe",
-        "C:/Program Files/7-Zip/7z.exe",
-        "C:/Program Files/7-Zip/7za.exe",
-        "C:/Program Files/7-Zip/7zz.exe",
-        "C:/Program Files (x86)/7-Zip/7z.exe",
-        "C:/Program Files (x86)/7-Zip/7za.exe",
-        "C:/Program Files (x86)/7-Zip/7zz.exe"
-    };
-#else
-    QStringList candidates = { "7z", "7za", "7zz" };
-#endif
-
-    for (const QString& c : candidates) {
-        QString p = QStandardPaths::findExecutable(c);
-        if (!p.isEmpty()) {
-            return p;  /** gasit in PATH */
-        }
-
-        if (QFile::exists(c)) {
-            return c;  /** gasit ca fisier hardcoded */
-        }
-    }
-
-    return QString();  /** nu a fost gasit */
-}
-
 void MainWindow::startDropboxUpload(const QString &localPath, const QString &fileSHA256)
 {
     progressBarDropbox->setRange(0, 100);
@@ -1387,6 +1362,13 @@ void MainWindow::startDropboxUpload(const QString &localPath, const QString &fil
     connect(m_dbxUploader, &DropboxUploader::uploadFinished,
             this, [this, localPath, fileSHA256](bool ok, const QString &msg) {
 
+                /** uploader-ul curent si-a terminat lucrul (si inainte de .sha256) */
+                if (m_dbxUploader) {
+                    m_dbxUploader->deleteLater();
+                    m_dbxUploader = nullptr;
+                }
+                btnAbortDropbox->setEnabled(false);
+
                 if (!ok) {
                     log(tr("⛔ Dropbox: încărcarea nereușită: ") + msg);
                 }
@@ -1414,9 +1396,6 @@ void MainWindow::startDropboxUpload(const QString &localPath, const QString &fil
                     log(tr("✔ Arhivarea și încărcarea în Dropbox reușită"));
                 }
 
-                m_dbxUploader->deleteLater();
-                m_dbxUploader = nullptr;
-
                 m_waitingForDropbox = false;
                 startNextJob();   /** urmatorul job */
             });
@@ -1433,6 +1412,7 @@ void MainWindow::startDropboxUpload(const QString &localPath, const QString &fil
             });
 
     log(tr("🌍 Dropbox: start încărcarea: ") + toWinPath(localPath));
+    btnAbortDropbox->setEnabled(true);
     m_dbxUploader->uploadFile(localPath, remotePath);
 }
 
@@ -1482,6 +1462,33 @@ void MainWindow::setPropertyVisible()
     currentStatusDropbox->setVisible(globals::syncDropbox);
     progressBarDropbox->setVisible(globals::syncDropbox);
     btnAbortDropbox->setVisible(globals::syncDropbox);
+}
+
+/** config MSSQL: parola in formatul vechi (XOR) -> DPAPI; true daca fisierul a fost rescris */
+static bool migrateMssqlPassword(const QString &configPath)
+{
+    QFile f(configPath);
+    if (!f.open(QIODevice::ReadOnly))
+        return false;
+
+    QJsonObject cfg = QJsonDocument::fromJson(f.readAll()).object();
+    f.close();
+
+    const QString stored = cfg.value("password").toString();
+    if (!isLegacyPassword(stored))
+        return false;
+
+    const QString dpapi = encryptPassword(decryptPassword(stored));
+    if (dpapi.isEmpty())
+        return false;
+
+    cfg["password"] = dpapi;
+
+    QSaveFile out(configPath); /** scriere atomica - nu pierdem config la eroare */
+    if (!out.open(QIODevice::WriteOnly))
+        return false;
+    out.write(QJsonDocument(cfg).toJson(QJsonDocument::Indented));
+    return out.commit();
 }
 
 static QCheckBox* checkboxAt(QTableWidget *table, int row, int col)
@@ -1542,16 +1549,24 @@ void MainWindow::loadSettings()
         return;
     }
 
-    if (!f.open(QIODevice::ReadOnly))
+    if (!f.open(QIODevice::ReadOnly)) {
+        log(tr("⚠ Nu pot citi fișierul de setări: %1").arg(toWinPath(settingsFilePath)));
+        retranslateUi();       /** textele UI se seteaza doar aici */
+        setPropertyVisible();
         return;
+    }
 
     QByteArray raw = f.readAll();
     f.close();
 
     QJsonParseError err;
     QJsonDocument doc = QJsonDocument::fromJson(raw, &err);
-    if (err.error != QJsonParseError::NoError || !doc.isObject())
+    if (err.error != QJsonParseError::NoError || !doc.isObject()) {
+        log(tr("⚠ Fișierul de setări este deteriorat: %1").arg(toWinPath(settingsFilePath)));
+        retranslateUi();
+        setPropertyVisible();
         return;
+    }
 
     QJsonObject obj = doc.object();
 
@@ -1610,8 +1625,16 @@ void MainWindow::loadSettings()
     if (obj.contains("setArchivePassword"))
         globals::setArchivePassword = obj["setArchivePassword"].toBool();
 
-    if (obj.contains("archivePassword"))
-        globals::archivePassword = decryptPassword(obj.value("archivePassword").toString());
+    if (obj.contains("archivePassword")) {
+        const QString stored = obj.value("archivePassword").toString();
+        globals::archivePassword = decryptPassword(stored);
+
+        /** DPAPI: parola e legata de utilizatorul Windows / PC */
+        if (!stored.isEmpty() && globals::archivePassword.isEmpty())
+            log(tr("⚠ Parola arhivelor nu poate fi decriptată (alt utilizator Windows sau alt PC). "
+                   "Introduceți parola din nou în Setări."));
+        /** formatul vechi (XOR) se recripteaza cu DPAPI la saveSettings() */
+    }
 
     if (obj.contains("succ_dropbox"))
         globals::loginSuccesDropbox = obj["succ_dropbox"].toString();
@@ -1619,10 +1642,7 @@ void MainWindow::loadSettings()
     if (obj.contains("succ_gdrive"))
         globals::loginSuccesGoogleDrive = obj["succ_gdrive"].toString();
 
-    if (obj.contains("paths_db")) {
-
-        if (!obj["paths_db"].isArray())
-            return;
+    if (obj.contains("paths_db") && obj["paths_db"].isArray()) {
 
         QJsonArray arr_db = obj["paths_db"].toArray();
 
@@ -1682,6 +1702,11 @@ void MainWindow::loadSettings()
             dbItem->setData(Qt::UserRole + 1, configured);
             dbItem->setData(Qt::UserRole + 2, configPath);
 
+            /** config MSSQL cu parola in formatul vechi (XOR) -> recriptam DPAPI */
+            if (typeDB == "mssql" && !configPath.isEmpty()
+                && migrateMssqlPassword(configPath))
+                log(tr("🔐 Parola MSSQL recriptată (DPAPI): %1").arg(name));
+
             log(tr("✔ Baza de date '%1' încărcată din setări.")
                     .arg(path));
         }
@@ -1705,6 +1730,14 @@ void MainWindow::loadSettings()
 
     if (obj.contains("lastNrDay"))
         globals::lastNrDay = obj["lastNrDay"].toString().toInt();
+
+    /** fara "currentLang" retranslateUi() nu s-ar apela -> etichete goale */
+    if (!obj.contains("currentLang"))
+        retranslateUi();
+
+    /** fara "syncDropbox" elementele Dropbox ar ramane vizibile */
+    if (!obj.contains("syncDropbox"))
+        setPropertyVisible();
 }
 
 void MainWindow::saveSettings()
@@ -1924,6 +1957,12 @@ void MainWindow::setDropboxAuthRequired()
 
 void MainWindow::cleanupOldArchives()
 {
+    /** fara vechime valida NU stergem nimic (0 ar sterge si arhivele noi) */
+    if (globals::lastNrDay <= 0) {
+        log(tr("⚠ Eliminarea arhivelor vechi omisă: nu este indicată vechimea (zile)."));
+        return;
+    }
+
     QDir dir(backupFolder);
     if (!dir.exists())
         return;
@@ -1932,14 +1971,12 @@ void MainWindow::cleanupOldArchives()
     const QDateTime limit =
         QDateTime::currentDateTime().addDays(-globals::lastNrDay);
 
-    /** filtru pu fisiere */
+    /** filtru pu fisiere - doar cele create de aplicatie */
     const QStringList filters =
     {
         "*.7z",
-        "*.zip",
-        "*.sha256",
-        "*.log",
-        "*.txt"
+        "*.7z.sha256",
+        "log_*.log"
     };
 
     /** bucla pu depistarea fisierelor */

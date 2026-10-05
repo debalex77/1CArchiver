@@ -68,6 +68,9 @@ private:
     void setupUI();
     void updateUI();
 
+public slots:
+    void reject() override; /** Esc -> trece prin closeEvent (validari + salvare) */
+
 protected:
     void closeEvent(QCloseEvent *event) override;
 };

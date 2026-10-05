@@ -30,7 +30,8 @@ SOURCES += \
     src/ui/dynamicpluginform.cpp \
     src/ui/pluginconfigdialog.cpp \
     src/updatechecker.cpp \
-    src/updatedialog.cpp
+    src/updatedialog.cpp \
+    src/utils.cpp
 
 HEADERS += \
     src/IBASEEntry.h \
@@ -66,7 +67,7 @@ FORMS += \
     src/dropbox/dropboxconnectdialog.ui
 
 TRANSLATIONS += \
-    resources/translations/1CArchiver_ru_RU.ts
+    resources/translations/1CArchiver_app_ru_RU.ts
 #lupdate 1CArchiver.pro -ts resources/translations/1CArchiver_app_ru_RU.ts
 #lrelease resources/translations/1CArchiver_app_ru_RU.ts -qm resources/translations/1CArchiver_app_ru_RU.qm
 
@@ -81,7 +82,10 @@ DISTFILES += \
     assets/first_image.png \
     assets/first_image_ru.png \
     build_script/build_win.bat \
+    build_script/build_win_common.bat \
     build_script/build_win_old.bat \
+    build_script/build_win_qt5.bat \
+    build_script/build_win_qt6.bat \
     docs/1CArchiver-User-Manual-RO.pdf \
     docs/1CArchiver-User-Manual-RU.pdf \
     index.html \
@@ -99,10 +103,15 @@ DISTFILES += \
     version.txt
 
 # IMPORTANT: Biblioteci Windows necesare pentru bit7z
-LIBS += -loleaut32 -lole32 -luuid
+LIBS += -loleaut32 -lole32 -luuid -luser32
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/3rdparty/bit7z/lib/x64/release/ -lbit7z
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/3rdparty/bit7z/lib/x64/debug/ -lbit7z
+# bit7z 4.1.0 - biblioteca compilata cu aceeasi versiune MSVC ca proiectul
+# (kit Qt5 -> MSVC2019, kit Qt6 -> MSVC2022)
+lessThan(QMAKE_MSC_VER, 1930): BIT7Z_MSVC = msvc2019
+else: BIT7Z_MSVC = msvc2022
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/3rdparty/bit7z/lib/x64/$$BIT7Z_MSVC/Release/ -lbit7z
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/3rdparty/bit7z/lib/x64/$$BIT7Z_MSVC/Debug/ -lbit7z
 
 # Corecție: include directorul părinte, nu subdirectorul bit7z
 INCLUDEPATH += $$PWD/3rdparty/bit7z/include
@@ -111,7 +120,7 @@ DEPENDPATH += $$PWD/3rdparty/bit7z/include
 win32 {
     QMAKE_PROJECT_DEPTH = 0
     RC_FILE = app.rc
-    LIBS += -ladvapi32
+    LIBS += -ladvapi32 -lcrypt32   # crypt32: DPAPI (src/utils.cpp)
 
     DLL_SRC = $$shell_path($$PWD/3rdparty/bit7z/bin/7z.dll)
     DLL_DST = $$shell_path($$OUT_PWD/release/7z.dll)

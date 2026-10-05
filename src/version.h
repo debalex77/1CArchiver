@@ -8,6 +8,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  *****************************************************************************/
 
-#define VER "1.8"
+#define VER "1.9"
 #define YEAR "2024"
 #define ORGANIZATION "SC 'Oxvalprim' SRL"

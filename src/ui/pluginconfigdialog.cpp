@@ -56,7 +56,9 @@ void PluginConfigDialog::onAccept()
         return;
     }
 
-    saveConfig();
+    if (!saveConfig())
+        return; /** ramanem in dialog */
+
     accept();
 }
 
@@ -85,7 +87,7 @@ void PluginConfigDialog::loadConfig()
     m_config = QJsonDocument::fromJson(f.readAll()).object();
 }
 
-void PluginConfigDialog::saveConfig()
+bool PluginConfigDialog::saveConfig()
 {
     QVariantMap values = m_form->values();
 
@@ -102,27 +104,54 @@ void PluginConfigDialog::saveConfig()
 
     obj["configured"] = true;
 
-    /** daca nu e indicat -> nou */
-    if (m_configFile.isEmpty()) {
+    /** fisierul vechi -> se elimina daca la editare s-a schimbat server/baza */
+    QString oldConfigFile;
+
+    if (m_pluginId == "mssql") {
 
         const QString baseDir =
             QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
             + "/plugins/" + m_pluginId;
 
-        QDir dir;
-        dir.mkpath(baseDir);
+        QDir().mkpath(baseDir);
 
-        if (m_pluginId == "mssql") {
-            const QString dbName = obj.value("database").toString().trimmed();
-            m_configFile = dir.toNativeSeparators(baseDir + "/" + dbName + ".json");
+        /** server + baza: aceeasi BD pe servere diferite -> fisiere diferite */
+        const QString server = obj.value("server").toString().trimmed();
+        const QString dbName = obj.value("database").toString().trimmed();
+        const QString target = QDir::toNativeSeparators(
+            baseDir + "/" + safeFileName(server + "_" + dbName) + ".json");
+
+        if (m_configFile.isEmpty()) {
+            /** nou */
+            m_configFile = target;
+        } else if (QDir::toNativeSeparators(m_configFile)
+                       .compare(target, Qt::CaseInsensitive) != 0) {
+            /** editare cu alt server/baza -> nu suprascriem alta configurare */
+            if (QFile::exists(target)) {
+                QMessageBox::warning(this, tr("Invalid configuration"),
+                                     tr("Există deja o configurare pentru serverul '%1' și baza '%2'.")
+                                         .arg(server, dbName));
+                return false;
+            }
+            oldConfigFile = m_configFile;
+            m_configFile  = target;
         }
     }
 
     QFile f(m_configFile);
-    if (!f.open(QIODevice::WriteOnly))
-        return;
+    if (!f.open(QIODevice::WriteOnly)
+        || f.write(QJsonDocument(obj).toJson(QJsonDocument::Indented)) < 0) {
+        QMessageBox::critical(this, tr("Error"),
+                              tr("Nu pot salva configurarea: %1")
+                                  .arg(QDir::toNativeSeparators(m_configFile)));
+        if (!oldConfigFile.isEmpty())
+            m_configFile = oldConfigFile;
+        return false;
+    }
+    f.close();
 
-    f.write(QJsonDocument(obj).toJson(QJsonDocument::Indented));
+    if (!oldConfigFile.isEmpty())
+        QFile::remove(oldConfigFile);
 
     /** !!! dupa ce au fost salvate datele e necesar de emis signal
      *  cu transmiterea datelor in tabela */
@@ -134,6 +163,7 @@ void PluginConfigDialog::saveConfig()
     dbInfo["configured"] = obj.value("configured").toBool();
     emit onAddedDatabase(dbInfo);
 
+    return true;
 }
 
 QString PluginConfigDialog::schemaPath() const

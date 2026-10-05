@@ -76,6 +76,8 @@ void ConnectorDropbox::testUpload()
 
     connect(uploader, &DropboxUploader::uploadFinished,
             this, &ConnectorDropbox::onTestFinished);
+    connect(uploader, &DropboxUploader::uploadFinished,
+            uploader, &QObject::deleteLater); /** uploader de unica folosinta */
 
     uploader->uploadFile(tmpFile, "/dropbox_test.txt");
 }

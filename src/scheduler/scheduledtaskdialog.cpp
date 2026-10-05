@@ -25,12 +25,23 @@ static bool runSchtasksElevated(const QString &arguments)
 {
     SHELLEXECUTEINFOW sei{};
     sei.cbSize = sizeof(sei);
+    sei.fMask = SEE_MASK_NOCLOSEPROCESS; // avem nevoie de handle -> cod de iesire
     sei.lpVerb = L"runas";              // solicită UAC
     sei.lpFile = L"schtasks.exe";
     sei.lpParameters = (LPCWSTR)arguments.utf16();
     sei.nShow = SW_HIDE;
 
-    return ShellExecuteExW(&sei);
+    /** UAC refuzat sau schtasks nu a pornit */
+    if (!ShellExecuteExW(&sei) || !sei.hProcess)
+        return false;
+
+    /** asteptam schtasks - succes doar la cod de iesire 0 */
+    DWORD exitCode = 1;
+    if (WaitForSingleObject(sei.hProcess, 30000) == WAIT_OBJECT_0)
+        GetExitCodeProcess(sei.hProcess, &exitCode);
+    CloseHandle(sei.hProcess);
+
+    return exitCode == 0;
 }
 
 ScheduledTaskDialog::ScheduledTaskDialog(QWidget *parent)
@@ -230,14 +241,22 @@ void ScheduledTaskDialog::onCancel()
 
 void ScheduledTaskDialog::enableTask()
 {
-    runSchtasksElevated("/change /tn \"1CArchiver Backup\" /enable");
+    if (!runSchtasksElevated("/change /tn \"1CArchiver Backup\" /enable")) {
+        QMessageBox::critical(this, tr("Eroare"),
+                              tr("Nu a fost posibilă activarea task-ului."));
+        return;
+    }
     m_taskEnabled = true;
     updateStatusUi();
 }
 
 void ScheduledTaskDialog::disableTask()
 {
-    runSchtasksElevated("/change /tn \"1CArchiver Backup\" /disable");
+    if (!runSchtasksElevated("/change /tn \"1CArchiver Backup\" /disable")) {
+        QMessageBox::critical(this, tr("Eroare"),
+                              tr("Nu a fost posibilă dezactivarea task-ului."));
+        return;
+    }
     m_taskEnabled = false;
     updateStatusUi();
 }
@@ -251,7 +270,11 @@ void ScheduledTaskDialog::deleteTaskUi()
         != QMessageBox::Yes)
         return;
 
-    runSchtasksElevated("/delete /tn \"1CArchiver Backup\" /f");
+    if (!runSchtasksElevated("/delete /tn \"1CArchiver Backup\" /f")) {
+        QMessageBox::critical(this, tr("Eroare"),
+                              tr("Nu a fost posibilă ștergerea task-ului."));
+        return;
+    }
 
     m_taskExists = false;
     m_taskEnabled = false;

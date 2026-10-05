@@ -60,7 +60,7 @@ void DropboxConnectDialog::onLoginFailed(const QString &msg)
 void DropboxConnectDialog::onTestClicked()
 {
     connect(m_connector, &ConnectorDropbox::testFinished,
-            this, &DropboxConnectDialog::onTestFinished);
+            this, &DropboxConnectDialog::onTestFinished, Qt::UniqueConnection);
 
     ui->lblStatus->setText("Testing...");
 

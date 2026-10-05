@@ -10,29 +10,34 @@
 
 #pragma once
 #include <QString>
-#include <QCryptographicHash>
 
-inline QByteArray deriveKey() {
-    QByteArray base = "1CArchiver-Secure-Key"; // La necesitate schimbam -> pu instalarea parolei la rhive
-    return QCryptographicHash::hash(base, QCryptographicHash::Sha256);
-}
+/*
+ * Parolele salvate (arhiva, MSSQL) - implementare in utils.cpp
+ *   - format nou:  "dpapi:<base64>"  (Windows DPAPI, legat de utilizatorul Windows)
+ *   - format vechi: base64(XOR)      (v1.8 si mai vechi) - doar citire, pentru migrare
+ */
 
-inline QByteArray xorCrypt(const QByteArray& data) {
-    QByteArray key = deriveKey();
-    QByteArray out = data;
-    for (int i = 0; i < out.size(); ++i)
-        out[i] = out[i] ^ key[i % key.size()];
-    return out;
-}
+/** criptare DPAPI; "" -> "" ; la eroare -> "" */
+QString encryptPassword(const QString& pass);
 
-inline QString encryptPassword(const QString& pass) {
-    QByteArray encrypted = xorCrypt(pass.toUtf8());
-    return encrypted.toBase64();
-}
+/** "dpapi:..." -> DPAPI ; altfel -> formatul vechi XOR ; la eroare DPAPI -> "" */
+QString decryptPassword(const QString& encoded);
 
-inline QString decryptPassword(const QString& encoded) {
-    QByteArray decoded = QByteArray::fromBase64(encoded.toUtf8());
-    QByteArray decrypted = xorCrypt(decoded);
-    return QString::fromUtf8(decrypted);
+/** true daca valoarea salvata e in formatul vechi (XOR) si trebuie recriptata */
+bool isLegacyPassword(const QString& encoded);
+
+/** nume de fisier valid in Windows (ex. ООО "Ромашка", SRV\SQLEXPRESS) */
+inline QString safeFileName(const QString& name) {
+    QString s = name;
+    for (QChar &ch : s) {
+        if (ch.unicode() < 0x20 || QStringLiteral("<>:\"/\\|?*").contains(ch))
+            ch = QLatin1Char('_');
+    }
+
+    /** Windows nu accepta punct/spatiu la sfarsitul numelui */
+    while (s.endsWith(QLatin1Char('.')) || s.endsWith(QLatin1Char(' ')))
+        s.chop(1);
+
+    return s.isEmpty() ? QStringLiteral("db") : s;
 }
 

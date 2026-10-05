@@ -56,7 +56,16 @@ void PluginManager::save() const
         pluginsArray.append(o);
     }
 
+    /** pastram restul setarilor (paths_db, backupFolder etc.) - modificam doar "plugins" */
     QJsonObject root;
+    {
+        QFile in(settingsPath());
+        if (in.open(QIODevice::ReadOnly)) {
+            const QJsonDocument doc = QJsonDocument::fromJson(in.readAll());
+            if (doc.isObject())
+                root = doc.object();
+        }
+    }
     root["plugins"] = pluginsArray;
 
     QFile file(settingsPath());

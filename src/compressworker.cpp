@@ -37,9 +37,9 @@ void CompressWorker::process() {
         bit7z::Bit7zLibrary lib;
         BitFileCompressor compressor{ lib, BitFormat::SevenZip };
 
-        //--- setam parola
+        //--- setam parola (criptam si antetele - lista fisierelor nu e vizibila fara parola)
         if (!m_password.isEmpty())
-            compressor.setPassword(m_password.toStdString());
+            compressor.setPassword(m_password.toStdString(), EncryptionScope::DataAndHeaders);
 
         //--- setam compresia
         compressor.setCompressionLevel(static_cast<BitCompressionLevel>(m_level));
@@ -65,8 +65,9 @@ void CompressWorker::process() {
                 );
         }
 
-        emit backupCreated(m_output);
+        /** intai finished (status rand + log), apoi backupCreated (SHA/Dropbox/job urmator) */
         emit finished(true, m_output, QString());
+        emit backupCreated(m_output);
 
     } catch (const BitException& ex) {
         // emit error(QString::fromStdString(ex.what()));

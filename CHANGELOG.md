@@ -20,6 +20,122 @@ Planned improvements and fixes:
 
 ---
 
+## [1.9] – 2026-10-05
+
+### 🇬🇧 English
+
+#### Dropbox
+- Archives larger than **150 MB** are now uploaded in chunks (upload sessions); previously such uploads failed
+- File names with **non-Latin characters** (e.g. Cyrillic database names) are uploaded correctly
+- An expired access token is refreshed automatically during upload; previously the backup queue could hang
+- The **"Stop Dropbox"** button is now active during uploads
+
+#### Security & Data Handling
+- Saved passwords (archive, MSSQL) are encrypted with **Windows DPAPI** instead of the previous fixed-key encryption; passwords saved by older versions are read and re-encrypted automatically
+- The MSSQL password is no longer passed on the `sqlcmd` command line
+- **Old archives cleanup** no longer deletes anything when the retention period is missing or `0`, and only removes files created by the application (`.7z`, `.7z.sha256`, `log_*.log`)
+- The archive password is applied only when the password option is enabled
+- Password-protected archives also encrypt the **file list** (7z headers): the password is required to open the archive, not only to extract it
+
+#### Bug Fixes
+- The UI no longer stays blocked when no database is selected; `--autorun` exits correctly in this case
+- Update download: GitHub redirects are followed and errors are reported; the application no longer closes after a failed download
+- Archive names with characters not allowed by Windows (e.g. `"`, `:`) are sanitized
+- MSSQL: the real error message is shown; configuration errors are reported; progress works with SQL authentication
+- MSSQL: configurations of the same database on different servers no longer overwrite each other; editing server/database updates the table row
+- "Auto-detect 1C databases" adds only missing databases instead of clearing the table
+- Settings: "No" in confirmation dialogs keeps the dialog open; closing with Esc applies the changes
+- Task Scheduler: actions report failure when `schtasks` fails
+- The application stops when `7z.dll` is missing
+- Correct log order after archiving; the title bar follows the selected theme; damaged settings files are handled
+
+#### Technical Improvements
+- Updated **bit7z to v4.1.0** (MSVC 2019 for Qt5, MSVC 2022 for Qt6)
+- The Qt5 package includes **OpenSSL 1.1.1w** (HTTPS for Dropbox and update checks)
+- New build scripts `build_win_qt6.bat` / `build_win_qt5.bat`: build, ZIP, Inno Setup and QIF installers, SHA-256
+
+#### Notes
+- With DPAPI, saved passwords are bound to the **Windows user and computer**; after moving the configuration to another PC or account, passwords must be re-entered
+- Do not downgrade to 1.8 after running 1.9: 1.8 cannot read DPAPI-encrypted passwords
+
+---
+
+### 🇷🇴 Română
+
+#### Dropbox
+- Arhivele mai mari de **150 MB** se încarcă pe bucăți (upload sessions); anterior încărcarea eșua
+- Fișierele cu **caractere non-latine** (ex. denumiri de baze în chirilică) se încarcă corect
+- Tokenul de acces expirat se reînnoiește automat în timpul încărcării; anterior coada de backup se putea bloca
+- Butonul **„Oprește Dropbox”** este activ în timpul încărcării
+
+#### Securitate și date
+- Parolele salvate (arhivă, MSSQL) sunt criptate cu **Windows DPAPI** în locul criptării anterioare cu cheie fixă; parolele salvate de versiunile vechi sunt citite și recriptate automat
+- Parola MSSQL nu mai este transmisă în linia de comandă `sqlcmd`
+- **Eliminarea arhivelor vechi** nu mai șterge nimic dacă vechimea lipsește sau este `0` și șterge doar fișierele create de aplicație (`.7z`, `.7z.sha256`, `log_*.log`)
+- Parola arhivei se aplică doar când opțiunea parolei este activată
+- Arhivele cu parolă criptează și **lista fișierelor** (antetele 7z): parola este cerută la deschiderea arhivei, nu doar la extragere
+
+#### Corecții
+- Interfața nu mai rămâne blocată dacă nu este selectată nicio bază; `--autorun` se închide corect în acest caz
+- Descărcarea actualizării: redirecționările GitHub sunt urmate, erorile sunt afișate; aplicația nu se mai închide după o descărcare eșuată
+- Numele arhivelor cu caractere nepermise în Windows (ex. `"`, `:`) sunt corectate
+- MSSQL: se afișează mesajul real de eroare; erorile de configurare sunt raportate; progresul funcționează cu autentificare SQL
+- MSSQL: configurările aceleiași baze pe servere diferite nu se mai suprascriu; editarea serverului/bazei actualizează rândul din tabel
+- „Detectare automată baze 1C” adaugă doar bazele lipsă, fără a goli tabelul
+- Setări: „Nu” în dialogurile de confirmare păstrează fereastra deschisă; închiderea cu Esc aplică modificările
+- Task Scheduler: acțiunile raportează eșecul când `schtasks` eșuează
+- Aplicația se oprește dacă lipsește `7z.dll`
+- Ordinea corectă a mesajelor după arhivare; bara de titlu urmează tema aleasă; fișierele de setări deteriorate sunt tratate
+
+#### Îmbunătățiri tehnice
+- Actualizare **bit7z la v4.1.0** (MSVC 2019 pentru Qt5, MSVC 2022 pentru Qt6)
+- Pachetul Qt5 include **OpenSSL 1.1.1w** (HTTPS pentru Dropbox și verificarea actualizărilor)
+- Scripturi noi de build `build_win_qt6.bat` / `build_win_qt5.bat`: compilare, ZIP, installere Inno Setup și QIF, SHA-256
+
+#### Note
+- Cu DPAPI, parolele salvate sunt legate de **utilizatorul Windows și calculator**; după mutarea configurării pe alt PC sau cont, parolele trebuie introduse din nou
+- Nu reveniți la 1.8 după rularea 1.9: 1.8 nu poate citi parolele criptate DPAPI
+
+---
+
+### 🇷🇺 Русский
+
+#### Dropbox
+- Архивы размером более **150 МБ** загружаются частями (upload sessions); ранее загрузка завершалась ошибкой
+- Файлы с **нелатинскими символами** (например, имена баз на кириллице) загружаются корректно
+- Просроченный токен доступа обновляется автоматически во время загрузки; ранее очередь резервного копирования могла зависнуть
+- Кнопка **«Остановить Dropbox»** активна во время загрузки
+
+#### Безопасность
+- Сохранённые пароли (архив, MSSQL) шифруются с помощью **Windows DPAPI** вместо прежнего шифрования с фиксированным ключом; пароли, сохранённые старыми версиями, читаются и перешифровываются автоматически
+- Пароль MSSQL больше не передаётся в командной строке `sqlcmd`
+- **Удаление старых архивов** ничего не удаляет, если срок хранения не указан или равен `0`, и удаляет только файлы, созданные приложением (`.7z`, `.7z.sha256`, `log_*.log`)
+- Пароль архива применяется только при включённой опции пароля
+- В архивах с паролем шифруется и **список файлов** (заголовки 7z): пароль запрашивается при открытии архива, а не только при извлечении
+
+#### Исправления
+- Интерфейс больше не блокируется, если не выбрана ни одна база; `--autorun` в этом случае корректно завершается
+- Загрузка обновления: перенаправления GitHub обрабатываются, ошибки отображаются; приложение больше не закрывается после неудачной загрузки
+- Имена архивов с недопустимыми в Windows символами (например, `"`, `:`) исправляются
+- MSSQL: отображается реальное сообщение об ошибке; ошибки конфигурации сообщаются; прогресс работает при SQL-аутентификации
+- MSSQL: конфигурации одной базы на разных серверах больше не перезаписывают друг друга; изменение сервера/базы обновляет строку таблицы
+- «Автомат.определение баз данных 1С пользователя» добавляет только отсутствующие базы, не очищая таблицу
+- Настройки: «Нет» в диалогах подтверждения оставляет окно открытым; закрытие по Esc применяет изменения
+- Планировщик заданий: при ошибке `schtasks` выводится сообщение
+- Приложение завершает работу при отсутствии `7z.dll`
+- Правильный порядок сообщений после архивирования; заголовок окна следует выбранной теме; повреждённые файлы настроек обрабатываются
+
+#### Технические улучшения
+- Обновление **bit7z до v4.1.0** (MSVC 2019 для Qt5, MSVC 2022 для Qt6)
+- Пакет Qt5 включает **OpenSSL 1.1.1w** (HTTPS для Dropbox и проверки обновлений)
+- Новые скрипты сборки `build_win_qt6.bat` / `build_win_qt5.bat`: компиляция, ZIP, установщики Inno Setup и QIF, SHA-256
+
+#### Примечания
+- При использовании DPAPI сохранённые пароли привязаны к **пользователю Windows и компьютеру**; после переноса конфигурации на другой ПК или учётную запись пароли нужно ввести заново
+- Не возвращайтесь к версии 1.8 после запуска 1.9: версия 1.8 не может прочитать пароли, зашифрованные DPAPI
+
+---
+
 ## [1.8] – 2026-01-08
 
 ### 🇬🇧 English

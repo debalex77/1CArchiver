@@ -38,11 +38,6 @@
 #include "appsettings.h"
 #include "IBASEEntry.h"
 
-namespace bit7z {
-    class Bit7zLibrary;
-    class BitFileCompressor;
-}
-
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -123,22 +118,11 @@ private:
     QString backupFolder;
     QVector<IBASEEntry> bases;
 
-    /** 7-Zip process */
-    QTimer *progressTimer      = nullptr;
-    QString currentArchivePath = nullptr;
-    qint64 sourceFileSize = 0;
-
     /** Job queue compress, archive */
     QVector<BackupJob> jobs;
     int currentJob = -1;
 
     QString settingsFilePath;
-
-    /** lib for bit7z */
-    bit7z::Bit7zLibrary* m_lib = nullptr;
-    bit7z::BitFileCompressor* m_compressor = nullptr;
-
-    qint64 m_currentTotalBytes = 0;   /** dimensiunea totală a 1Cv8.1CD pentru job-ul curent */
 
     QLabel *lblCompression;
     QTranslator translator;
@@ -176,8 +160,6 @@ private:
     void proceedWithArchiveMssql(BackupJob &job);
 
     void startNextJob();
-    void updateRowStatusIcon(int row, bool ok);
-    QString get7zPath() const;
 
     void startDropboxUpload(const QString &localPath, const QString &fileSHA256 = QString());
 
