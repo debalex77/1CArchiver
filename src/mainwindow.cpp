@@ -30,9 +30,12 @@
 #include <QDirIterator>
 #include <QSettings>
 
+#include <src/common/defaultoperations.h>
+#include <src/common/itemroles.h>
 #include <src/core/WorkerMssql.h>
 #include <src/core/pluginactivator.h>
 #include <src/core/pluginmanager.h>
+#include <src/core/workerexport1c.h>
 #include <src/dropbox/connectordropbox.h>
 #include <src/dropbox/dropboxhealthchecker.h>
 #include <src/dropbox/dropboxoauth2_pkce.h>
@@ -480,9 +483,10 @@ void MainWindow::onChooseDirWithDb()
             table->setItem(row, 3, statusItem);
 
             // metadata interna
-            dbItem->setData(Qt::UserRole,     "one_file");
-            dbItem->setData(Qt::UserRole + 1, true);
-            dbItem->setData(Qt::UserRole + 2, "");
+            dbItem->setData(ItemRole::DbType,     "one_file");
+            dbItem->setData(ItemRole::Configured, true);
+            dbItem->setData(ItemRole::ConfigPath, "");
+            dbItem->setData(ItemRole::Operations, defaultOperationsWithGlobals());
         }
     }
 }
@@ -536,7 +540,7 @@ void MainWindow::onStartArchive()
             if (!item)
                 continue;
 
-            QString typeDB = item->data(Qt::UserRole).toString();
+            QString typeDB = item->data(ItemRole::DbType).toString();
             if (typeDB == "one_file") {
                 hasFileDb = true;
                 break;
@@ -581,7 +585,7 @@ void MainWindow::onStartArchive()
         if (!itemDb)
             continue;
 
-        QString typeDB = itemDb->data(Qt::UserRole).toString();
+        QString typeDB = itemDb->data(ItemRole::DbType).toString();
 
         BackupJob j;
         j.row     = i;
@@ -594,16 +598,30 @@ void MainWindow::onStartArchive()
             QString folder = table->item(i,2)->text();
             QString file1cd = QDir(folder).filePath("1Cv8.1CD"); //QString file1cd = folder + "/1Cv8.1CD";
 
+            /** plugin export_1c activ -> exportul .dt in locul arhivarii .1CD */
+            QString exportConfig;
+            if (globals::pl_export1c) {
+                exportConfig = WorkerExport1C::findConfig(j.dbName, folder);
+                if (exportConfig.isEmpty())
+                    log(tr("⚠ Export 1C: nu există configurare pentru '%1', se arhivează fișierul .1CD.")
+                            .arg(j.dbName));
+            }
+
+            /** baza de server 1C nu are fisier 1Cv8.1CD local */
+            const bool serverBase = !exportConfig.isEmpty()
+                                    && WorkerExport1C::isServerConfig(exportConfig);
+
             QFileInfo f(file1cd);
-            if (!f.exists()) {
+            if (!serverBase && !f.exists()) {
                 log(tr("⛔ Nu găsesc 1Cv8.1CD în: ") + folder);
                 continue;
             }
 
-            j.typeDB      = typeDB;
-            j.dbFolder    = folder;
-            j.file1CD     = file1cd;
-            j.archivePath = buildArchiveName(j.dbName);
+            j.typeDB       = typeDB;
+            j.dbFolder     = folder;
+            j.file1CD      = file1cd;
+            j.exportConfig = exportConfig;
+            j.archivePath  = buildArchiveName(j.dbName);
             j.archiveWholeFolder = globals::backupExtFiles;
 
         } else if (typeDB == "mssql") {
@@ -613,7 +631,7 @@ void MainWindow::onStartArchive()
                 continue;
             }
 
-            QString configPath = itemDb->data(Qt::UserRole + 2).toString();
+            QString configPath = itemDb->data(ItemRole::ConfigPath).toString();
 
             if (configPath.isEmpty() || !QFileInfo::exists(configPath)) {
                 log(tr("⛔ Config MSSQL lipsă pentru: ") + j.dbName);
@@ -795,9 +813,10 @@ void MainWindow::autoDetectPaths1C()
         table->setItem(i, 3, statusItem);
 
         /** metadata interna (FOARTE IMPORTANT) */
-        dbItem->setData(Qt::UserRole,     "one_file"); /** typeDB -> "one_file" */
-        dbItem->setData(Qt::UserRole + 1, true);       /** configured -> true or false */
-        dbItem->setData(Qt::UserRole + 2, "");         /** path config JSON */
+        dbItem->setData(ItemRole::DbType,     "one_file"); /** typeDB -> "one_file" */
+        dbItem->setData(ItemRole::Configured, true);       /** configured -> true or false */
+        dbItem->setData(ItemRole::ConfigPath, "");         /** path config JSON */
+        dbItem->setData(ItemRole::Operations, defaultOperationsWithGlobals());
     }
 }
 
@@ -856,9 +875,10 @@ void MainWindow::onAddedDatabaseMSSQL(const QVariantMap &dbInfo)
     table->setItem(row, 3, statusItem);
 
     /** --- Metadata interna (FOARTE IMPORTANT) */
-    dbItem->setData(Qt::UserRole,        typeDB);     /** typeDB -> "mssql" */
-    dbItem->setData(Qt::UserRole + 1,    configured); /** configured -> true or false */
-    dbItem->setData(Qt::UserRole + 2,    cfgPath);    /** path config JSON */
+    dbItem->setData(ItemRole::DbType,     typeDB);     /** typeDB -> "mssql" */
+    dbItem->setData(ItemRole::Configured, configured); /** configured -> true or false */
+    dbItem->setData(ItemRole::ConfigPath, cfgPath);    /** path config JSON */
+    dbItem->setData(ItemRole::Operations, defaultOperationsWithGlobals());
 
     /** --- Selectam automat randul nou */
     table->selectRow(row);
@@ -911,7 +931,7 @@ void MainWindow::onEditMssqlDb()
     if (!itemDb)
         return;
 
-    const QString configFile = itemDb->data(Qt::UserRole + 2).toString();
+    const QString configFile = itemDb->data(ItemRole::ConfigPath).toString();
     if (configFile.isEmpty() || !QFile::exists(configFile)) {
         QMessageBox::warning(
             this,
@@ -934,7 +954,7 @@ void MainWindow::onRemoveMssqlDb()
     if (!itemDb)
         return;
 
-    const QString configFile = itemDb->data(Qt::UserRole + 2).toString();
+    const QString configFile = itemDb->data(ItemRole::ConfigPath).toString();
 
     if (configFile.isEmpty())
         return;
@@ -1013,6 +1033,14 @@ QString MainWindow::buildArchiveNameMSSQL(const QString &dbName) const
         dbName + "_mssql_" +
         QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss") +
         ".bak");
+}
+
+QString MainWindow::buildDumpNameExport1C(const QString &dbName) const
+{
+    return QDir(backupFolder).filePath(
+        dbName + "_" +
+        QDateTime::currentDateTime().toString("yyyy-MM-dd_HH.mm.ss") +
+        ".dt");
 }
 
 void MainWindow::proceedWithArchive(BackupJob &job)
@@ -1094,7 +1122,8 @@ void MainWindow::proceedWithArchive(BackupJob &job)
 
                 t->quit();
                 if (!ok)
-                    QMetaObject::invokeMethod(this, "startNextJob", Qt::QueuedConnection);
+                    QMetaObject::invokeMethod(this, [this]() { startNextJob(); },
+                                              Qt::QueuedConnection);
             });
 
     /** ARHIVA CREATA -> SHA -> DROPBOX */
@@ -1108,9 +1137,8 @@ void MainWindow::proceedWithArchive(BackupJob &job)
                         .arg(toWinPath(archivePath),
                              QString::number(sizeMB, 'f', 1)));
 
-                /** eliminam fisierul .bak */
-                if (globals::pl_mssql &&
-                    ! job.fileBak.isEmpty() &&
+                /** eliminam fisierul intermediar (.bak MSSQL / .dt export 1C) */
+                if (! job.fileBak.isEmpty() &&
                     QFile(job.archivePath).exists()) {
                     if (!QFile::remove(job.file1CD)) {
                         log(tr("⚠ Nu pot șterge fișierul: %1")
@@ -1192,7 +1220,7 @@ void MainWindow::proceedWithArchiveMssql(BackupJob &job)
 
     connect(worker, &WorkerMssql::finished,
             this,
-            [=, &job](bool ok, const QString &err) {
+            [=, &job](bool ok, const QString &, const QString &err) {
 
                 mv->stop();
                 mv->deleteLater();
@@ -1238,6 +1266,81 @@ void MainWindow::proceedWithArchiveMssql(BackupJob &job)
             t, &QObject::deleteLater);
 
     t->start();
+}
+
+void MainWindow::proceedWithExport1C(BackupJob &job)
+{
+    /** durata exportului nu se cunoaste -> progresBar nedeterminat */
+    progressBar->setRange(0, 0);
+    currentStatus->setText(tr("Export 1C (.dt): ..."));
+
+    /** spinner tabelei */
+    QLabel *lbl = new QLabel(this);
+    lbl->setAlignment(Qt::AlignCenter);
+
+    QMovie *mv = globals::isDark
+                     ? new QMovie(":/icons/icons/spinner.gif")
+                     : new QMovie(":/icons/icons/Fading balls.gif");
+
+    mv->setScaledSize(QSize(20, 20));
+    lbl->setMovie(mv);
+    mv->start();
+
+    table->setCellWidget(job.row, 3, lbl);
+
+    // ---------- Worker export 1C ----------
+    /** QProcess e asincron -> worker-ul ruleaza in firul principal */
+    auto *worker = new WorkerExport1C(this);
+
+    worker->setConfigFile(job.exportConfig);
+    worker->setDbFolder(job.dbFolder);
+
+    /** fisier .dt */
+    const QString dtPath = buildDumpNameExport1C(job.dbName);
+    worker->setOutputDt(dtPath);
+
+    connect(worker, &WorkerExport1C::log,
+            this, &MainWindow::log);
+
+    connect(worker, &WorkerExport1C::finished,
+            this,
+            [=, &job](bool ok, const QString &, const QString &err) {
+
+                worker->deleteLater();
+
+                mv->stop();
+                mv->deleteLater();
+                lbl->deleteLater();
+                table->removeCellWidget(job.row, 3);
+
+                progressBar->setRange(0, 100);
+                progressBar->setValue(0);
+
+                if (!ok) {
+                    auto *it = new QTableWidgetItem("❌");
+                    it->setTextAlignment(Qt::AlignCenter);
+                    table->setItem(job.row, 3, it);
+
+                    log(tr("❌ Export 1C eșuat: ") + err);
+                    QMetaObject::invokeMethod(this, [this]() { startNextJob(); },
+                                              Qt::QueuedConnection);
+                    return;
+                }
+
+                log(tr("✔ Export 1C finalizat, creat - %1")
+                        .arg(toWinPath(dtPath)));
+
+                /** transformam job-ul: arhivam fisierul .dt (pipeline-ul normal) */
+                job.file1CD = dtPath;                            /** file INPUT */
+                job.fileBak = dtPath;                            /** IMPORTANT - .dt se elimina dupa arhivare */
+                job.exportConfig.clear();
+                job.archiveWholeFolder = false;                  /** arhivam doar .dt */
+                job.archivePath = buildArchiveName(job.dbName);  /** file OUTPUT */
+
+                proceedWithArchive(job);
+            });
+
+    worker->process();
 }
 
 // ======================================
@@ -1290,6 +1393,8 @@ void MainWindow::startNextJob()
     //---------------------------------------------
     if (job.typeDB == "mssql") {
         proceedWithArchiveMssql(job);
+    } else if (job.typeDB == "one_file" && !job.exportConfig.isEmpty()) {
+        proceedWithExport1C(job);
     } else if (job.typeDB == "one_file") {
         proceedWithArchive(job);
     }
@@ -1653,6 +1758,14 @@ void MainWindow::loadSettings()
             const QString configPath =
                 o.value("configPath").toString(); // poate lipsi -> ""
 
+            QVariantMap ops;
+            if (o.contains("operations")) {
+                ops = o.value("operations").toObject().toVariantMap();
+            } else {
+                /** daca nu este in config -> completarea din varibile globale */
+                ops = defaultOperationsWithGlobals(); /** vezi -> src/common/defaultoperations.h */
+            }
+
             int row = table->rowCount();
             table->insertRow(row);
 
@@ -1678,9 +1791,10 @@ void MainWindow::loadSettings()
             table->setItem(row, 3, statusItem);
 
             /** restaurarea metadata interna -> IMPORTANT */
-            dbItem->setData(Qt::UserRole,     typeDB);
-            dbItem->setData(Qt::UserRole + 1, configured);
-            dbItem->setData(Qt::UserRole + 2, configPath);
+            dbItem->setData(ItemRole::DbType,     typeDB);
+            dbItem->setData(ItemRole::Configured, configured);
+            dbItem->setData(ItemRole::ConfigPath, configPath);
+            dbItem->setData(ItemRole::Operations, ops);
 
             log(tr("✔ Baza de date '%1' încărcată din setări.")
                     .arg(path));
@@ -1716,6 +1830,7 @@ void MainWindow::saveSettings()
     // ----------------------------------------
     QJsonArray arr_plugins;
     QJsonObject obj_plugin;
+    obj_plugin["export1c"] = globals::pl_export1c;
     obj_plugin["mssql"]    = globals::pl_mssql;
     obj_plugin["rsync"]    = globals::pl_rsync;
     obj_plugin["onedrive"] = globals::pl_onedrive;
@@ -1769,13 +1884,18 @@ void MainWindow::saveSettings()
 
         // metedata interna - e Important !!!
         obj["typeDB"] =
-            dbItem->data(Qt::UserRole).toString();
+            dbItem->data(ItemRole::DbType).toString();
 
         obj["configured"] =
-            dbItem->data(Qt::UserRole + 1).toBool();
+            dbItem->data(ItemRole::Configured).toBool();
 
         obj["configPath"] =
-            dbItem->data(Qt::UserRole + 2).toString();
+            dbItem->data(ItemRole::ConfigPath).toString();
+
+        QVariantMap ops =
+            dbItem->data(ItemRole::Operations).toMap();
+
+        obj["operations"] = QJsonObject::fromVariantMap(ops);
 
         arr_db.append(obj);
     }
@@ -1928,18 +2048,23 @@ void MainWindow::cleanupOldArchives()
     if (!dir.exists())
         return;
 
+    /** vechimea neindicata (0 / -1) -> NU stergem nimic,
+     *  altfel limita devine "acum" si se sterg toate arhivele, inclusiv cele noi */
+    if (globals::lastNrDay <= 0) {
+        log(tr("⚠ Eliminarea arhivelor vechi omisă: nu este indicată vechimea arhivelor."));
+        return;
+    }
+
     /** determinam data limita */
     const QDateTime limit =
         QDateTime::currentDateTime().addDays(-globals::lastNrDay);
 
-    /** filtru pu fisiere */
+    /** filtru pu fisiere -> doar fisierele create de aplicatie */
     const QStringList filters =
     {
         "*.7z",
-        "*.zip",
-        "*.sha256",
-        "*.log",
-        "*.txt"
+        "*.7z.sha256",
+        "log_*.log"
     };
 
     /** bucla pu depistarea fisierelor */

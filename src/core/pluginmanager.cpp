@@ -12,6 +12,7 @@
 PluginManager::PluginManager()
 {
     /** starea implicită dezactivata */
+    m_plugins["export1c"] = false;
     m_plugins["mssql"]    = false;
     m_plugins["rsync"]    = false;
     m_plugins["onedrive"] = false;
@@ -41,6 +42,7 @@ void PluginManager::load()
     }
 
     /** setam variabile globale */
+    globals::pl_export1c = m_plugins["export1c"];
     globals::pl_mssql    = m_plugins["mssql"];
     globals::pl_rsync    = m_plugins["rsync"];
     globals::pl_onedrive = m_plugins["onedrive"];

@@ -33,36 +33,44 @@ signals:
     void addedDatabaseMSSQL(const QVariantMap &dbInfo);
 
 private slots:
+    void onClickExport1C(bool on);
     void onClickMSSQL(bool on);
     void onClickRsync(bool on);
     void onClickOneDrive(bool on);
 
+    void onClickConfigExport1C();
     void onClickConfigMSSQL();
 
 private:
     QLabel *lblInfo;
 
-    QLabel *lbl_mssql; /** titlu principal */
+    QLabel *lbl_export1C; /** titlu principal */
+    QLabel *lbl_mssql;
     QLabel *lbl_rsync;
     QLabel *lbl_onedrive;
 
-    QLabel *desc_mssql; /** descrierea */
+    QLabel *desc_export1C; /** descrierea */
+    QLabel *desc_mssql;
     QLabel *desc_rsync;
     QLabel *desc_onedrive;
 
-    QLabel *status_mssql; /** ststus plugin-lui */
+    QLabel *status_export1C; /** ststus plugin-lui */
+    QLabel *status_mssql;
     QLabel *status_rsync;
     QLabel *status_onedrive;
 
-    SwitchButton *btnMSSQL    = nullptr; /** switch button pu activarea plugin */
+    SwitchButton *btnExport1C = nullptr; /** switch button pu activarea plugin */
+    SwitchButton *btnMSSQL    = nullptr;
     SwitchButton *btnRsync    = nullptr;
     SwitchButton *btnOneDrive = nullptr;
 
-    QPushButton *btnConfigMSSQL    = nullptr; /** butoane pu adaugarea BD */
+    QPushButton *btnConfigExport1C = nullptr; /** butoane pu adaugarea BD */
+    QPushButton *btnConfigMSSQL    = nullptr;
     QPushButton *btnConfigRsync    = nullptr;
     QPushButton *btnConfigOneDrive = nullptr;
 
     //-----------------------------------------
+    void checkPluginExport1C();
     void checkPluginMSSQL();
     void checkPluginRsync();
     void checkPluginOneDrive();

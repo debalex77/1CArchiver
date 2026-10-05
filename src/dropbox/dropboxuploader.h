@@ -75,6 +75,7 @@ private:
     DropboxOAuth2_PKCE *m_oauth = nullptr;
 
     bool m_retryAfterRefresh = false;
+    bool m_refreshAttempted  = false; /** un singur refresh per upload */
 
     UploadState m_state = UploadState::Idle;
 };

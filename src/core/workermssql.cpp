@@ -51,9 +51,11 @@ void WorkerMssql::setConfigFile(const QString &path)
     QString err;
     QVariantMap dbCfg = loadJsonConfig(path, &err);
     if (dbCfg.isEmpty()) {
-        emit finished(false, QString(), "Config error: " + err);
+        /** semnalul nu e inca conectat aici -> eroarea se raporteaza in process() */
+        m_configError = "Config error: " + err;
         return;
     }
+    m_configError.clear();
     m_server   = dbCfg.value("server").toString();
     m_database = dbCfg.value("database").toString();
     m_auth     = dbCfg.value("auth").toString();
@@ -68,6 +70,11 @@ void WorkerMssql::setOutputBak(const QString &bakPath)
 
 void WorkerMssql::process()
 {
+    if (!m_configError.isEmpty()) {
+        emit finished(false, QString(), m_configError);
+        return;
+    }
+
     emit log(tr("MSSQL backup started"));
 
     // -------------------------------------------------
