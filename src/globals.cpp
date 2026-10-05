@@ -25,6 +25,7 @@ namespace globals {
     bool deleteArchives = false; /** eliminarea arhivelor */
     int lastNrDay = -1;          /** arhive mai mari de 3 zile (exemplu) */
 
+    bool pl_export1c  = false; /** plugin export_1c activat */
     bool pl_mssql     = false; /** plugin mssql activat */
     bool set_pl_mssql = false; /** plugin mssql setat */
 

@@ -36,8 +36,12 @@ private:
     void loadConfig();
     void saveConfig();
 
+    QString getPlatform1CPath() const;
+    static QString export1CDbName(const QVariantMap &values);
+
     QString schemaPath() const;
 
+    QString m_platform1CPath;
     QString m_pluginId;
     QString m_configFile;
 

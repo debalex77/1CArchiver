@@ -15,7 +15,7 @@
 #include <QJsonObject>
 #include <QMap>
 #include <QVariantMap>
-
+#include <QEvent>
 /*
  * DynamicPluginForm
  * -----------------
@@ -34,6 +34,10 @@ public:
     bool validate(QString *errorMessage = nullptr) const; /** verificam daca tot e completat */
     QVariantMap values() const;                           /** valorile introduse de utilizator */
     void setValues(const QVariantMap &values);            /** setam valorile din QVariantMap */
+    void setValue(const QString &key, const QVariant &value);
+
+signals:
+    void sizeChanged();
 
 private slots:
     void updateVisibility(); /** actualizam vizibilitatea campurilor (visible_if) */
@@ -45,7 +49,6 @@ private:
     QVariant fieldValue(const QString &id) const;
 
     QJsonObject m_schema;
-
 
     QMap<QString, QWidget*>    m_fields;    /** id -> widget */
     QMap<QString, QJsonObject> m_fieldDefs; /** id -> descriere .json */

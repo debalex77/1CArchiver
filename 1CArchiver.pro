@@ -14,6 +14,7 @@ SOURCES += \
     src/compressworker.cpp \
     src/core/pluginactivator.cpp \
     src/core/pluginmanager.cpp \
+    src/core/workerexport1c.cpp \
     src/core/workermssql.cpp \
     src/dropbox/connectordropbox.cpp \
     src/dropbox/dropboxconnectdialog.cpp \
@@ -36,9 +37,11 @@ HEADERS += \
     src/IBASEEntry.h \
     src/aboutdialog.h \
     src/appsettings.h \
+    src/common/defaultoperations.h \
     src/compressworker.h \
     src/core/pluginactivator.h \
     src/core/pluginmanager.h \
+    src/core/workerexport1c.h \
     src/core/workermssql.h \
     src/dropbox/connectordropbox.h \
     src/dropbox/dropboxconnectdialog.h \
@@ -47,6 +50,7 @@ HEADERS += \
     src/dropbox/dropboxuploader.h \
     src/globals.h \
     src/ibaseparser.h \
+    src/common/itemroles.h \
     src/lineeditpassword.h \
     src/mainwindow.h \
     src/scheduler/scheduledtaskdialog.h \

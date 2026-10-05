@@ -26,10 +26,12 @@ PluginActivator::PluginActivator(QWidget *parent)
     updateUI(); /** actualizam forma */
 
     /** connections */
+    connect(btnExport1C, &SwitchButton::toggled, this, &PluginActivator::onClickExport1C);
     connect(btnMSSQL, &SwitchButton::toggled, this, &PluginActivator::onClickMSSQL);
     connect(btnRsync, &SwitchButton::toggled, this, &PluginActivator::onClickRsync);
     connect(btnOneDrive, &SwitchButton::toggled, this, &PluginActivator::onClickOneDrive);
 
+    connect(btnConfigExport1C, &QPushButton::clicked, this, &PluginActivator::onClickConfigExport1C);
     connect(btnConfigMSSQL, &QPushButton::clicked, this, &PluginActivator::onClickConfigMSSQL);
 }
 
@@ -87,6 +89,50 @@ void PluginActivator::setupUI()
 
     v->addLayout(layout_info);
     v->addWidget(line_info);
+
+    //-------------------------------------------------
+    // --- Export 1C
+    //-------------------------------------------------
+
+    auto *layout_export1C = new QHBoxLayout;
+    layout_export1C->setContentsMargins(10,10,10,10);
+    layout_export1C->setSpacing(10);
+
+    lbl_export1C = new QLabel(this);
+    lbl_export1C->setStyleSheet("font-size: 14px; font-weight: bold;");
+    lbl_export1C->setText(tr("Export 1C"));
+
+    btnExport1C = new SwitchButton(this);
+    btnExport1C->setChecked(globals::pl_export1c);
+
+    desc_export1C = new QLabel(this);
+    desc_export1C->setStyleSheet("font-size: 11px;");
+    desc_export1C->setText(
+        tr("Activarea pluginului pentru exportul baze de date<br>"
+           "cu ajutorul <b>1C tool</b> (crearea fişierului .dt)")
+        );
+
+    btnConfigExport1C = new QPushButton(this);
+    btnConfigExport1C->setText(tr("Config"));
+
+    status_export1C = new QLabel(this);
+    status_export1C->setStyleSheet("font-size: 11px; font-style: italic; color: #7acfcf;");
+    checkPluginExport1C();
+
+    layout_export1C->addWidget(btnExport1C);
+    layout_export1C->addWidget(desc_export1C);
+    layout_export1C->addStretch();
+    layout_export1C->addWidget(btnConfigExport1C);
+
+    QFrame* line_export1C = new QFrame(this);
+    line_export1C->setFrameShape(QFrame::HLine);
+    line_export1C->setFrameShadow(QFrame::Plain);
+    line_export1C->setFixedHeight(1);
+
+    v->addWidget(lbl_export1C);
+    v->addLayout(layout_export1C);
+    v->addWidget(status_export1C);
+    v->addWidget(line_export1C);
 
     //-------------------------------------------------
     // --- MSSQL
@@ -219,15 +265,25 @@ void PluginActivator::setupUI()
 
 void PluginActivator::updateUI()
 {
+    status_export1C->setVisible(btnExport1C->isChecked());
     status_mssql->setVisible(btnMSSQL->isChecked());
     status_rsync->setVisible(btnRsync->isChecked());
     status_onedrive->setVisible(btnOneDrive->isChecked());
 
+    btnConfigExport1C->setEnabled(btnExport1C->isChecked());
     btnConfigMSSQL->setEnabled(btnMSSQL->isChecked());
     btnConfigRsync->setEnabled(btnRsync->isChecked());
     btnConfigOneDrive->setEnabled(btnOneDrive->isChecked());
 
     this->adjustSize();
+}
+
+void PluginActivator::onClickExport1C(bool on)
+{
+    globals::pl_export1c = on;
+    if (on)
+        checkPluginExport1C();
+    updateUI();
 }
 
 void PluginActivator::onClickMSSQL(bool on)
@@ -257,6 +313,17 @@ void PluginActivator::onClickOneDrive(bool on)
     updateUI();
 }
 
+void PluginActivator::onClickConfigExport1C()
+{
+    PluginConfigDialog *config_dlg_export1C
+        = new PluginConfigDialog("export_1c",
+                                 QString(),
+                                 this);
+    config_dlg_export1C->setMinimumWidth(510);
+    config_dlg_export1C->adjustSize();
+    config_dlg_export1C->exec();
+}
+
 void PluginActivator::onClickConfigMSSQL()
 {
     PluginConfigDialog *config_dlg_mssql
@@ -266,6 +333,11 @@ void PluginActivator::onClickConfigMSSQL()
     connect(config_dlg_mssql, &PluginConfigDialog::onAddedDatabase,
             this, &PluginActivator::addedDatabaseMSSQL, Qt::UniqueConnection);
     config_dlg_mssql->exec();
+}
+
+void PluginActivator::checkPluginExport1C()
+{
+    status_export1C->setText(tr("Dacă pluginul este activ arhivarea fişierului .1CD nu se efectuiază."));
 }
 
 void PluginActivator::checkPluginMSSQL()

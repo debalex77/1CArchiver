@@ -25,6 +25,7 @@ void DropboxUploader::uploadFile(const QString &localPath, const QString &remote
 {
     m_localPath  = localPath;
     m_remotePath = remotePath;
+    m_refreshAttempted = false;
 
     startUpload();
 }
@@ -136,11 +137,16 @@ void DropboxUploader::onUploadReply()
         if (m_state == UploadState::RefreshingToken)
             return;
 
-        m_state = UploadState::RefreshingToken;
-        m_retryAfterRefresh = true;
+        /** refresh deja incercat -> tokenul nou tot nu e valid, inchidem fluxul */
+        if (m_refreshAttempted) {
+            m_state = UploadState::Failed;
+            emit authError(tr("Dropbox authentication required"));
+            emit uploadFinished(false, tr("Dropbox authentication failed after token refresh."));
+            return;
+        }
 
-        emit authError(tr("Dropbox authentication required"));
-        tryRefreshToken();
+        m_retryAfterRefresh = true;
+        tryRefreshToken(); /** seteaza singur m_state = RefreshingToken */
         return;
     }
 
@@ -162,6 +168,7 @@ void DropboxUploader::tryRefreshToken()
 {
     if (m_refreshToken.isEmpty()) {
         m_state = UploadState::Failed;
+        emit authError(tr("Dropbox authentication required"));
         emit uploadFinished(false, "Upload failed: no refresh_token available.");
         return;
     }
@@ -171,6 +178,7 @@ void DropboxUploader::tryRefreshToken()
         return;
 
     m_state = UploadState::RefreshingToken;
+    m_refreshAttempted = true;
 
     if (!m_oauth) {
         m_oauth = new DropboxOAuth2_PKCE(this);
@@ -216,5 +224,7 @@ void DropboxUploader::onRefreshSuccess()
  */
 void DropboxUploader::onRefreshFail(const QString &reason)
 {
+    m_state = UploadState::Failed;
+    emit authError(tr("Dropbox authentication required"));
     emit uploadFinished(false, QString("Refresh token failed: ") + reason);
 }
