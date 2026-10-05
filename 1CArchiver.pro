@@ -119,7 +119,8 @@ win32 {
     LIBS += -ladvapi32 -lcrypt32
 
     DLL_SRC = $$shell_path($$PWD/3rdparty/bit7z/bin/7z.dll)
-    DLL_DST = $$shell_path($$OUT_PWD/release/7z.dll)
+    CONFIG(debug, debug|release): DLL_DST = $$shell_path($$OUT_PWD/debug/7z.dll)
+    else:                         DLL_DST = $$shell_path($$OUT_PWD/release/7z.dll)
 
     QMAKE_POST_LINK += cmd /c copy /Y "$$DLL_SRC" "$$DLL_DST"
 }
