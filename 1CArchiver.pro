@@ -76,6 +76,7 @@ TRANSLATIONS += \
 #lrelease resources/translations/1CArchiver_app_ru_RU.ts -qm resources/translations/1CArchiver_app_ru_RU.qm
 
 DISTFILES += \
+    .github/workflows/build.yml \
     CHANGELOG.md \
     LICENSE \
     PRIVACY.md \
