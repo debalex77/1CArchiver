@@ -104,7 +104,7 @@ DISTFILES += \
     version.txt
 
 # IMPORTANT: Biblioteci Windows necesare pentru bit7z
-LIBS += -loleaut32 -lole32 -luuid
+LIBS += -loleaut32 -lole32 -luuid -luser32
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/3rdparty/bit7z/lib/x64/release/ -lbit7z
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/3rdparty/bit7z/lib/x64/debug/ -lbit7z
