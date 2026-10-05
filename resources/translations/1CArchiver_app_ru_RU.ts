@@ -64,8 +64,8 @@
     </message>
     <message>
         <location filename="../../src/appsettings.cpp" line="128"/>
-        <source>Setarea parolei la arhive.&lt;br&gt;La salvarea parolei se criptează &lt;b&gt;&lt;span%1&gt;(AES-like XOR + hashed key)&lt;/span&gt;&lt;/b&gt;</source>
-        <translation>Установка пароля на архивы.&lt;br&gt;Пароль шифруется при сохранении &lt;b&gt;&lt;span%1&gt;(AES-like XOR + hashed key)&lt;/span&gt;&lt;/b&gt;</translation>
+        <source>Setarea parolei la arhive.&lt;br&gt;La salvarea parolei se criptează &lt;b&gt;&lt;span%1&gt;(Windows DPAPI)&lt;/span&gt;&lt;/b&gt;</source>
+        <translation>Установка пароля на архивы.&lt;br&gt;Пароль шифруется при сохранении &lt;b&gt;&lt;span%1&gt;(Windows DPAPI)&lt;/span&gt;&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../../src/appsettings.cpp" line="174"/>

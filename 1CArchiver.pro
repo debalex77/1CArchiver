@@ -31,7 +31,8 @@ SOURCES += \
     src/ui/dynamicpluginform.cpp \
     src/ui/pluginconfigdialog.cpp \
     src/updatechecker.cpp \
-    src/updatedialog.cpp
+    src/updatedialog.cpp \
+    src/utils.cpp
 
 HEADERS += \
     src/IBASEEntry.h \
@@ -115,7 +116,7 @@ DEPENDPATH += $$PWD/3rdparty/bit7z/include
 win32 {
     QMAKE_PROJECT_DEPTH = 0
     RC_FILE = app.rc
-    LIBS += -ladvapi32
+    LIBS += -ladvapi32 -lcrypt32
 
     DLL_SRC = $$shell_path($$PWD/3rdparty/bit7z/bin/7z.dll)
     DLL_DST = $$shell_path($$OUT_PWD/release/7z.dll)
