@@ -2,10 +2,12 @@
 #
 #   - push pe master / pull request / manual -> pachetele raman ca artifacts
 #   - push tag "v*" (ex. v1.9)              -> se creeaza un release DRAFT cu
-#                                              arhivele .zip + .sha256 atasate
+#                                              installer .exe + .zip + .sha256
 #
 # Pachetul repeta build_script/build_win.bat:
 #   1CArchiver.exe + windeployqt + 7z.dll + VC_redist.x64.exe
+#   + installer Qt Installer Framework (installer/). Numele installerului
+#   trebuie sa ramana cel cautat de UpdateDialog (src/updatedialog.cpp).
 
 name: Build
 
@@ -30,9 +32,11 @@ jobs:
           - name: qt5
             qt: '5.15.2'
             arch: win64_msvc2019_64
+            installer: qt5_Windows7-11_amd64
           - name: qt6
             qt: '6.9.3'
             arch: win64_msvc2022_64
+            installer: Windows_amd64
 
     steps:
       - uses: actions/checkout@v4
@@ -42,6 +46,7 @@ jobs:
         with:
           version: ${{ matrix.qt }}
           arch: ${{ matrix.arch }}
+          tools: 'tools_ifw'
           cache: true
 
       - name: Mediu MSVC x64
@@ -61,6 +66,7 @@ jobs:
           }
           "VERSION=$ver" >> $env:GITHUB_ENV
           "PKG=1CArchiver_v${ver}_${{ matrix.name }}" >> $env:GITHUB_ENV
+          "SETUP=1CArchiver_v${ver}_${{ matrix.installer }}.exe" >> $env:GITHUB_ENV
 
       - name: Build (release)
         shell: cmd
@@ -83,12 +89,39 @@ jobs:
           Copy-Item 3rdparty/bit7z/bin/7z.dll $dist
           Invoke-WebRequest https://aka.ms/vs/17/release/vc_redist.x64.exe -OutFile "$dist/VC_redist.x64.exe"
 
+      #--- installer QIF, ca in build_win.bat (versiunea din config se aliniaza cu VER)
+      - name: Installer
+        shell: pwsh
+        run: |
+          $bc = Get-ChildItem $env:IQTA_TOOLS -Recurse -Filter binarycreator.exe | Select-Object -First 1
+          if (-not $bc) { throw 'binarycreator.exe nu a fost gasit' }
+
+          $inst = 'build-ci/installer'
+          Copy-Item installer $inst -Recurse
+          $data = "$inst/packages/com.oxvalprim.archiver/data"
+          Copy-Item "dist/$env:PKG/*" $data -Recurse -Force
+          Copy-Item icons/backup.ico $data
+
+          $date = Get-Date -Format 'yyyy-MM-dd'
+          foreach ($f in "$inst/config/config.xml", "$inst/packages/com.oxvalprim.archiver/meta/package.xml") {
+            $xml = Get-Content $f -Raw -Encoding utf8
+            $xml = $xml -replace '<Version>[^<]*</Version>', "<Version>$env:VERSION</Version>"
+            $xml = $xml -replace '<ReleaseDate>[^<]*</ReleaseDate>', "<ReleaseDate>$date</ReleaseDate>"
+            $xml = $xml -replace '1CArchiver v[0-9.]+', "1CArchiver v$env:VERSION"
+            Set-Content $f $xml -Encoding utf8NoBOM -NoNewline
+          }
+
+          & $bc.FullName --offline-only -c "$inst/config/config.xml" -p "$inst/packages" "dist/$env:SETUP"
+          if ($LASTEXITCODE -ne 0) { throw 'binarycreator a esuat' }
+
       - name: Arhivare + SHA256
         shell: pwsh
         run: |
           Compress-Archive -Path "dist/$env:PKG/*" -DestinationPath "dist/$env:PKG.zip"
-          $hash = (Get-FileHash "dist/$env:PKG.zip" -Algorithm SHA256).Hash.ToLower()
-          "$hash  $env:PKG.zip" | Out-File -Encoding ascii "dist/$env:PKG.zip.sha256"
+          foreach ($f in "$env:PKG.zip", "$env:SETUP") {
+            $hash = (Get-FileHash "dist/$f" -Algorithm SHA256).Hash.ToLower()
+            "$hash  $f" | Out-File -Encoding ascii "dist/$f.sha256"
+          }
 
       - uses: actions/upload-artifact@v4
         with:
@@ -96,6 +129,8 @@ jobs:
           path: |
             dist/${{ env.PKG }}.zip
             dist/${{ env.PKG }}.zip.sha256
+            dist/${{ env.SETUP }}
+            dist/${{ env.SETUP }}.sha256
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
@@ -115,5 +150,6 @@ jobs:
           draft: true
           name: 1CArchiver ${{ github.ref_name }}
           files: |
+            dist/*.exe
             dist/*.zip
             dist/*.sha256
