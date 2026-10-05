@@ -65,8 +65,9 @@ void CompressWorker::process() {
                 );
         }
 
-        emit backupCreated(m_output);
+        //--- intai finished (log + tabel + quit thread), apoi backupCreated (SHA/Dropbox/job urmator)
         emit finished(true, m_output, QString());
+        emit backupCreated(m_output);
 
     } catch (const BitException& ex) {
         // emit error(QString::fromStdString(ex.what()));
