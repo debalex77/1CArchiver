@@ -2,7 +2,7 @@
 
 <img src="https://img.shields.io/badge/platform-Windows%20x64-blue" alt="Platform">
 <img src="https://img.shields.io/badge/Qt-6.9.3-brightgreen" alt="Qt">
-<img src="https://img.shields.io/badge/bit7z-4.0.10-lightgrey" alt="bit7z">
+<img src="https://img.shields.io/badge/bit7z-4.1.0-lightgrey" alt="bit7z">
 <img src="https://img.shields.io/github/license/debalex77/1CArchiver" alt="License">
 <img src="https://img.shields.io/github/v/release/debalex77/1CArchiver" alt="Latest Release">
 <img src="https://img.shields.io/github/downloads/debalex77/1CArchiver/total" alt="Downloads">
