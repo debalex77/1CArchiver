@@ -1,13 +1,17 @@
-![Platform](https://img.shields.io/badge/platform-Windows%20x64-blue)
-![Qt](https://img.shields.io/badge/Qt-6.9.3-brightgreen)
-![bit7z](https://img.shields.io/badge/bit7z-4.0.10-lightgrey)
-![License](https://img.shields.io/github/license/debalex77/1CArchiver)
-![Latest Release](https://img.shields.io/github/v/release/debalex77/1CArchiver)
-![Downloads](https://img.shields.io/github/downloads/debalex77/1CArchiver/total)
-![Status](https://img.shields.io/badge/status-active-success)
-![Installer](https://img.shields.io/badge/installer-Inno%20Setup-lightblue)
-![Security](https://img.shields.io/badge/encryption-AES--256-critical)
-[![Sponsor](https://img.shields.io/badge/Sponsor-GitHub-ea4aaa?logo=github)](https://github.com/sponsors/debalex77)
+<div align="center">
+
+<img src="https://img.shields.io/badge/platform-Windows%20x64-blue" alt="Platform">
+<img src="https://img.shields.io/badge/Qt-6.9.3-brightgreen" alt="Qt">
+<img src="https://img.shields.io/badge/bit7z-4.0.10-lightgrey" alt="bit7z">
+<img src="https://img.shields.io/github/license/debalex77/1CArchiver" alt="License">
+<img src="https://img.shields.io/github/v/release/debalex77/1CArchiver" alt="Latest Release">
+<img src="https://img.shields.io/github/downloads/debalex77/1CArchiver/total" alt="Downloads">
+<img src="https://img.shields.io/badge/status-active-success" alt="Status">
+<img src="https://img.shields.io/badge/installer-Inno%20Setup-lightblue" alt="Installer">
+<img src="https://img.shields.io/badge/encryption-AES--256-critical" alt="Security">
+<a href="https://github.com/sponsors/debalex77"><img src="https://img.shields.io/badge/Sponsor-GitHub-ea4aaa?logo=github" alt="Sponsor"></a>
+
+</div>
 
 ---
 
@@ -39,7 +43,7 @@ The project is built with:
 
 - **Qt 6.9.3 (MSVC 2022)**
 - **C++17**
-- **[bit7z](https://github.com/rikyoz/bit7z) 4.0.10 (SevenZip SDK)**
+- **[bit7z](https://github.com/rikyoz/bit7z) 4.1.0 (SevenZip SDK)**
 - **Windows 64-bit support**
 
 ---
@@ -90,7 +94,7 @@ The project is built with:
 - Qt 6.9.3 (MSVC 2022)  
 - Visual Studio Build Tools 2022  
 - [7-Zip](https://www.7-zip.org/) installed (for `7z.dll`)  
-- [bit7z 4.0.10](https://github.com/rikyoz/bit7z)  
+- [bit7z 4.1.0](https://github.com/rikyoz/bit7z)  
 
 ---
 
