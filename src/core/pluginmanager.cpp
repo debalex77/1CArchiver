@@ -15,6 +15,8 @@ PluginManager::PluginManager()
     m_plugins["mssql"]    = false;
     m_plugins["rsync"]    = false;
     m_plugins["onedrive"] = false;
+    m_plugins["export_1c"] = false;
+    m_plugins["telegram"]  = false;
 }
 
 void PluginManager::load()
@@ -44,6 +46,8 @@ void PluginManager::load()
     globals::pl_mssql    = m_plugins["mssql"];
     globals::pl_rsync    = m_plugins["rsync"];
     globals::pl_onedrive = m_plugins["onedrive"];
+    globals::pl_export1c = m_plugins["export_1c"];
+    globals::pl_telegram = m_plugins["telegram"];
 }
 
 void PluginManager::save() const

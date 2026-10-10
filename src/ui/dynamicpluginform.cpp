@@ -87,8 +87,14 @@ void DynamicPluginForm::updateVisibility()
         QString id = it.key();
         QJsonObject def = it.value();
 
+        /** eticheta din QFormLayout se ascunde odata cu campul */
+        auto *form  = qobject_cast<QFormLayout*>(layout());
+        QWidget *lbl = form ? form->labelForField(m_fields[id]) : nullptr;
+
         if (!def.contains("visible_if")) {
             m_fields[id]->setVisible(true);
+            if (lbl)
+                lbl->setVisible(true);
             continue;
         }
 
@@ -104,6 +110,8 @@ void DynamicPluginForm::updateVisibility()
         }
 
         m_fields[id]->setVisible(visible);
+        if (lbl)
+            lbl->setVisible(visible);
     }
 }
 

@@ -10,13 +10,99 @@ and this project follows Semantic Versioning.
 ## [Unreleased]
 
 Planned improvements and fixes:
-  - uploading data using 1C tools
+  - sending the backup log by email
   - archive synchronization via RSYNC
   - synchronization of archives with the external OneDrive service
 
 ---
 
 # Changelog
+
+---
+
+## [1.10] – 2026-10-09
+
+### 🇬🇧 English
+
+#### New Features
+- New plugin **Export 1C (.dt)**: databases are dumped with the 1C platform tools (`1cv8.exe DESIGNER /DumpIB`)
+  - Works for **file** databases (`/F`) and **server** databases (`/S cluster\infobase`)
+  - Configured per database: right click on the database in the table → **"Configure .dt export"** (1C user, password, optional path to `1cv8.exe`; for server databases also the 1C cluster and infobase name)
+  - When `.dt` export is configured, it **replaces** the native backup (`.1CD` / `.bak`): `.dt` → `.7z` → `.sha256` → Dropbox (optional); the temporary `.dt` file is removed after archiving
+  - The latest installed 1C platform version is detected automatically if no path is set
+  - Export errors (exit code and the platform log) are shown in the log and the row is marked ❌; there is no silent fallback
+- New plugin **Telegram**: after each backup (manual or `--autorun`) a bot sends a **summary** (computer, result, start time, duration, ✔/❌ per database) and the **full log** as a file
+  - Mode **always** or **errors only**
+  - **Test** button in the plugin window
+  - In `--autorun` mode the application closes only after the report has been sent (30 s timeout per request)
+
+#### Security & Data Handling
+- The 1C password and the Telegram bot token are encrypted with **Windows DPAPI**
+- The bot token is hidden in error messages
+
+#### Bug Fixes
+- Plugin configuration forms: the label of a hidden field is now hidden together with the field (e.g. "User" with Windows authentication for MSSQL)
+- MSSQL: the row is marked ❌ when the `.bak` file remains locked by SQL Server
+
+#### Notes
+- The 1C password is passed on the `1cv8.exe` command line (the platform offers no other way) and is visible in the process list during the export
+- For server databases the `1cv8.exe` version must match the version of the 1C server cluster; set the path explicitly if several platform versions are installed
+
+---
+
+### 🇷🇴 Română
+
+#### Funcționalități noi
+- Plugin nou **Export 1C (.dt)**: bazele se exportă cu uneltele platformei 1C (`1cv8.exe DESIGNER /DumpIB`)
+  - Funcționează pentru baze **de fișiere** (`/F`) și baze **de server** (`/S cluster\bază`)
+  - Configurare per bază: click dreapta pe bază în tabel → **„Configurare export .dt”** (utilizator 1C, parolă, opțional calea spre `1cv8.exe`; pentru bazele de server și clusterul 1C și numele bazei)
+  - Când exportul `.dt` este configurat, acesta **înlocuiește** backup-ul nativ (`.1CD` / `.bak`): `.dt` → `.7z` → `.sha256` → Dropbox (opțional); fișierul `.dt` temporar se șterge după arhivare
+  - Dacă nu este indicată calea, se detectează automat cea mai nouă versiune instalată a platformei 1C
+  - Erorile exportului (codul returnat și logul platformei) apar în log, iar rândul este marcat ❌; nu există fallback ascuns
+- Plugin nou **Telegram**: după fiecare arhivare (manuală sau `--autorun`) botul trimite un **rezumat** (calculator, rezultat, ora de start, durata, ✔/❌ pentru fiecare bază) și **logul complet** ca fișier
+  - Mod **mereu** sau **doar la erori**
+  - Buton **Test** în fereastra pluginurilor
+  - În modul `--autorun` aplicația se închide abia după trimiterea raportului (timeout 30 s pe cerere)
+
+#### Securitate și date
+- Parola 1C și tokenul botului Telegram sunt criptate cu **Windows DPAPI**
+- Tokenul botului este ascuns în mesajele de eroare
+
+#### Corecții
+- Formularele de configurare a pluginurilor: eticheta unui câmp ascuns se ascunde împreună cu câmpul (ex. „User” la autentificarea Windows pentru MSSQL)
+- MSSQL: rândul este marcat ❌ când fișierul `.bak` rămâne blocat de SQL Server
+
+#### Note
+- Parola 1C este transmisă în linia de comandă `1cv8.exe` (platforma nu oferă altă metodă) și este vizibilă în lista proceselor pe durata exportului
+- Pentru bazele de server versiunea `1cv8.exe` trebuie să coincidă cu versiunea clusterului 1C; indicați calea explicit dacă sunt instalate mai multe versiuni ale platformei
+
+---
+
+### 🇷🇺 Русский
+
+#### Новые возможности
+- Новый плагин **Выгрузка 1С (.dt)**: базы выгружаются средствами платформы 1С (`1cv8.exe DESIGNER /DumpIB`)
+  - Работает для **файловых** (`/F`) и **серверных** баз (`/S кластер\база`)
+  - Настройка для каждой базы: правый клик по базе в таблице → **«Настройка выгрузки .dt»** (пользователь 1С, пароль, при необходимости путь к `1cv8.exe`; для серверных баз также кластер 1С и имя базы)
+  - Если выгрузка `.dt` настроена, она **заменяет** обычное резервное копирование (`.1CD` / `.bak`): `.dt` → `.7z` → `.sha256` → Dropbox (опционально); временный файл `.dt` удаляется после архивации
+  - Если путь не указан, автоматически определяется последняя установленная версия платформы 1С
+  - Ошибки выгрузки (код возврата и лог платформы) выводятся в лог, строка отмечается ❌; скрытого перехода на другой способ нет
+- Новый плагин **Telegram**: после каждой архивации (ручной или `--autorun`) бот отправляет **сводку** (компьютер, результат, время начала, длительность, ✔/❌ по каждой базе) и **полный лог** файлом
+  - Режим **всегда** или **только при ошибках**
+  - Кнопка **Тест** в окне плагинов
+  - В режиме `--autorun` приложение закрывается только после отправки отчёта (таймаут 30 с на запрос)
+
+#### Безопасность
+- Пароль 1С и токен бота Telegram шифруются с помощью **Windows DPAPI**
+- Токен бота скрывается в сообщениях об ошибках
+
+#### Исправления
+- Формы настройки плагинов: подпись скрытого поля скрывается вместе с полем (например, «User» при Windows-аутентификации MSSQL)
+- MSSQL: строка отмечается ❌, если файл `.bak` остаётся заблокированным SQL Server
+
+#### Примечания
+- Пароль 1С передаётся в командной строке `1cv8.exe` (платформа не поддерживает другой способ) и виден в списке процессов во время выгрузки
+- Для серверных баз версия `1cv8.exe` должна совпадать с версией кластера 1С; укажите путь явно, если установлено несколько версий платформы
 
 ---
 

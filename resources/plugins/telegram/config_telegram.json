@@ -1,0 +1,28 @@
+{
+  "ui": {
+    "fields":
+    [
+      {
+        "id": "password",
+        "type": "password",
+        "label": "Bot token",
+        "placeholder": "123456789:AA...",
+        "required": true
+      },
+      {
+        "id": "chat_id",
+        "type": "string",
+        "label": "Chat ID",
+        "placeholder": "123456789 or -100...",
+        "required": true
+      },
+      {
+        "id": "mode",
+        "type": "enum",
+        "label": "Send",
+        "values": ["always", "errors"],
+        "default": "always"
+      }
+    ]
+  }
+}

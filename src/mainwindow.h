@@ -21,6 +21,7 @@
 #include <QProcess>
 #include <QTimer>
 #include <QVector>
+#include <QDateTime>
 #include <QMovie>
 #include <QComboBox>
 #include <QJsonObject>
@@ -122,6 +123,12 @@ private:
     QVector<BackupJob> jobs;
     int currentJob = -1;
 
+    /** raportul rularii curente (Telegram) */
+    QDateTime   m_runStart;
+    QStringList m_runResults;          /** "✔ baza" / "❌ baza" */
+    int         m_runLogOffset = 0;    /** inceputul logului rularii curente in logBox */
+    bool        m_reportPending = false;
+
     QString settingsFilePath;
 
     QLabel *lblCompression;
@@ -158,6 +165,16 @@ private:
 
     void proceedWithArchive(BackupJob &job);
     void proceedWithArchiveMssql(BackupJob &job);
+    void proceedWithDumpIB(BackupJob &job);
+
+    void setRowStatus(int row, bool ok); /** ✔ / ❌ in coloana Status */
+
+    void sendTelegramReport();             /** rezumat + log -> Telegram, apoi finishAllJobs() */
+    QString buildRunSummary(bool hasErrors) const;
+    void finishAllJobs();                  /** log in fisier (--autorun) + allJobsFinished */
+
+    void onConfigDtDb(int row);
+    void onRemoveDtConfig(int row);
 
     void startNextJob();
 

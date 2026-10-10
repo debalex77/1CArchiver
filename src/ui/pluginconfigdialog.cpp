@@ -9,6 +9,7 @@
 #include <QJsonDocument>
 #include <QMessageBox>
 #include <QDir>
+#include <QFileInfo>
 #include <QStandardPaths>
 
 PluginConfigDialog::PluginConfigDialog(const QString &pluginId,
@@ -138,6 +139,8 @@ bool PluginConfigDialog::saveConfig()
         }
     }
 
+    QDir().mkpath(QFileInfo(m_configFile).absolutePath());
+
     QFile f(m_configFile);
     if (!f.open(QIODevice::WriteOnly)
         || f.write(QJsonDocument(obj).toJson(QJsonDocument::Indented)) < 0) {
@@ -168,5 +171,12 @@ bool PluginConfigDialog::saveConfig()
 
 QString PluginConfigDialog::schemaPath() const
 {
-    return QString(":/plugins/%1/config_mssql.json").arg(m_pluginId);
+    return QString(":/plugins/%1/config_%1.json").arg(m_pluginId);
+}
+
+void PluginConfigDialog::setDefaults(const QVariantMap &values)
+{
+    /** doar pentru configurare noua - nu suprascriem valorile salvate */
+    if (m_config.isEmpty() && m_form)
+        m_form->setValues(values);
 }

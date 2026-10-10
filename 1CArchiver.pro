@@ -14,6 +14,7 @@ SOURCES += \
     src/compressworker.cpp \
     src/core/pluginactivator.cpp \
     src/core/pluginmanager.cpp \
+    src/core/workerdumpib.cpp \
     src/core/workermssql.cpp \
     src/dropbox/connectordropbox.cpp \
     src/dropbox/dropboxconnectdialog.cpp \
@@ -24,6 +25,7 @@ SOURCES += \
     src/ibaseparser.cpp \
     src/lineeditpassword.cpp \
     src/mainwindow.cpp \
+    src/notify/telegramnotifier.cpp \
     src/scheduler/scheduledtaskdialog.cpp \
     src/switchbutton.cpp \
     src/thememanager.cpp \
@@ -40,6 +42,7 @@ HEADERS += \
     src/compressworker.h \
     src/core/pluginactivator.h \
     src/core/pluginmanager.h \
+    src/core/workerdumpib.h \
     src/core/workermssql.h \
     src/dropbox/connectordropbox.h \
     src/dropbox/dropboxconnectdialog.h \
@@ -50,6 +53,7 @@ HEADERS += \
     src/ibaseparser.h \
     src/lineeditpassword.h \
     src/mainwindow.h \
+    src/notify/telegramnotifier.h \
     src/scheduler/scheduledtaskdialog.h \
     src/switchbutton.h \
     src/thememanager.h \

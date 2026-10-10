@@ -36,8 +36,12 @@ private slots:
     void onClickMSSQL(bool on);
     void onClickRsync(bool on);
     void onClickOneDrive(bool on);
+    void onClickExport1C(bool on);
+    void onClickTelegram(bool on);
 
     void onClickConfigMSSQL();
+    void onClickConfigTelegram();
+    void onClickTestTelegram();
 
 private:
     QLabel *lblInfo;
@@ -45,27 +49,39 @@ private:
     QLabel *lbl_mssql; /** titlu principal */
     QLabel *lbl_rsync;
     QLabel *lbl_onedrive;
+    QLabel *lbl_export1c;
+    QLabel *lbl_telegram;
 
     QLabel *desc_mssql; /** descrierea */
     QLabel *desc_rsync;
     QLabel *desc_onedrive;
+    QLabel *desc_export1c;
+    QLabel *desc_telegram;
 
     QLabel *status_mssql; /** ststus plugin-lui */
     QLabel *status_rsync;
     QLabel *status_onedrive;
+    QLabel *status_export1c;
+    QLabel *status_telegram;
 
     SwitchButton *btnMSSQL    = nullptr; /** switch button pu activarea plugin */
     SwitchButton *btnRsync    = nullptr;
     SwitchButton *btnOneDrive = nullptr;
+    SwitchButton *btnExport1C = nullptr;
+    SwitchButton *btnTelegram = nullptr;
 
     QPushButton *btnConfigMSSQL    = nullptr; /** butoane pu adaugarea BD */
     QPushButton *btnConfigRsync    = nullptr;
     QPushButton *btnConfigOneDrive = nullptr;
+    QPushButton *btnConfigTelegram = nullptr;
+    QPushButton *btnTestTelegram   = nullptr;
 
     //-----------------------------------------
     void checkPluginMSSQL();
     void checkPluginRsync();
     void checkPluginOneDrive();
+    void checkPluginExport1C();
+    void checkPluginTelegram();
 };
 
 #endif // PLUGINACTIVATOR_H

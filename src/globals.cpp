@@ -34,4 +34,8 @@ namespace globals {
     bool pl_onedrive     = false; /** plugin onedrive activat */
     bool set_pl_onedrive = false; /** plugin onedrive setat */
 
+    bool pl_export1c = false; /** plugin export .dt (1cv8 DESIGNER /DumpIB) activat */
+
+    bool pl_telegram = false; /** plugin trimiterea logului in Telegram activat */
+
 }

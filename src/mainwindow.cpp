@@ -30,8 +30,11 @@
 #include <QDirIterator>
 #include <QSaveFile>
 #include <QSettings>
+#include <QSysInfo>
 
 #include <src/core/WorkerMssql.h>
+#include <src/core/workerdumpib.h>
+#include <src/notify/telegramnotifier.h>
 #include <src/core/pluginactivator.h>
 #include <src/core/pluginmanager.h>
 #include <src/dropbox/connectordropbox.h>
@@ -548,6 +551,11 @@ void MainWindow::onStartArchive()
     jobs.clear();
     currentJob = -1;
 
+    m_runStart = QDateTime::currentDateTime();
+    m_runResults.clear();
+    /** --autorun: tot logul tine de rulare (inclusiv avertismentele de la pornire) */
+    m_runLogOffset = globals::isAutorun ? 0 : logBox->toPlainText().length();
+
     for (int i = 0; i < table->rowCount(); ++i) {
         QCheckBox *cb = table->cellWidget(i,0)->findChild<QCheckBox *>();
         if (!cb || !cb->isChecked())
@@ -603,6 +611,23 @@ void MainWindow::onStartArchive()
         } else {
             log(tr("⛔ Nu este determinat tipul bazei de date: ") + j.dbName);
             continue;
+        }
+
+        /** export .dt configurat -> inlocuieste backup-ul nativ (.1CD / .bak) */
+        const QString configDt = itemDb->data(Qt::UserRole + 3).toString();
+        if (globals::pl_export1c && !configDt.isEmpty()) {
+
+            if (!QFileInfo::exists(configDt)) {
+                log(tr("⛔ Config export .dt lipsă pentru: ") + j.dbName);
+                setRowStatus(i, false);
+                continue;
+            }
+
+            j.typeDB     = "dump_dt";
+            j.configPath = configDt;
+            j.file1CD.clear();
+            if (typeDB == "mssql")
+                j.dbFolder.clear(); /** baza de server -> /S din config */
         }
 
         jobs.append(j);
@@ -711,6 +736,21 @@ void MainWindow::onTableContextMenu(const QPoint &pos)
     menu.addSeparator();
     QAction *actAuto = menu.addAction(tr("🔍 Detectare automată baze 1C"));
 
+    /** export .dt - pentru randul de sub cursor */
+    QAction *actConfigDt = nullptr;
+    QAction *actRemoveDt = nullptr;
+    const int row = table->rowAt(pos.y());
+
+    if (globals::pl_export1c && row >= 0 && table->item(row, 1)) {
+        const bool hasDt =
+            !table->item(row, 1)->data(Qt::UserRole + 3).toString().isEmpty();
+
+        menu.addSeparator();
+        actConfigDt = menu.addAction(tr("📤 Configurare export .dt"));
+        actRemoveDt = menu.addAction(tr("🗑 Elimină configurarea .dt"));
+        actRemoveDt->setEnabled(hasDt);
+    }
+
     QAction *selected = menu.exec(table->viewport()->mapToGlobal(pos));
     if (!selected)
         return;
@@ -721,6 +761,83 @@ void MainWindow::onTableContextMenu(const QPoint &pos)
         removeCurrentRow();
     else if (selected == actAuto)
         autoDetectPaths1C();
+    else if (selected == actConfigDt)
+        onConfigDtDb(row);
+    else if (selected == actRemoveDt)
+        onRemoveDtConfig(row);
+}
+
+void MainWindow::onConfigDtDb(int row)
+{
+    auto *dbItem   = table->item(row, 1);
+    auto *pathItem = table->item(row, 2);
+    if (!dbItem || !pathItem)
+        return;
+
+    const bool isServer = dbItem->data(Qt::UserRole).toString() == "mssql";
+
+    QString configFile = dbItem->data(Qt::UserRole + 3).toString();
+    if (configFile.isEmpty()) {
+        /** config nou: un fisier per baza (folder BD sau server + baza) */
+        const QString key = isServer
+                                ? pathItem->text() + "_" + dbItem->text()
+                                : pathItem->text();
+        configFile = QDir::toNativeSeparators(
+            QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
+            + "/plugins/export_1c/" + safeFileName(key) + ".json");
+    }
+
+    PluginConfigDialog dialog_dt("export_1c", configFile, this);
+
+    QVariantMap defaults;
+    defaults["connection"] = isServer ? "server" : "file";
+    if (isServer) {
+        /** sugestie: gazda serverului SQL (fara instanta) si denumirea bazei */
+        defaults["server1c"] = pathItem->text().section('\\', 0, 0);
+        defaults["infobase"] = dbItem->text();
+    }
+    dialog_dt.setDefaults(defaults);
+
+    connect(&dialog_dt, &PluginConfigDialog::onAddedDatabase,
+            this, [this, row](const QVariantMap &dbInfo) {
+                auto *item = table->item(row, 1);
+                if (!item)
+                    return;
+                item->setData(Qt::UserRole + 3, dbInfo.value("config").toString());
+                item->setToolTip(tr("Export .dt activ"));
+                log(tr("✔ Configurarea export .dt salvată: %1").arg(item->text()));
+            });
+
+    dialog_dt.exec();
+}
+
+void MainWindow::onRemoveDtConfig(int row)
+{
+    auto *dbItem = table->item(row, 1);
+    if (!dbItem)
+        return;
+
+    const QString configFile = dbItem->data(Qt::UserRole + 3).toString();
+    if (configFile.isEmpty())
+        return;
+
+    if (QMessageBox::question(
+            this,
+            tr("Confirmare"),
+            tr("Eliminați configurarea export .dt pentru această bază de date?"))
+        != QMessageBox::Yes)
+        return;
+
+    if (QFile::exists(configFile) && !QFile::remove(configFile)) {
+        QMessageBox::warning(
+            this,
+            tr("Eroare"),
+            tr("Nu pot șterge fișierul de configurare."));
+        return;
+    }
+
+    dbItem->setData(Qt::UserRole + 3, QString());
+    dbItem->setToolTip(QString());
 }
 
 void MainWindow::clearAllRows()
@@ -1107,9 +1224,7 @@ void MainWindow::proceedWithArchive(BackupJob &job)
 
                 table->removeCellWidget(job.row, 3);
 
-                auto *it = new QTableWidgetItem(ok ? "✔" : "❌");
-                it->setTextAlignment(Qt::AlignCenter);
-                table->setItem(job.row, 3, it);
+                setRowStatus(job.row, ok);
 
                 log(ok
                         ? tr("✔ Backup finalizat")
@@ -1131,17 +1246,16 @@ void MainWindow::proceedWithArchive(BackupJob &job)
                         .arg(toWinPath(archivePath),
                              QString::number(sizeMB, 'f', 1)));
 
-                /** eliminam fisierul .bak */
-                if (globals::pl_mssql &&
-                    ! job.fileBak.isEmpty() &&
+                /** eliminam fisierul temporar .bak / .dt */
+                if (! job.fileBak.isEmpty() &&
                     QFile(job.archivePath).exists()) {
-                    if (!QFile::remove(job.file1CD)) {
+                    if (!QFile::remove(job.fileBak)) {
                         log(tr("⚠ Nu pot șterge fișierul: %1")
-                                .arg(job.file1CD));
+                                .arg(job.fileBak));
                     } else {
                         log(tr("✔ Eliminat fișierul: %1")
-                                .arg(job.file1CD));
-                        job.fileBak.clear();     /** IMPORTANT - eliminam path-ul catre fisier .bak */
+                                .arg(job.fileBak));
+                        job.fileBak.clear();     /** IMPORTANT - eliminam path-ul catre fisier temporar */
                     }
                 }
 
@@ -1225,9 +1339,7 @@ void MainWindow::proceedWithArchiveMssql(BackupJob &job)
                 t->quit();
 
                 if (!ok) {
-                    auto *it = new QTableWidgetItem("❌");
-                    it->setTextAlignment(Qt::AlignCenter);
-                    table->setItem(job.row, 3, it);
+                    setRowStatus(job.row, false);
 
                     log(tr("❌ Backup MSSQL eșuat: ") + err);
                     startNextJob();
@@ -1238,6 +1350,7 @@ void MainWindow::proceedWithArchiveMssql(BackupJob &job)
                         .arg(toWinPath(bakPath)));
 
                 if (!waitForFileReady(bakPath)) {
+                    setRowStatus(job.row, false);
                     log(tr("❌ Fișierul .bak este blocat de MSSQL"));
                     startNextJob();
                     return;
@@ -1263,6 +1376,177 @@ void MainWindow::proceedWithArchiveMssql(BackupJob &job)
     t->start();
 }
 
+void MainWindow::proceedWithDumpIB(BackupJob &job)
+{
+    /** DumpIB nu raporteaza procentul -> progres nedeterminat */
+    progressBar->setRange(0, 0);
+    currentStatus->setText(tr("Export .dt: ..."));
+
+    /** spinner tabelei */
+    QLabel *lbl = new QLabel(this);
+    lbl->setAlignment(Qt::AlignCenter);
+
+    QMovie *mv = globals::isDark
+                     ? new QMovie(":/icons/icons/spinner.gif")
+                     : new QMovie(":/icons/icons/Fading balls.gif");
+
+    mv->setScaledSize(QSize(20, 20));
+    lbl->setMovie(mv);
+    mv->start();
+
+    table->setCellWidget(job.row, 3, lbl);
+
+    // ---------- Worker DumpIB ----------
+    QThread *t = new QThread(this);
+    WorkerDumpIB *worker = new WorkerDumpIB;
+
+    worker->moveToThread(t);
+
+    worker->setConfigFile(job.configPath);
+    worker->setDbFolder(job.dbFolder); /** gol -> baza de server */
+
+    /** fisier .dt temporar */
+    const QString dtPath = QDir(backupFolder).filePath(
+        safeFileName(job.dbName) + "_dt_" +
+        QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss") +
+        ".dt");
+
+    worker->setOutputDt(dtPath);
+
+    connect(t, &QThread::started,
+            worker, &WorkerDumpIB::process);
+
+    connect(worker, &WorkerDumpIB::log,
+            this, &MainWindow::log);
+
+    connect(worker, &WorkerDumpIB::finished,
+            this,
+            [=, &job](bool ok, const QString &, const QString &err) {
+
+                mv->stop();
+                mv->deleteLater();
+                lbl->deleteLater();
+                table->removeCellWidget(job.row, 3);
+
+                progressBar->setRange(0, 100);
+                progressBar->setValue(0);
+
+                t->quit();
+
+                if (!ok) {
+                    setRowStatus(job.row, false);
+
+                    log(tr("❌ Export .dt eșuat: ") + err);
+                    startNextJob();
+                    return;
+                }
+
+                log(tr("✔ Export .dt finalizat, creat - %1")
+                        .arg(toWinPath(dtPath)));
+
+                /** transformam job-ul în ONE_FILE (ca la MSSQL) */
+                job.typeDB = "one_file";                                 /** tipul BD */
+                job.file1CD = dtPath;                                    /** file INPUT */
+                job.fileBak = dtPath;                                    /** IMPORTANT - file .dt pu eliminarea */
+                job.archiveWholeFolder = false;                          /** doar fisierul .dt */
+                job.archivePath = buildArchiveName(job.dbName + "_dt");  /** file OUTPUT */
+
+                /** intram in pipeline-ul normal */
+                proceedWithArchive(job);
+            });
+
+    connect(t, &QThread::finished,
+            worker, &QObject::deleteLater);
+    connect(t, &QThread::finished,
+            t, &QObject::deleteLater);
+
+    t->start();
+}
+
+void MainWindow::setRowStatus(int row, bool ok)
+{
+    auto *it = new QTableWidgetItem(ok ? "✔" : "❌");
+    it->setTextAlignment(Qt::AlignCenter);
+    table->setItem(row, 3, it);
+
+    if (auto *dbItem = table->item(row, 1))
+        m_runResults << QString("%1 %2").arg(ok ? "✔" : "❌", dbItem->text());
+}
+
+// ======================================
+// Raportul in Telegram
+// ======================================
+
+void MainWindow::sendTelegramReport()
+{
+    auto *tg = new TelegramNotifier(this);
+
+    QString err;
+    if (!tg->loadConfig(&err)) {
+        tg->deleteLater();
+        log(tr("⚠ Telegram: %1").arg(err));
+        finishAllJobs();
+        return;
+    }
+
+    const QString runLog = logBox->toPlainText().mid(m_runLogOffset);
+    const bool hasErrors = runLog.contains("❌") || runLog.contains("⛔");
+
+    if (tg->onlyErrors() && !hasErrors) {
+        tg->deleteLater();
+        finishAllJobs();
+        return;
+    }
+
+    m_reportPending = true;
+    currentStatus->setText(tr("Telegram: trimiterea raportului..."));
+
+    connect(tg, &TelegramNotifier::finished,
+            this, [this, tg](bool ok, const QString &error) {
+                tg->deleteLater();
+                m_reportPending = false;
+
+                log(ok ? tr("📨 Telegram: raportul a fost trimis.")
+                       : tr("⚠ Telegram: raportul nu a fost trimis: %1").arg(error));
+                currentStatus->setText("Gata.");
+
+                finishAllJobs();
+            });
+
+    tg->send(buildRunSummary(hasErrors),
+             runLog.toUtf8(),
+             "log_" + m_runStart.toString("yyyy-MM-dd_HH.mm.ss") + ".log");
+}
+
+QString MainWindow::buildRunSummary(bool hasErrors) const
+{
+    const qint64 secs = m_runStart.secsTo(QDateTime::currentDateTime());
+
+    QStringList lines;
+    lines << QString("1CArchiver v%1 · %2").arg(VER, QSysInfo::machineHostName());
+    lines << (hasErrors ? tr("❌ Arhivarea finalizată cu erori")
+                        : tr("✔ Arhivarea finalizată cu succes"));
+    lines << tr("Start: %1 · Durata: %2 min %3 s")
+                 .arg(m_runStart.toString("dd.MM.yyyy HH:mm"),
+                      QString::number(secs / 60),
+                      QString::number(secs % 60));
+
+    if (!m_runResults.isEmpty())
+        lines << QString() << m_runResults;
+
+    lines << QString() << tr("Logul complet - în fișierul atașat.");
+    return lines.join('\n');
+}
+
+void MainWindow::finishAllJobs()
+{
+    // inscrim logul in fisier daca e "--autorun"
+    if (globals::isAutorun)
+        saveLogToFile();
+
+    emit allJobsFinished(); // pu "--autorun" vezi in main.cpp
+}
+
 // ======================================
 // Pornește job
 // ======================================
@@ -1277,6 +1561,9 @@ void MainWindow::startNextJob()
 
     /** finalizarea job-lui */
     if (currentJob >= jobs.size()) {
+        if (m_reportPending)
+            return; /** raportul Telegram e deja in curs */
+
         log("----------------------------------------------------------------------------");
         log(tr("Toate backup-urile finalizate."));
         currentStatus->setText("Gata.");
@@ -1293,11 +1580,11 @@ void MainWindow::startNextJob()
             cleanupOldArchives();
         }
 
-        // inscrim logul in fisier daca e "--autorun"
-        if (globals::isAutorun)
-            saveLogToFile();
-
-        emit allJobsFinished(); // pu "--autorun" vezi in main.cpp
+        /** Telegram -> finishAllJobs() dupa trimitere (--autorun inchide aplicatia) */
+        if (globals::pl_telegram)
+            sendTelegramReport();
+        else
+            finishAllJobs();
 
         return;
     }
@@ -1313,6 +1600,8 @@ void MainWindow::startNextJob()
     //---------------------------------------------
     if (job.typeDB == "mssql") {
         proceedWithArchiveMssql(job);
+    } else if (job.typeDB == "dump_dt") {
+        proceedWithDumpIB(job);
     } else if (job.typeDB == "one_file") {
         proceedWithArchive(job);
     }
@@ -1673,6 +1962,9 @@ void MainWindow::loadSettings()
             const QString configPath =
                 o.value("configPath").toString(); // poate lipsi -> ""
 
+            const QString configDt =
+                o.value("configDt").toString();   // config export .dt, poate lipsi -> ""
+
             int row = table->rowCount();
             table->insertRow(row);
 
@@ -1701,6 +1993,9 @@ void MainWindow::loadSettings()
             dbItem->setData(Qt::UserRole,     typeDB);
             dbItem->setData(Qt::UserRole + 1, configured);
             dbItem->setData(Qt::UserRole + 2, configPath);
+            dbItem->setData(Qt::UserRole + 3, configDt);
+            if (!configDt.isEmpty())
+                dbItem->setToolTip(tr("Export .dt activ"));
 
             /** config MSSQL cu parola in formatul vechi (XOR) -> recriptam DPAPI */
             if (typeDB == "mssql" && !configPath.isEmpty()
@@ -1752,6 +2047,8 @@ void MainWindow::saveSettings()
     obj_plugin["mssql"]    = globals::pl_mssql;
     obj_plugin["rsync"]    = globals::pl_rsync;
     obj_plugin["onedrive"] = globals::pl_onedrive;
+    obj_plugin["export_1c"] = globals::pl_export1c;
+    obj_plugin["telegram"]  = globals::pl_telegram;
     arr_plugins.append(obj_plugin);
 
     obj["plugins"] = arr_plugins;
@@ -1809,6 +2106,9 @@ void MainWindow::saveSettings()
 
         obj["configPath"] =
             dbItem->data(Qt::UserRole + 2).toString();
+
+        obj["configDt"] =
+            dbItem->data(Qt::UserRole + 3).toString();
 
         arr_db.append(obj);
     }

@@ -25,5 +25,7 @@
         <file>styles/main_style.qss</file>
         <file>styles/dark_style.qss</file>
         <file>plugins/mssql/config_mssql.json</file>
+        <file>plugins/export_1c/config_export_1c.json</file>
+        <file>plugins/telegram/config_telegram.json</file>
     </qresource>
 </RCC>

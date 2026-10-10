@@ -47,6 +47,10 @@ namespace globals {
 
     extern bool pl_onedrive;
     extern bool set_pl_onedrive;
+
+    extern bool pl_export1c;
+
+    extern bool pl_telegram;
 }
 
 #

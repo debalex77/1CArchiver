@@ -1,0 +1,47 @@
+{
+  "ui": {
+    "fields":
+    [
+      {
+        "id": "connection",
+        "type": "enum",
+        "label": "Connection",
+        "values": ["file", "server"],
+        "default": "file"
+      },
+      {
+        "id": "platform",
+        "type": "string",
+        "label": "Path 1cv8.exe",
+        "placeholder": "auto (latest installed version)"
+      },
+      {
+        "id": "server1c",
+        "type": "string",
+        "label": "1C server (cluster)",
+        "placeholder": "srv1c or srv1c:1541",
+        "visible_if": { "connection": "server" },
+        "required": true
+      },
+      {
+        "id": "infobase",
+        "type": "string",
+        "label": "Infobase name",
+        "placeholder": "base_1c",
+        "visible_if": { "connection": "server" },
+        "required": true
+      },
+      {
+        "id": "user",
+        "type": "string",
+        "label": "1C user",
+        "placeholder": "Administrator"
+      },
+      {
+        "id": "password",
+        "type": "password",
+        "label": "Password"
+      }
+    ]
+  }
+}

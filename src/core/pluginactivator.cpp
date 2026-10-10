@@ -1,4 +1,8 @@
 #include "pluginactivator.h"
+#include "src/notify/telegramnotifier.h"
+
+#include <QMessageBox>
+#include <QSysInfo>
 
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -29,8 +33,12 @@ PluginActivator::PluginActivator(QWidget *parent)
     connect(btnMSSQL, &SwitchButton::toggled, this, &PluginActivator::onClickMSSQL);
     connect(btnRsync, &SwitchButton::toggled, this, &PluginActivator::onClickRsync);
     connect(btnOneDrive, &SwitchButton::toggled, this, &PluginActivator::onClickOneDrive);
+    connect(btnExport1C, &SwitchButton::toggled, this, &PluginActivator::onClickExport1C);
+    connect(btnTelegram, &SwitchButton::toggled, this, &PluginActivator::onClickTelegram);
 
     connect(btnConfigMSSQL, &QPushButton::clicked, this, &PluginActivator::onClickConfigMSSQL);
+    connect(btnConfigTelegram, &QPushButton::clicked, this, &PluginActivator::onClickConfigTelegram);
+    connect(btnTestTelegram, &QPushButton::clicked, this, &PluginActivator::onClickTestTelegram);
 }
 
 PluginActivator::~PluginActivator()
@@ -134,6 +142,92 @@ void PluginActivator::setupUI()
     v->addWidget(line_mssql);
 
     //-------------------------------------------------
+    // --- EXPORT 1C (.dt)
+    //-------------------------------------------------
+    auto *layout_export1c = new QHBoxLayout;
+    layout_export1c->setContentsMargins(10,10,10,2);
+    layout_export1c->setSpacing(10);
+
+    lbl_export1c = new QLabel(this);
+    lbl_export1c->setStyleSheet("font-size: 14px; font-weight: bold;");
+    lbl_export1c->setText(tr("Plugin Export 1C (.dt)"));
+
+    btnExport1C = new SwitchButton(this);
+    btnExport1C->setChecked(globals::pl_export1c);
+
+    desc_export1c = new QLabel(this);
+    desc_export1c->setStyleSheet("font-size: 11px;");
+    desc_export1c->setText(
+        tr("Exportul bazelor în format .dt (în locul .1CD / .bak)<br>"
+           "cu ajutorul platformei 1C (1cv8.exe DESIGNER /DumpIB).")
+        );
+
+    status_export1c = new QLabel(this);
+    status_export1c->setStyleSheet("font-size: 11px; font-style: italic; color: #7acfcf;");
+    checkPluginExport1C();
+
+    layout_export1c->addWidget(btnExport1C);
+    layout_export1c->addWidget(desc_export1c);
+    layout_export1c->addStretch();
+
+    QFrame* line_export1c = new QFrame(this);
+    line_export1c->setFrameShape(QFrame::HLine);
+    line_export1c->setFrameShadow(QFrame::Plain);
+    line_export1c->setFixedHeight(1);
+
+    v->addWidget(lbl_export1c);
+    v->addLayout(layout_export1c);
+    v->addWidget(status_export1c);
+    v->addWidget(line_export1c);
+
+    //-------------------------------------------------
+    // --- TELEGRAM
+    //-------------------------------------------------
+    auto *layout_telegram = new QHBoxLayout;
+    layout_telegram->setContentsMargins(10,10,10,2);
+    layout_telegram->setSpacing(10);
+
+    lbl_telegram = new QLabel(this);
+    lbl_telegram->setStyleSheet("font-size: 14px; font-weight: bold;");
+    lbl_telegram->setText(tr("Plugin Telegram"));
+
+    btnTelegram = new SwitchButton(this);
+    btnTelegram->setChecked(globals::pl_telegram);
+
+    desc_telegram = new QLabel(this);
+    desc_telegram->setStyleSheet("font-size: 11px;");
+    desc_telegram->setText(
+        tr("Trimiterea rezumatului și a logului arhivării<br>"
+           "în Telegram (prin bot).")
+        );
+
+    btnConfigTelegram = new QPushButton(this);
+    btnConfigTelegram->setText(tr("Configurarea"));
+
+    btnTestTelegram = new QPushButton(this);
+    btnTestTelegram->setText(tr("Test"));
+
+    status_telegram = new QLabel(this);
+    status_telegram->setStyleSheet("font-size: 11px; font-style: italic; color: #7acfcf;");
+    checkPluginTelegram();
+
+    layout_telegram->addWidget(btnTelegram);
+    layout_telegram->addWidget(desc_telegram);
+    layout_telegram->addStretch();
+    layout_telegram->addWidget(btnConfigTelegram);
+    layout_telegram->addWidget(btnTestTelegram);
+
+    QFrame* line_telegram = new QFrame(this);
+    line_telegram->setFrameShape(QFrame::HLine);
+    line_telegram->setFrameShadow(QFrame::Plain);
+    line_telegram->setFixedHeight(1);
+
+    v->addWidget(lbl_telegram);
+    v->addLayout(layout_telegram);
+    v->addWidget(status_telegram);
+    v->addWidget(line_telegram);
+
+    //-------------------------------------------------
     // --- RSYNC
     //-------------------------------------------------
     auto *layout_rsync = new QHBoxLayout;
@@ -222,10 +316,14 @@ void PluginActivator::updateUI()
     status_mssql->setVisible(btnMSSQL->isChecked());
     status_rsync->setVisible(btnRsync->isChecked());
     status_onedrive->setVisible(btnOneDrive->isChecked());
+    status_export1c->setVisible(btnExport1C->isChecked());
+    status_telegram->setVisible(btnTelegram->isChecked());
 
     btnConfigMSSQL->setEnabled(btnMSSQL->isChecked());
     btnConfigRsync->setEnabled(btnRsync->isChecked());
     btnConfigOneDrive->setEnabled(btnOneDrive->isChecked());
+    btnConfigTelegram->setEnabled(btnTelegram->isChecked());
+    btnTestTelegram->setEnabled(btnTelegram->isChecked());
 
     this->adjustSize();
 }
@@ -257,6 +355,66 @@ void PluginActivator::onClickOneDrive(bool on)
     updateUI();
 }
 
+void PluginActivator::onClickExport1C(bool on)
+{
+    globals::pl_export1c = on;
+
+    emit activatePlugin("export_1c", on);
+
+    if (on)
+        checkPluginExport1C();
+    updateUI();
+}
+
+void PluginActivator::onClickTelegram(bool on)
+{
+    globals::pl_telegram = on;
+
+    emit activatePlugin("telegram", on);
+
+    if (on)
+        checkPluginTelegram();
+    updateUI();
+}
+
+void PluginActivator::onClickConfigTelegram()
+{
+    PluginConfigDialog config_dlg_telegram("telegram",
+                                           TelegramNotifier::configPath(),
+                                           this);
+    config_dlg_telegram.exec();
+    checkPluginTelegram();
+}
+
+void PluginActivator::onClickTestTelegram()
+{
+    auto *notifier = new TelegramNotifier(this); /** eliberat la finished sau odata cu dialogul */
+
+    QString err;
+    if (!notifier->loadConfig(&err)) {
+        notifier->deleteLater();
+        QMessageBox::warning(this, tr("Telegram"), err);
+        return;
+    }
+
+    btnTestTelegram->setEnabled(false);
+
+    connect(notifier, &TelegramNotifier::finished,
+            this, [this, notifier](bool ok, const QString &error) {
+                notifier->deleteLater();
+                btnTestTelegram->setEnabled(btnTelegram->isChecked());
+
+                if (ok)
+                    QMessageBox::information(this, tr("Telegram"),
+                                             tr("Mesajul de test a fost trimis."));
+                else
+                    QMessageBox::warning(this, tr("Telegram"),
+                                         tr("Mesajul nu a fost trimis: %1").arg(error));
+            });
+
+    notifier->send(tr("1CArchiver: mesaj de test (%1)").arg(QSysInfo::machineHostName()));
+}
+
 void PluginActivator::onClickConfigMSSQL()
 {
     PluginConfigDialog config_dlg_mssql("mssql",
@@ -280,4 +438,16 @@ void PluginActivator::checkPluginRsync()
 void PluginActivator::checkPluginOneDrive()
 {
     status_onedrive->setText(tr("Se află în procesul de dezvoltare !!!"));
+}
+
+void PluginActivator::checkPluginExport1C()
+{
+    status_export1c->setText(tr("Configurarea: click dreapta pe bază în tabel → «Configurare export .dt»."));
+}
+
+void PluginActivator::checkPluginTelegram()
+{
+    status_telegram->setText(QFile::exists(TelegramNotifier::configPath())
+                                 ? tr("Configurat.")
+                                 : tr("Nu este configurat - apăsați «Configurarea»."));
 }

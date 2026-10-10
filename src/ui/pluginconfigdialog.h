@@ -25,6 +25,8 @@ public:
                                 const QString &configFile,
                                 QWidget *parent = nullptr);
 
+    void setDefaults(const QVariantMap &values); /** valori initiale pu configurare noua */
+
 signals:
     void onAddedDatabase(const QVariantMap &dbInfo);
 
